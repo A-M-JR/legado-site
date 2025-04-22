@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-gold: #D4B74C;
+  --dark-gold: #8A7A42;
+  --cream-bg: #F5F3E4;
+  --light-cream: #F8F6E9;
+}
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  color: #4B4B4B;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Lora', serif;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Animation classes */
+.animate-fade-in-down {
+  animation: fadeInDown 0.5s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Custom utilities */
+.shadow-soft {
+  box-shadow: 0 10px 25px -5px rgba(212, 183, 76, 0.1), 0 10px 10px -5px rgba(212, 183, 76, 0.04);
+}
+
+/* Button hover animations */
+a, button {
+  transition: all 0.3s ease;
+}
+
+body {
+  background-color: #f9f8f6;
+  color: #4a4a4a;
+  font-family: 'Georgia', serif;
+}
+
+h1, h2, h3 {
+  font-family: 'Georgia', serif;
+  color: #3b3b3b;
+}
+
+.btn-primary {
+  background-color: #bfa67a;
+  color: white;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+}
+
+.btn-primary:hover {
+  background-color: #a98c64;
+}
