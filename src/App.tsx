@@ -1,47 +1,18 @@
-import React, { useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import About from './components/About';
-import Features from './components/Features';
-import Testimonials from './components/Testimonials';
-import Partners from './components/Partners';
-import FAQ from './components/FAQ';
-import Contact from './components/Contact';
-import CTA from './components/CTA';
-import Footer from './components/Footer';
+import React from 'react';
 
-function App() {
-  useEffect(() => {
-    const updateMetaTags = () => {
-      document.title = "Legado - Preservando Memórias";
-      
-      // Update or create meta description
-      let metaDescription = document.querySelector('meta[name="description"]');
-      if (!metaDescription) {
-        metaDescription = document.createElement('meta');
-        metaDescription.name = 'description';
-        document.head.appendChild(metaDescription);
-      }
-      metaDescription.content = 'Legado: Aplicativo para empresas de planos funerários, oferecendo gerenciamento de recordações dos entes queridos que já se foram.';
-    };
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import RecordacaoPublica from './pages/recordacoes-publicas/[id]';
+import Sucesso from './pages/recordacoes-publicas/sucesso';
+import Home from './pages/recordacoes-publicas/Home';
 
-    updateMetaTags();
-  }, []);
-
+export default function App() {
   return (
-    <div className="font-sans">
-      <Navbar />
-      <Hero />
-      <About />
-      <Features />
-      <Testimonials />
-      <FAQ />
-      <Partners />
-      <CTA />
-      <Contact />
-      <Footer />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/recordacoes-publicas/:id" element={<RecordacaoPublica />} />
+        <Route path="/recordacoes-publicas/sucesso" element={<Sucesso />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;
