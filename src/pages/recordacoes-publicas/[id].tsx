@@ -16,11 +16,12 @@ export default function RecordacaoPublica() {
     const [imagem, setImagem] = useState<File | null>(null);
     const [enviando, setEnviando] = useState(false);
     const [sucesso, setSucesso] = useState(false);
+    const { id: dependenteId } = useParams();
     const navigate = useNavigate();
 
 
     const handleUpload = async () => {
-        if (!id || !mensagem) return;
+        if (!dependenteId || !mensagem) return;
 
         setEnviando(true);
         let imagem_url: string | null = null;
@@ -39,14 +40,13 @@ export default function RecordacaoPublica() {
                 if (urlData?.publicUrl) {
                     imagem_url = urlData.publicUrl;
                 }
-
             }
         }
 
         const remetente = anonimo ? 'Anônimo' : nome || 'Anônimo';
 
         const { error: insertError } = await supabase.from('recordacoes').insert({
-            dependente_id: id,
+            dependente_id: dependenteId,
             mensagem: `${mensagem}\n\n– ${remetente}`,
             imagem_url,
         });
@@ -54,7 +54,7 @@ export default function RecordacaoPublica() {
         setEnviando(false);
 
         if (!insertError) {
-            navigate('/recordacoes-publicas/sucesso');
+            navigate(`/recordacoes-publicas/sucesso/${dependenteId}`);
         } else {
             alert('Erro ao enviar a recordação.');
         }
@@ -62,13 +62,15 @@ export default function RecordacaoPublica() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#eafbf7] to-[#d7f1ed] flex flex-col items-center justify-center px-4 py-10">
-            <div className="bg-white shadow-md rounded-xl w-full max-w-xl p-6">
-                <h1 className="text-2xl font-bold text-center mb-6 text-[#007080]">Deixe sua recordação</h1>
+        <div className="min-h-screen bg-[#E3F1EB] flex items-center justify-center px-4 py-10">
+            <div className="bg-white shadow-lg rounded-2xl w-full max-w-xl p-6 border border-[#D1F2EB]">
+                <h1 className="text-2xl font-bold text-center mb-6 text-[#007080]">
+                    Deixe sua recordação 💙
+                </h1>
 
                 <textarea
                     placeholder="Escreva sua mensagem..."
-                    className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+                    className="w-full p-4 border border-[#B2D8D8] rounded-lg mb-4 text-[#2D2D2D] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5BA58C]"
                     rows={5}
                     value={mensagem}
                     onChange={(e) => setMensagem(e.target.value)}
@@ -77,7 +79,7 @@ export default function RecordacaoPublica() {
                 <input
                     type="file"
                     accept="image/*"
-                    className="mb-4"
+                    className="mb-4 text-sm text-gray-600"
                     onChange={(e) => setImagem(e.target.files?.[0] || null)}
                 />
 
@@ -85,16 +87,18 @@ export default function RecordacaoPublica() {
                     type="text"
                     placeholder="Seu nome (opcional)"
                     disabled={anonimo}
-                    className="w-full p-3 border border-gray-300 rounded-lg mb-2"
+                    className={`w-full p-4 border border-[#B2D8D8] rounded-lg mb-2 text-[#2D2D2D] placeholder-gray-400 focus:outline-none focus:ring-2 ${anonimo ? 'bg-gray-100 text-gray-500' : 'focus:ring-[#5BA58C]'
+                        }`}
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
                 />
 
-                <label className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                <label className="flex items-center gap-2 text-sm text-[#007080] font-medium mb-4">
                     <input
                         type="checkbox"
                         checked={anonimo}
                         onChange={(e) => setAnonimo(e.target.checked)}
+                        className="accent-[#5BA58C]"
                     />
                     Enviar como anônimo
                 </label>
@@ -102,13 +106,13 @@ export default function RecordacaoPublica() {
                 <button
                     onClick={handleUpload}
                     disabled={enviando}
-                    className="w-full bg-[#007080] text-white py-3 rounded-lg font-bold hover:bg-[#005f66] transition"
+                    className="w-full bg-[#5BA58C] text-white py-3 rounded-lg font-bold hover:bg-[#4a8c75] transition"
                 >
                     {enviando ? 'Enviando...' : 'Enviar recordação'}
                 </button>
 
                 {sucesso && (
-                    <div className="mt-4 bg-green-100 text-green-700 text-center p-3 rounded-lg">
+                    <div className="mt-4 bg-green-100 text-green-700 text-center p-3 rounded-lg shadow-sm">
                         Recordação enviada com sucesso 💙
                     </div>
                 )}
