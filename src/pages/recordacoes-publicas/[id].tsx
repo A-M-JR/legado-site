@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 
@@ -9,16 +9,34 @@ const supabase = createClient(
 );
 
 export default function RecordacaoPublica() {
-    const { id } = useParams();
+    const { id: dependenteId } = useParams();
     const [nome, setNome] = useState('');
     const [mensagem, setMensagem] = useState('');
     const [anonimo, setAnonimo] = useState(false);
     const [imagem, setImagem] = useState<File | null>(null);
     const [enviando, setEnviando] = useState(false);
     const [sucesso, setSucesso] = useState(false);
-    const { id: dependenteId } = useParams();
+    const [dependente, setDependente] = useState<any>(null);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const fetchDependente = async () => {
+            if (!dependenteId) return;
+
+            const { data, error } = await supabase
+                .from('dependentes')
+                .select('nome, data_nascimento, data_falecimento, imagem_url')
+                .eq('id', dependenteId)
+                .maybeSingle();
+            if (error) {
+                console.error('Erro ao buscar dependente:', error.message);
+            } else {
+                setDependente(data);
+            }
+        };
+
+        fetchDependente();
+    }, [dependenteId]);
 
     const handleUpload = async () => {
         if (!dependenteId || !mensagem) return;
@@ -60,10 +78,30 @@ export default function RecordacaoPublica() {
         }
     };
 
-
     return (
         <div className="min-h-screen bg-[#E3F1EB] flex items-center justify-center px-4 py-10">
             <div className="bg-white shadow-lg rounded-2xl w-full max-w-xl p-6 border border-[#D1F2EB]">
+                {dependente && (
+                    <div className="flex flex-col items-center mb-8">
+                        <img
+                            src={dependente.imagem_url || '/placeholder.jpg'}
+                            alt={dependente.nome}
+                            className="w-28 h-28 rounded-full object-cover mb-4 shadow-md"
+                        />
+                        <h2 className="text-xl font-bold text-[#007080]">{dependente.nome}</h2>
+                        {dependente.data_nascimento && (
+                            <p className="text-sm text-gray-600">
+                                Nascimento: {dependente.data_nascimento}
+                            </p>
+                        )}
+                        {dependente.data_falecimento && (
+                            <p className="text-sm text-gray-600">
+                                Falecimento: {dependente.data_falecimento}
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 <h1 className="text-2xl font-bold text-center mb-6 text-[#007080]">
                     Deixe sua recordação 💙
                 </h1>
@@ -87,8 +125,7 @@ export default function RecordacaoPublica() {
                     type="text"
                     placeholder="Seu nome (opcional)"
                     disabled={anonimo}
-                    className={`w-full p-4 border border-[#B2D8D8] rounded-lg mb-2 text-[#2D2D2D] placeholder-gray-400 focus:outline-none focus:ring-2 ${anonimo ? 'bg-gray-100 text-gray-500' : 'focus:ring-[#5BA58C]'
-                        }`}
+                    className={`w-full p-4 border border-[#B2D8D8] rounded-lg mb-2 text-[#2D2D2D] placeholder-gray-400 focus:outline-none focus:ring-2 ${anonimo ? 'bg-gray-100 text-gray-500' : 'focus:ring-[#5BA58C]'}`}
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
                 />
