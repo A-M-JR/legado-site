@@ -5,17 +5,12 @@ const faqs = [
   {
     question: 'O que é o aplicativo Legado?',
     answer:
-      'O Legado é um aplicativo que ajuda a preservar e gerenciar memórias de entes queridos que já partiram. Ele permite criar álbuns digitais, registrar histórias de vida, compartilhar recordações com familiares e acessar suporte emocional especializado durante o processo de luto.',
-  },
-  {
-    question: 'Como funciona a parceria com empresas de planos funerários?',
-    answer:
-      'Oferecemos uma solução tecnológica que as empresas de planos funerários podem incluir como um benefício adicional aos seus clientes. O aplicativo complementa os serviços tradicionais, proporcionando um espaço digital para preservação de memórias e suporte emocional após a perda.',
+      'O Legado é um aplicativo que preserva e possibilita a família gerenciar memórias de pessoas queridas que já partiram. Ele permite criar álbuns digitais registrando histórias de vida, compartilhar recordações com familiares e acessar suporte emocional especializado durante o processo de luto.',
   },
   {
     question: 'As memórias compartilhadas são privadas e seguras?',
     answer:
-      'Sim, a segurança e privacidade são prioridades. Você controla quem pode ver e contribuir para as recordações. Utilizamos tecnologias avançadas de criptografia e seguimos rigorosos padrões de proteção de dados para garantir que suas memórias permaneçam seguras e privadas.',
+      'Sim, a segurança e privacidade são prioridades. Você controla quem pode ver e pode apagar recordações que foram inseridas. Utilizamos tecnologias avançadas de criptografia e seguimos rigorosos padrões de proteção de dados para garantir que suas memórias permaneçam seguras e se for sua opção: privadas.',
   },
   {
     question: 'Como funciona o suporte psicológico oferecido?',
@@ -25,7 +20,7 @@ const faqs = [
   {
     question: 'É possível acessar o aplicativo em diferentes dispositivos?',
     answer:
-      'Sim, o Legado está disponível para smartphones iOS e Android, além de possuir uma versão web acessível de qualquer navegador. As recordações são sincronizadas em todos os dispositivos, garantindo que você possa acessar e gerenciar memórias de onde estiver.',
+      'Sim, o APP Legado está disponível para smartphones iOS e Android, além de possuir uma versão web acessível de qualquer navegador. As recordações são sincronizadas em todos os dispositivos, garantindo que você possa acessar e gerenciar memórias de onde estiver.',
   },
 ];
 
@@ -44,8 +39,7 @@ const FAQ = () => {
             Perguntas <span className="text-[#D4B74C]">Frequentes</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Encontre respostas para as dúvidas mais comuns sobre o Legado e 
-            como podemos ajudar você ou sua empresa.
+            Encontre respostas para as dúvidas mais comuns sobre o APP Legado e entenda como podemos ajudar você.
           </p>
         </div>
 
@@ -53,7 +47,7 @@ const FAQ = () => {
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="mb-4 border border-[#D4B74C]/30 rounded-lg overflow-hidden bg-white"
+              className="mb-4 border border-[#D4B74C]/30 rounded-lg overflow-hidden bg-white shadow-sm"
             >
               <button
                 className="w-full text-left p-6 focus:outline-none flex justify-between items-center"
@@ -68,13 +62,13 @@ const FAQ = () => {
                   <ChevronDown className="h-5 w-5 text-[#D4B74C]" />
                 )}
               </button>
-              
+
               <div
                 className={`overflow-hidden transition-all duration-300 ${
                   openIndex === index ? 'max-h-96' : 'max-h-0'
                 }`}
               >
-                <div className="p-6 pt-0 text-gray-600 border-t border-[#D4B74C]/20">
+                <div className="p-6 pt-0 text-gray-600 border-t border-[#D4B74C]/20 text-justify leading-relaxed">
                   {faq.answer}
                 </div>
               </div>

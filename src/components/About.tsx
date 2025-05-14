@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart, Clock, Shield, Users } from 'lucide-react';
+import imagem from '../assets/fotoantiga.png';
 
 const About = () => {
   return (
@@ -7,12 +8,17 @@ const About = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#8A7A42] mb-4">
-            Sobre o <span className="text-[#D4B74C]">Legado</span>
+            Quem <span className="text-[#D4B74C]">somos</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Mais do que um aplicativo, somos uma plataforma que conecta 
-            memórias, emoções e pessoas. Ajudamos empresas de planos 
-            funerários a oferecerem um valor único aos seus clientes.
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto text-justify leading-relaxed">
+            Somos a Empresa Legado&Conforto e aqui lhe apresentamos carinhosamente um dos nossos produtos: APP Legado.
+            Mais do que um aplicativo, somos uma plataforma que conecta memórias, emoções e pessoas.
+            Sabemos que a perda de alguém especial é um dos momentos mais difíceis da vida. As lembranças que temos dessas pessoas são preciosas, e muitas vezes queremos uma maneira de guardá-las para sempre, tendo a certeza de que estarão ao nosso alcance.
+            <br /><br />
+            Foi pensando nisso que criamos o APP LEGADO; uma plataforma para preservar e compartilhar memórias de quem partiu, de forma íntima, significativa e segura.
+            Com o tempo, memórias podem se perder, histórias podem sim ser esquecidas, e as vozes das pessoas que amamos e que se foram tendem a parecer mais distantes. Por mais dor que isso possa trazer, é a realidade.
+            <br /><br />
+            O APP LEGADO permite que famílias e amigos registrem fotos e mensagens de momentos especiais, criando um memorial digital que mantém viva a presença de quem foi importante para você.
           </p>
         </div>
 
@@ -22,9 +28,8 @@ const About = () => {
               <Heart className="h-8 w-8 text-[#D4B74C]" />
             </div>
             <h3 className="text-xl font-serif font-semibold text-[#8A7A42] mb-3">Cuidado Emocional</h3>
-            <p className="text-gray-600">
-              Fornecemos suporte emocional através da preservação de memórias e 
-              conexão com suporte psicológico profissional.
+            <p className="text-gray-600 text-justify leading-relaxed">
+              O APP Legado ajuda no processo do luto, trazendo conforto ao transformar a dor da perda em gratidão pelas memórias compartilhadas. Cada história registrada se torna uma forma de manter vivo o legado daqueles que você amou e que partiram.
             </p>
           </div>
 
@@ -33,9 +38,8 @@ const About = () => {
               <Clock className="h-8 w-8 text-[#D4B74C]" />
             </div>
             <h3 className="text-xl font-serif font-semibold text-[#8A7A42] mb-3">Acesso Permanente</h3>
-            <p className="text-gray-600">
-              Oferecemos um espaço digital onde recordações podem ser preservadas 
-              e acessadas por gerações futuras.
+            <p className="text-gray-600 text-justify leading-relaxed">
+              Enquanto você desejar, terá acesso, conforme as informações no termo de adesão.
             </p>
           </div>
 
@@ -44,9 +48,8 @@ const About = () => {
               <Shield className="h-8 w-8 text-[#D4B74C]" />
             </div>
             <h3 className="text-xl font-serif font-semibold text-[#8A7A42] mb-3">Segurança e Privacidade</h3>
-            <p className="text-gray-600">
-              Protegemos suas memórias e informações pessoais com os mais altos 
-              padrões de segurança digital.
+            <p className="text-gray-600 text-justify leading-relaxed">
+              Para acessar o APP Legado é necessário login e senha. Somente membros da família poderão compartilhar essas informações com os demais. A família também decide se as memórias registradas serão privadas ou públicas — para que amigos também tenham acesso.
             </p>
           </div>
 
@@ -55,9 +58,8 @@ const About = () => {
               <Users className="h-8 w-8 text-[#D4B74C]" />
             </div>
             <h3 className="text-xl font-serif font-semibold text-[#8A7A42] mb-3">Conexão Familiar</h3>
-            <p className="text-gray-600">
-              Facilitamos o compartilhamento de recordações entre familiares, 
-              fortalecendo laços mesmo após a partida.
+            <p className="text-gray-600 text-justify leading-relaxed">
+              A conexão familiar depois da morte de alguém é como um tecido que, embora rasgado pela dor, pode ser costurado pela presença, pelo amor e pela memória — dando novo significado à vida de quem fica.
             </p>
           </div>
         </div>
@@ -66,22 +68,21 @@ const About = () => {
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">
               <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#8A7A42] mb-4">
-                Nossa Missão
+                Nosso Propósito
               </h3>
-              <p className="text-gray-600 mb-4">
-                O Legado nasceu da compreensão de que a dor da perda pode ser 
-                amenizada quando transformamos luto em celebração de memórias.
+              <p className="text-black mb-4 text-justify leading-relaxed">
+                O APP Legado nasceu da compreensão de que a dor da perda pode ser amenizada quando transformamos o luto em celebração e gratidão por ter vivido um precioso tempo com aquela pessoa que sempre será importante para você.
               </p>
-              <p className="text-gray-600">
-                Trabalhamos com empresas de planos funerários para oferecer uma 
-                solução tecnológica que transcende o serviço tradicional, 
-                proporcionando conforto e preservação de histórias de vida para 
-                as famílias.
+              <p className="text-black mb-4 text-justify leading-relaxed">
+                O que oferecemos é um espaço digital para guardar lembranças, compartilhar histórias e manter viva a memória de quem se foi.
+              </p>
+              <p className="text-black mb-4 text-justify leading-relaxed">
+                "Nosso propósito é preservar o que é mais precioso: as memórias, o amor e a história de quem jamais será esquecido."
               </p>
             </div>
             <div className="md:w-1/2 flex justify-center">
               <img
-                src="https://images.pexels.com/photos/7641915/pexels-photo-7641915.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                src={imagem}
                 alt="Pessoa olhando foto antiga"
                 className="rounded-lg shadow-md max-w-full h-auto"
               />

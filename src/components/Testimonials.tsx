@@ -8,7 +8,8 @@ const testimonials = [
       'O Legado trouxe conforto durante um momento muito difícil. Poder ver e compartilhar memórias do meu pai com toda a família nos ajudou a transformar a dor em celebração da vida dele.',
     name: 'Mariana Silva',
     role: 'Usuária do Aplicativo',
-    image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
+    image:
+      'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
   },
   {
     id: 2,
@@ -16,7 +17,8 @@ const testimonials = [
       'Como empresa de planos funerários, o Legado nos permitiu oferecer um serviço diferenciado que vai além do convencional. Nossos clientes valorizam muito essa tecnologia que preserva memórias.',
     name: 'Carlos Mendes',
     role: 'Diretor de Empresa de Planos Funerários',
-    image: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
+    image:
+      'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
   },
   {
     id: 3,
@@ -24,7 +26,8 @@ const testimonials = [
       'A plataforma é intuitiva e respeitosa. Consigo manter vivas as histórias da minha avó de uma forma que nunca imaginei ser possível. É um verdadeiro tesouro digital.',
     name: 'Roberto Almeida',
     role: 'Usuário do Aplicativo',
-    image: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
+    image:
+      'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
   },
 ];
 
@@ -32,14 +35,14 @@ const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const nextTestimonial = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1
+    setCurrentIndex((prev) =>
+      prev === testimonials.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevTestimonial = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1
+    setCurrentIndex((prev) =>
+      prev === 0 ? testimonials.length - 1 : prev - 1
     );
   };
 
@@ -51,8 +54,7 @@ const Testimonials = () => {
             O que dizem sobre <span className="text-[#D4B74C]">Legado</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Histórias reais de pessoas e empresas que encontraram conforto e 
-            valor em nossa plataforma de preservação de memórias.
+            Histórias reais de pessoas que encontraram conforto e valor com o APP Legado; preservando memórias e revivendo momentos felizes.
           </p>
         </div>
 
@@ -60,7 +62,7 @@ const Testimonials = () => {
           <div className="absolute top-0 left-0 -mt-6 -ml-4">
             <Quote className="h-12 w-12 text-[#D4B74C]/30" />
           </div>
-          
+
           <div className="bg-[#F5F3E4] rounded-xl p-8 md:p-12 shadow-md">
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="md:w-1/3 flex justify-center">
@@ -71,16 +73,14 @@ const Testimonials = () => {
                 />
               </div>
               <div className="md:w-2/3 text-center md:text-left">
-                <p className="text-lg md:text-xl text-gray-700 italic mb-6">
+                <p className="text-lg md:text-xl text-gray-700 italic mb-6 text-justify leading-relaxed">
                   "{testimonials[currentIndex].content}"
                 </p>
                 <div>
                   <h4 className="text-[#8A7A42] font-semibold text-lg">
                     {testimonials[currentIndex].name}
                   </h4>
-                  <p className="text-[#D4B74C]">
-                    {testimonials[currentIndex].role}
-                  </p>
+                  <p className="text-[#D4B74C]">{testimonials[currentIndex].role}</p>
                 </div>
               </div>
             </div>
@@ -89,19 +89,17 @@ const Testimonials = () => {
           <div className="absolute bottom-0 right-0 -mb-6 -mr-4">
             <Quote className="h-12 w-12 text-[#D4B74C]/30 transform rotate-180" />
           </div>
-          
+
           <div className="flex justify-center mt-8 gap-2">
             {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
                 className={`h-3 w-3 rounded-full ${
-                  index === currentIndex
-                    ? 'bg-[#D4B74C]'
-                    : 'bg-[#D4B74C]/30'
+                  index === currentIndex ? 'bg-[#D4B74C]' : 'bg-[#D4B74C]/30'
                 }`}
                 aria-label={`Ver depoimento ${index + 1}`}
-              ></button>
+              />
             ))}
           </div>
 
