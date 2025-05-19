@@ -5,11 +5,13 @@ export default {
     extend: {
       colors: {
         legado: {
-          light: '#ECEB9C',      // substitui cream/lightCream
-          mid: '#BDC895',      // substitui hard-coded previous
-          dark: '#8DA48D',      // substitui softPink/darkGold
-          black: '#000000',      // adicionado
-          white: '#FFFFFF',      // adicionado
+          light: '#ECEB9C',
+          mid: '#BDC895',
+          mid10: 'rgba(189, 200, 149, 0.1)',   // 10% opacidade para mid
+          dark: '#8DA48D',
+          gold: '#D4B74C',
+          black: '#000000',
+          white: '#FFFFFF',
         },
       },
       fontFamily: {
@@ -17,7 +19,7 @@ export default {
         serif: ['Lora', 'serif'],
       },
       boxShadow: {
-        soft: '0 10px 25px -5px rgba(212, 183, 76, 0.1), 0 10px 10px -5px rgba(212, 183, 76, 0.04)',
+        soft: '0 10px 25px -5px #BDC895, 0 10px 10px -5px rgba(212, 183, 76, 0.04)',
       },
       animation: {
         'fade-in-down': 'fadeInDown 0.5s ease-out',
