@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const testimonials = [
   {
@@ -8,124 +9,102 @@ const testimonials = [
       'O Legado trouxe conforto durante um momento muito difícil. Poder ver e compartilhar memórias do meu pai com toda a família nos ajudou a transformar a dor em celebração da vida dele.',
     name: 'Mariana Silva',
     role: 'Usuária do Aplicativo',
-    image:
-      'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
+    image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
   },
   {
     id: 2,
     content:
-      'Como empresa de planos funerários, o Legado nos permitiu oferecer um serviço diferenciado que vai além do convencional. Nossos clientes valorizam muito essa tecnologia que preserva memórias.',
-    name: 'Carlos Mendes',
-    role: 'Diretor de Empresa de Planos Funerários',
-    image:
-      'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
-  },
-  {
-    id: 3,
-    content:
       'A plataforma é intuitiva e respeitosa. Consigo manter vivas as histórias da minha avó de uma forma que nunca imaginei ser possível. É um verdadeiro tesouro digital.',
     name: 'Roberto Almeida',
     role: 'Usuário do Aplicativo',
-    image:
-      'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
+    image: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg',
   },
 ];
 
-const Testimonials = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export default function Testimonials() {
+  const [index, setIndex] = useState(0);
+  const { content, name, role, image } = testimonials[index];
 
-  const nextTestimonial = () => {
-    setCurrentIndex((prev) =>
-      prev === testimonials.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const prevTestimonial = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? testimonials.length - 1 : prev - 1
-    );
-  };
+  const next = () => setIndex((i) => (i + 1) % testimonials.length);
+  const prev = () => setIndex((i) => (i - 1 + testimonials.length) % testimonials.length);
 
   return (
-    <section id="depoimentos" className="py-20 bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#8A7A42] mb-4">
-            O que dizem sobre <span className="text-[#D4B74C]">Legado</span>
-          </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Histórias reais de pessoas que encontraram conforto e valor com o APP Legado; preservando memórias e revivendo momentos felizes.
-          </p>
-        </div>
+    <section id="depoimentos" className="py-24 bg-legado-mid bg-opacity-10">
+      <div className="container mx-auto px-6 lg:px-8 text-center">
+        <h2 className="text-4xl font-serif font-bold text-legado-dark mb-6">
+          O que dizem sobre <span className="text-legado-gold">Legado</span>
+        </h2>
+        <p className="text-base text-legado-dark/70 mb-16 max-w-2xl mx-auto">
+          Histórias reais de pessoas que encontraram conforto e valor com o APP Legado.
+        </p>
 
-        <div className="relative max-w-4xl mx-auto">
-          <div className="absolute top-0 left-0 -mt-6 -ml-4">
-            <Quote className="h-12 w-12 text-[#D4B74C]/30" />
-          </div>
+        <div className="relative max-w-2xl mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6 }}
+              className="relative bg-legado-white rounded-3xl shadow-2xl p-8 md:p-12 overflow-hidden"
+            >
+              {/* Accent background shape */}
+              <div className="absolute inset-0 bg-legado-gold/10 rotate-6 origin-center scale-150"></div>
 
-          <div className="bg-[#F5F3E4] rounded-xl p-8 md:p-12 shadow-md">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="md:w-1/3 flex justify-center">
-                <img
-                  src={testimonials[currentIndex].image}
-                  alt={testimonials[currentIndex].name}
-                  className="rounded-full h-32 w-32 object-cover border-4 border-[#D4B74C]/30"
-                />
-              </div>
-              <div className="md:w-2/3 text-center md:text-left">
-                <p className="text-lg md:text-xl text-gray-700 italic mb-6 text-justify leading-relaxed">
-                  "{testimonials[currentIndex].content}"
+              <div className="relative z-10">
+                
+                <p className="text-lg text-legado-dark italic mb-8 leading-relaxed">
+                  {content}
                 </p>
-                <div>
-                  <h4 className="text-[#8A7A42] font-semibold text-lg">
-                    {testimonials[currentIndex].name}
-                  </h4>
-                  <p className="text-[#D4B74C]">{testimonials[currentIndex].role}</p>
+                <div className="flex items-center justify-center space-x-4">
+                  <img
+                    src={image}
+                    alt={name}
+                    className="h-20 w-20 rounded-full object-cover border-4 border-legado-gold"
+                  />
+                  <div className="text-left">
+                    <h4 className="text-legado-dark font-semibold text-lg">
+                      {name}
+                    </h4>
+                    <p className="text-legado-gold text-sm">{role}</p>
+                  </div>
+                </div>
+
+                {/* Navigation controls */}
+                <div className="mt-8 flex items-center justify-between">
+                  <button
+                    onClick={prev}
+                    className="p-2 bg-legado-white rounded-full shadow-lg hover:bg-legado-light transition-colors"
+                    aria-label="Anterior"
+                  >
+                    <ChevronLeft className="text-legado-dark" />
+                  </button>
+
+                  <div className="flex space-x-3">
+                    {testimonials.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setIndex(idx)}
+                        className={`h-3 w-3 rounded-full transition-transform duration-300 ${idx === index ? 'bg-legado-gold scale-125' : 'bg-legado-gold/40'
+                          }`}
+                        aria-label={`Depoimento ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={next}
+                    className="p-2 bg-legado-white rounded-full shadow-lg hover:bg-legado-light transition-colors"
+                    aria-label="Próximo"
+                  >
+                    <ChevronRight className="text-legado-dark" />
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="absolute bottom-0 right-0 -mb-6 -mr-4">
-            <Quote className="h-12 w-12 text-[#D4B74C]/30 transform rotate-180" />
-          </div>
-
-          <div className="flex justify-center mt-8 gap-2">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`h-3 w-3 rounded-full ${
-                  index === currentIndex ? 'bg-[#D4B74C]' : 'bg-[#D4B74C]/30'
-                }`}
-                aria-label={`Ver depoimento ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          <div className="absolute top-1/2 -left-4 md:-left-12 transform -translate-y-1/2">
-            <button
-              onClick={prevTestimonial}
-              className="p-2 rounded-full bg-white shadow-md hover:bg-[#F5F3E4] transition-colors"
-              aria-label="Depoimento anterior"
-            >
-              <ChevronLeft className="h-6 w-6 text-[#8A7A42]" />
-            </button>
-          </div>
-
-          <div className="absolute top-1/2 -right-4 md:-right-12 transform -translate-y-1/2">
-            <button
-              onClick={nextTestimonial}
-              className="p-2 rounded-full bg-white shadow-md hover:bg-[#F5F3E4] transition-colors"
-              aria-label="Próximo depoimento"
-            >
-              <ChevronRight className="h-6 w-6 text-[#8A7A42]" />
-            </button>
-          </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>
   );
-};
-
-export default Testimonials;
+}

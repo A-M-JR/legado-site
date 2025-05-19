@@ -19,65 +19,64 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
-      const totalScroll = document.documentElement.scrollTop;
-      const windowHeight =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
-      const scroll = (totalScroll / windowHeight) * 100;
-      setScrollProgress(scroll);
+      const total = document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      setScrollProgress((total / height) * 100);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'
-        }`}
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-legado-white/80 backdrop-blur-md shadow-md py-2'
+          : 'bg-transparent py-4'
+      }`}
     >
-      {/* Barra de progresso */}
+      {/* Progress bar */}
       <motion.div
-        className="h-1 bg-[#D4B74C] fixed top-0 left-0 z-[60]"
+        className="h-1 bg-legado-gold fixed top-0 left-0 z-[60]"
         style={{ width: `${scrollProgress}%` }}
       />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <a href="#inicio">
-            <img src={logo} alt="Legado" className="h-12 md:h-14" />
+            <img src={logo} alt="Legado" className="h-10 md:h-12" />
           </a>
 
-          {/* Navegação desktop */}
+          {/* Desktop nav */}
           <div className="hidden md:flex items-center space-x-6">
-            {navLinks.map((link) => (
+            {navLinks.map(({ href, label }) => (
               <a
-                key={link.href}
-                href={link.href}
-                className="text-[#8A7A42] hover:text-[#D4B74C] transition-colors font-medium text-base"
+                key={href}
+                href={href}
+                className="text-legado-dark hover:text-legado-gold transition-colors font-medium"
               >
-                {link.label}
+                {label}
               </a>
             ))}
             <a
               href="#contato"
-              className="bg-[#D4B74C] hover:bg-[#C3A53B] text-white px-5 py-2 rounded-md font-medium transition-all shadow-sm"
+              className="font-bold bg-legado-gold text-legado-black px-5 py-2 rounded-md shadow-sm transition-all duration-300 hover:bg-legado-darkGold hover:text-legado-white"
             >
               Contato
             </a>
           </div>
 
-          {/* Botão mobile */}
+          {/* Mobile menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-[#8A7A42] hover:text-[#D4B74C]"
+            className="md:hidden text-legado-dark hover:text-legado-gold transition-colors"
             aria-label="Abrir menu"
           >
             {isOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
         </div>
 
-        {/* Menu mobile animado */}
+        {/* Mobile nav */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -85,23 +84,23 @@ export default function Navbar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="md:hidden mt-4 bg-white/90 backdrop-blur-xl rounded-xl shadow-lg p-5"
+              className="md:hidden mt-4 bg-legado-white/90 backdrop-blur-xl rounded-xl shadow-lg p-5"
             >
               <div className="flex flex-col space-y-4">
-                {navLinks.map((link) => (
+                {navLinks.map(({ href, label }) => (
                   <a
-                    key={link.href}
-                    href={link.href}
+                    key={href}
+                    href={href}
                     onClick={() => setIsOpen(false)}
-                    className="text-[#8A7A42] hover:text-[#D4B74C] font-medium text-base"
+                    className="text-legado-dark hover:text-legado-gold font-medium transition-colors"
                   >
-                    {link.label}
+                    {label}
                   </a>
                 ))}
                 <a
                   href="#contato"
                   onClick={() => setIsOpen(false)}
-                  className="bg-[#D4B74C] text-white px-5 py-2 rounded-md hover:bg-[#C3A53B] font-medium text-center transition-all"
+                  className="font-bold bg-legado-gold text-legado-black px-5 py-2 rounded-md transition-all duration-300 hover:bg-legado-darkGold hover:text-legado-white text-center"
                 >
                   Contato
                 </a>

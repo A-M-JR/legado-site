@@ -11,40 +11,43 @@ import FAQ from '../../components/FAQ';
 import Contact from '../../components/Contact';
 import CTA from '../../components/CTA';
 import Footer from '../../components/Footer';
+import WhatsAppButton from '../../components/WhatsAppButton';
+
 
 export default function Home() {
-    useEffect(() => {
-      const updateMetaTags = () => {
-        document.title = "Legado - Preservando Memórias";
-  
-        let metaDescription = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-        if (!metaDescription) {
-          metaDescription = document.createElement('meta');
-          metaDescription.name = 'description';
-          document.head.appendChild(metaDescription);
-        }
-  
-        if (metaDescription) {
-          metaDescription.content =
-            'Legado: Aplicativo para empresas de planos funerários, oferecendo gerenciamento de recordações dos entes queridos que já se foram.';
-        }
-      };
-  
-      updateMetaTags();
-    }, []);
-  
-    return (
-      <div className="font-sans">
-        <Navbar />
-        <Hero />
-        <About />
-        <Features />
-        <Testimonials />
-        <FAQ />
-        <Partners />
-        <CTA />
-        <Contact />
-        <Footer />
-      </div>
-    );
-  }
+  useEffect(() => {
+    const updateMetaTags = () => {
+      document.title = "Legado - Preservando Memórias";
+
+      let metaDescription = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.name = 'description';
+        document.head.appendChild(metaDescription);
+      }
+
+      if (metaDescription) {
+        metaDescription.content =
+          'Legado: Aplicativo para empresas de planos funerários, oferecendo gerenciamento de recordações dos entes queridos que já se foram.';
+      }
+    };
+
+    updateMetaTags();
+  }, []);
+
+  return (
+    <div className="font-sans">
+      <Navbar />
+      <Hero />
+      <About />
+      <Features />
+      <Testimonials />
+      <FAQ />
+      {/* <Partners /> */}
+      <CTA />
+      <Contact />
+      <Footer />
+      <WhatsAppButton />
+    </div>
+  );
+}

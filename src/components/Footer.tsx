@@ -1,103 +1,97 @@
-import React from 'react';
-import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import React, { useState } from 'react';
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter, FaPaperPlane } from 'react-icons/fa';
 import logo from '../assets/Legado - Branco.png';
 
-const Footer = () => {
+export default function Footer() {
+  const [email, setEmail] = useState('');
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    // TODO: integrar com backend da newsletter
+    alert(`Obrigado por assinar, ${email}!`);
+    setEmail('');
+  };
+
   return (
-    <footer className="bg-[#4A4228] text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Logo e Descrição */}
-          <div>
-            <img src={logo} alt="Legado" className="h-12 mb-4" />
-            <p className="text-white/80 mb-6 text-sm leading-relaxed">
-              Transformando memórias em legados digitais que conectam gerações
-              e amenizam a dor da perda.
-            </p>
-            <div className="flex space-x-3">
-              {[Facebook, Instagram, Twitter, Linkedin].map((Icon, idx) => (
-                <a
-                  key={idx}
-                  href="#"
-                  className="bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors"
-                  aria-label={Icon.name}
-                >
-                  <Icon className="h-5 w-5 text-white" />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Links</h3>
-            <ul className="space-y-2 text-sm">
-              {[
-                { href: '#inicio', label: 'Início' },
-                { href: '#sobre', label: 'Sobre' },
-                { href: '#recursos', label: 'Recursos' },
-                { href: '#depoimentos', label: 'Depoimentos' },
-                { href: '#parceiros', label: 'Parceiros' },
-                { href: '#contato', label: 'Contato' },
-              ].map((item, i) => (
-                <li key={i}>
-                  <a
-                    href={item.href}
-                    className="text-white/80 hover:text-white transition-colors"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Recursos */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Recursos</h3>
-            <ul className="space-y-2 text-sm">
-              {['Suporte', 'FAQ', 'Política de Privacidade', 'Termos de Uso', 'Blog'].map((item, i) => (
-                <li key={i}>
-                  <a
-                    href="#"
-                    className="text-white/80 hover:text-white transition-colors"
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Newsletter</h3>
-            <p className="text-white/80 mb-4 text-sm">
-              Receba nossas atualizações e conteúdos sobre memórias, luto e bem-estar.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                placeholder="Seu e-mail"
-                className="px-4 py-2 rounded-md bg-white/90 text-[#4A4228] placeholder:text-[#4A4228]/50 text-sm focus:outline-none flex-grow"
-              />
-              <button
-                type="submit"
-                className="bg-[#D4B74C] hover:bg-[#C3A53B] transition-colors px-4 py-2 rounded-md text-white font-medium text-sm"
+    <footer className="bg-[#2C2A29] text-white">
+      <div className="container mx-auto px-6 lg:px-16 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
+        {/* Logo + descrição + social */}
+        <div className="space-y-6">
+          <img src={logo} alt="Legado Logo" className="h-12" />
+          <p className="text-sm text-white/90">
+            Transformamos memórias em legados digitais que conectam gerações e amenizam a dor da perda.
+          </p>
+          <div className="flex space-x-4">
+            {[FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn].map((Icon, i) => (
+              <a
+                key={i}
+                href="#"
+                className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition-colors"
+                aria-label="Social link"
               >
-                Assinar
-              </button>
-            </form>
+                <Icon className="h-5 w-5 text-white" />
+              </a>
+            ))}
           </div>
         </div>
 
-        {/* Rodapé */}
-        <div className="border-t border-white/20 mt-10 pt-6 text-center text-white/60 text-sm">
-          <p>© {new Date().getFullYear()} Legado. Todos os direitos reservados.</p>
+        {/* Navegação */}
+        <div className="space-y-4">
+          <h4 className="font-serif font-semibold text-white text-lg">Navegação</h4>
+          <ul className="space-y-2 text-sm">
+            {['Início', 'Sobre', 'Recursos', 'Depoimentos', 'Parceiros', 'Contato'].map((label, idx) => (
+              <li key={idx}>
+                <a href={`#${label.toLowerCase()}`} className="text-white/70 hover:text-white transition-colors">
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
+
+        {/* Recursos */}
+        <div className="space-y-4">
+          <h4 className="font-serif font-semibold text-white text-lg">Recursos</h4>
+          <ul className="space-y-2 text-sm">
+            {['FAQ', 'Suporte', 'Política de Privacidade', 'Termos de Uso', 'Blog'].map((item, idx) => (
+              <li key={idx}>
+                <a href="#" className="text-white/70 hover:text-white transition-colors">
+                  {item}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Newsletter */}
+        <div className="space-y-4">
+          <h4 className="font-serif font-semibold text-white text-lg">Newsletter</h4>
+          <p className="text-sm text-white/90">
+            Receba dicas, histórias e atualizações sobre o APP Legado.
+          </p>
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="email"
+              placeholder="Seu e-mail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="flex-grow px-4 py-2 rounded-md bg-white/10 placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-[#D4B74C]"
+            />
+            <button
+              type="submit"
+              className="inline-flex items-center px-4 py-2 bg-[#D4B74C] hover:bg-[#BFA340] transition-colors rounded-md text-white font-medium text-sm"
+            >
+              <FaPaperPlane className="mr-2" /> Assinar
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Copyright */}
+      <div className="border-t border-white/30 py-6 text-center text-sm text-white/60">
+        © {new Date().getFullYear()} Legado. Todos os direitos reservados.
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

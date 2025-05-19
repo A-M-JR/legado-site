@@ -5,11 +5,11 @@ export default {
     extend: {
       colors: {
         legado: {
-          gold: '#D4B74C',
-          darkGold: '#8A7A42',
-          cream: '#F5F3E4',
-          lightCream: '#F8F6E9',
-          softPink: '#FFCACB',
+          light: '#ECEB9C',      // substitui cream/lightCream
+          mid: '#BDC895',      // substitui hard-coded previous
+          dark: '#8DA48D',      // substitui softPink/darkGold
+          black: '#000000',      // adicionado
+          white: '#FFFFFF',      // adicionado
         },
       },
       fontFamily: {

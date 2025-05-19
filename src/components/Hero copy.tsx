@@ -16,16 +16,17 @@ export default function Hero() {
 
       <div className="container mx-auto px-6 lg:px-8">
         <div className="grid max-w-7xl grid-cols-1 md:grid-cols-2 items-center gap-12">
-          
+
           {/* Texto */}
           <div className="text-center md:text-left">
             <h1 className="text-4xl font-serif font-bold tracking-tight text-[#8A7A42] sm:text-5xl lg:text-6xl">
               Honre quem partiu,{' '}
-              <span className="text-[#D4B74C]">preserve quem vive em você</span>
+              <span className="text-[#D4B74C]">preserve quem vive em você!</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-700 max-w-xl">
-              Com o <strong>Legado & Conforto</strong>, você eterniza memórias com amor. 
+              Com o <strong>Legado & Conforto</strong>, você eterniza memórias com amor.
               Deixe homenagens e mantenha viva a presença de quem é eterno em sua história.
+
             </p>
             <div className="mt-10 flex flex-col sm:flex-row justify-center md:justify-start gap-4">
               <a
