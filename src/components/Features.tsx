@@ -55,13 +55,13 @@ const Features = () => {
           </div>
 
           {/* Imagem */}
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="absolute -inset-6 bg-legado-gold/10 rounded-full blur-xl"></div>
+          <div className="flex justify-center max-w-lg w-full">
+            <div className="relative w-full overflow-hidden">
+              <div className="absolute -inset-3 md:-inset-6 bg-legado-gold/10 rounded-full blur-xl"></div>
               <img
                 src={imagem}
                 alt="Tela do aplicativo mostrando recordações"
-                className="relative z-10 rounded-2xl shadow-lg w-full max-w-lg object-cover"
+                className="relative z-10 rounded-2xl shadow-lg w-full max-h-[400px] object-cover"
               />
             </div>
           </div>
@@ -70,13 +70,13 @@ const Features = () => {
         {/* Bloco 2 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Imagem de suporte */}
-          <div className="flex justify-center order-2 lg:order-1">
-            <div className="relative">
-              <div className="absolute -inset-6 bg-legado-gold/10 rounded-full blur-xl"></div>
+          <div className="flex justify-center order-2 lg:order-1 max-w-lg w-full">
+            <div className="relative w-full overflow-hidden">
+              <div className="absolute -inset-3 md:-inset-6 bg-legado-gold/10 rounded-full blur-xl"></div>
               <img
                 src={imagemsuporte}
                 alt="Tela do aplicativo mostrando perfil"
-                className="relative z-10 rounded-2xl shadow-lg w-full max-w-lg object-cover"
+                className="relative z-10 rounded-2xl shadow-lg w-full max-h-[400px] object-cover"
               />
             </div>
           </div>

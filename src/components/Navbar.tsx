@@ -13,7 +13,7 @@ export default function Navbar() {
     { href: '#sobre', label: 'Sobre' },
     { href: '#recursos', label: 'Recursos' },
     { href: '#depoimentos', label: 'Depoimentos' },
-    { href: '#parceiros', label: 'Parceiros' },
+    // { href: '#parceiros', label: 'Parceiros' },
   ];
 
   useEffect(() => {
