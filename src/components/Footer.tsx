@@ -76,7 +76,7 @@ export default function Footer() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="flex-grow px-4 py-2 rounded-md bg-white/10 placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-[#D4B74C]"
+              className="flex-grow px-4 py-2 rounded-md bg-white/10 placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-legado-gold"
             />
             <button
               type="submit"
