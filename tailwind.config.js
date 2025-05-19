@@ -9,7 +9,7 @@ export default {
           mid: '#BDC895',
           mid10: 'rgba(189, 200, 149, 0.1)',   // 10% opacidade para mid
           dark: '#8DA48D',
-          gold: '#D4B74C',
+          gold: 'rgba(112, 169, 127, 1)',
           black: '#000000',
           white: '#FFFFFF',
         },
