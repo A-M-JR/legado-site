@@ -80,7 +80,7 @@ export default function Footer() {
             />
             <button
               type="submit"
-              className="inline-flex items-center px-4 py-2 bg-[#D4B74C] hover:bg-[#BFA340] transition-colors rounded-md text-white font-medium text-sm"
+              className="inline-flex items-center px-4 py-2 bg-legado-gold hover:bg-[#BFA340] transition-colors rounded-md text-white font-medium text-sm"
             >
               <FaPaperPlane className="mr-2" /> Assinar
             </button>

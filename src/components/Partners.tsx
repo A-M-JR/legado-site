@@ -19,7 +19,7 @@ const Partners = () => {
         {/* 
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
           <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3 bg-[#D4B74C]/10 flex items-center justify-center p-8">
+            <div className="md:w-1/3 bg-legado-gold/10 flex items-center justify-center p-8">
               <img
                 src="https://images.pexels.com/photos/5699456/pexels-photo-5699456.jpeg"
                 alt="Dra. Ana Beatriz Silva"
@@ -63,7 +63,7 @@ const Partners = () => {
               <div className="mt-6">
                 <a
                   href="#contato"
-                  className="inline-flex items-center px-4 py-2 bg-[#D4B74C] text-white rounded-md hover:bg-[#C3A53B] transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-legado-gold text-white rounded-md hover:bg-[#C3A53B] transition-colors"
                 >
                   Solicitar Atendimento
                 </a>

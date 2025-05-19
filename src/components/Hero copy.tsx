@@ -31,7 +31,7 @@ export default function Hero() {
             <div className="mt-10 flex flex-col sm:flex-row justify-center md:justify-start gap-4">
               <a
                 href="#contato"
-                className="inline-flex items-center justify-center rounded-md bg-[#D4B74C] px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-[#C3A53B] transition"
+                className="inline-flex items-center justify-center rounded-md bg-legado-gold px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-[#C3A53B] transition"
               >
                 Saiba mais
                 <ArrowRight size={18} className="ml-2" />
@@ -48,7 +48,7 @@ export default function Hero() {
           {/* Imagem com glow */}
           <div className="relative flex justify-center items-center">
             <div className="relative w-full max-w-md rounded-3xl shadow-lg overflow-hidden">
-              <div className="absolute -inset-2 bg-[#D4B74C]/30 blur-xl rounded-3xl animate-pulse -z-10"></div>
+              <div className="absolute -inset-2 bg-legado-gold/30 blur-xl rounded-3xl animate-pulse -z-10"></div>
               <img
                 src={imagem}
                 alt="Pessoa segurando foto antiga"
