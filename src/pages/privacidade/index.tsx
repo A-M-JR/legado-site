@@ -48,7 +48,12 @@ const PrivacyPolicy = () => {
                     Você pode acessar, corrigir ou solicitar a exclusão dos seus dados a qualquer momento pelo próprio aplicativo ou entrando em contato conosco. Valorizamos sua privacidade e respeitamos suas escolhas.
                 </p>
 
-                <h2 className="text-2xl font-semibold text-legado-dark mb-4">6. Contato</h2>
+                <h2 className="text-2xl font-semibold text-legado-dark mb-4">6. Exclusão de Conta e Dados</h2>
+                <p className="text-legado-dark text-base leading-relaxed mb-6 text-justify">
+                    Você tem o direito de solicitar a exclusão completa da sua conta e de todos os seus dados pessoais armazenados em nosso sistema. Para isso, acesse as configurações do aplicativo ou entre em contato com nosso suporte pelo e-mail <a href="mailto:contato@legadoeconforto.com.br" className="text-legado-gold underline">contato@legadoeconforto.com.br</a>. Após a solicitação, seus dados serão removidos de forma segura em até 30 dias, conforme previsto na legislação vigente.
+                </p>
+
+                <h2 className="text-2xl font-semibold text-legado-dark mb-4">7. Contato</h2>
                 <p className="text-legado-dark text-base leading-relaxed text-justify">
                     Para dúvidas ou solicitações relacionadas à privacidade, envie um e-mail para <a href="mailto:contato@legadoeconforto.com.br" className="text-legado-gold underline">contato@legadoeconforto.com.br</a>.
                 </p>
