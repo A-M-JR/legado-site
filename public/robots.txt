@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /privacidade
+Disallow: /sucesso
+Disallow: /consulta-recordacao
+Disallow: /recordacoes-publicas
+
+Sitemap: https://legadoapp.com.br/sitemap.xml
