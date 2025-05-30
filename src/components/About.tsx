@@ -6,7 +6,6 @@ const About = () => {
   return (
     <section id="sobre" className="py-24 bg-legado-mid bg-opacity-10">
       <div className="container mx-auto px-6 lg:px-16">
-        {/* Heading */}
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-legado-dark mb-2">
             <span className="text-legado-gold">Quem somos</span>
@@ -16,9 +15,7 @@ const About = () => {
           </p>
         </div>
 
-        {/* Two cards side by side with equal space */}
         <div className="grid grid-cols-12 mb-16">
-          {/* Card de texto ocupa todas as 12 colunas */}
           <div className="col-span-12 bg-legado-white rounded-3xl shadow-xl p-8 md:p-12 border-l-4 border-legado-gold transform hover:scale-105 transition-transform duration-300">
             <p className="text-legado-dark text-base leading-relaxed text-justify mb-4">
               Somos a Empresa Legado&Conforto e aqui lhe apresentamos carinhosamente um dos nossos produtos: APP Legado. Mais do que um aplicativo, somos uma plataforma que conecta memórias, emoções e pessoas. Sabemos que a perda de alguém especial é um dos momentos mais difíceis da vida. As lembranças que temos dessas pessoas são preciosas, e muitas vezes queremos uma maneira de guardá-las para sempre, tendo a certeza de que estarão ao nosso alcance.
@@ -29,9 +26,7 @@ const About = () => {
           </div>
         </div>
 
-        {/* Intro Section */}
         <div className="flex flex-col-reverse md:flex-row items-center gap-8 mb-16">
-          {/* Text Card */}
           <div className="md:w-1/2 bg-legado-white rounded-3xl shadow-xl p-8 md:p-12 border-l-4 border-legado-gold transform hover:scale-105 transition-transform duration-300">
             <p className="text-legado-dark text-base leading-relaxed mb-4">
               O APP Legado nasceu da compreensão de que a dor da perda pode ser amenizada quando transformamos o luto em celebração e gratidão por ter vivido um precioso tempo com aquela pessoa que sempre será importante para você.
@@ -42,17 +37,19 @@ const About = () => {
             <p className="text-legado-dark text-base leading-relaxed">
               "Nosso propósito é preservar o que é mais precioso: as memórias, o amor e a história de quem jamais será esquecido."</p>
           </div>
-          {/* Image */}
           <div className="md:w-1/2 flex justify-center">
+
             <img
               src={imagem}
               alt="Foto antiga"
-              className="rounded-3xl shadow-lg w-full max-w-md object-cover transform hover:scale-105 transition-transform duration-500"
+              width="600"
+              height="400"
+              loading="lazy"
+              className="rounded-3xl shadow-lg w-full max-w-md object-cover"
             />
           </div>
         </div>
 
-        {/* Features Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
             {

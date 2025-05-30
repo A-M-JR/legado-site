@@ -12,7 +12,6 @@ export default function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: integrate with backend
     alert('Mensagem enviada com sucesso!');
     setFormData({ name: '', email: '', phone: '', message: '' });
   };
@@ -20,7 +19,6 @@ export default function Contact() {
   return (
     <section id="contato" className="py-24 bg-legado-mid bg-opacity-10">
       <div className="container mx-auto px-6 lg:px-8">
-        {/* Heading */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-serif font-bold text-legado-dark">
             Entre em <span className="text-legado-gold">Contato</span>
@@ -29,10 +27,7 @@ export default function Contact() {
             Fale conosco para saber como o Legado pode transformar suas lembranças em histórias eternas.
           </p>
         </div>
-
-        {/* Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 max-w-6xl mx-auto">
-          {/* Form Card */}
           <motion.div
             className="lg:col-span-7 bg-legado-white rounded-3xl shadow-2xl p-8 md:p-12"
             initial={{ opacity: 0, y: 20 }}
@@ -92,8 +87,6 @@ export default function Contact() {
               </button>
             </form>
           </motion.div>
-
-          {/* Info Card */}
           <motion.div
             className="lg:col-span-5 bg-legado-white rounded-3xl shadow-2xl p-8 md:p-12 flex flex-col justify-center"
             initial={{ opacity: 0, y: 20 }}

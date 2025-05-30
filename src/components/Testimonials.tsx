@@ -27,7 +27,6 @@ export default function Testimonials() {
   const next = () => setIndex((i) => (i + 1) % testimonials.length);
   const prev = () => setIndex((i) => (i - 1 + testimonials.length) % testimonials.length);
 
-  // Optional autoPlay
   useEffect(() => {
     const interval = setInterval(next, 8000); // muda a cada 8s
     return () => clearInterval(interval);

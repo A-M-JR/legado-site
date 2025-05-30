@@ -7,7 +7,6 @@ export default function Footer() {
 
   const handleSubscribe = (e) => {
     e.preventDefault();
-    // TODO: integrar com backend da newsletter
     alert(`Obrigado por assinar, ${email}!`);
     setEmail('');
   };
@@ -15,7 +14,6 @@ export default function Footer() {
   return (
     <footer className="bg-[#2C2A29] text-white">
       <div className="container mx-auto px-6 lg:px-16 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
-        {/* Logo + descrição + social */}
         <div className="space-y-6">
           <img src={logo} alt="Legado Logo" className="h-12" />
           <p className="text-sm text-white/90">
@@ -35,7 +33,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Navegação */}
         <div className="space-y-4">
           <h4 className="font-serif font-semibold text-white text-lg">Navegação</h4>
           <ul className="space-y-2 text-sm">
@@ -49,7 +46,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Recursos */}
         <div className="space-y-4">
           <h4 className="font-serif font-semibold text-white text-lg">Recursos</h4>
           <ul className="space-y-2 text-sm">
@@ -63,7 +59,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Newsletter */}
         <div className="space-y-4">
           <h4 className="font-serif font-semibold text-white text-lg">Newsletter</h4>
           <p className="text-sm text-white/90">

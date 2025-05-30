@@ -35,7 +35,6 @@ export default function Navbar() {
           : 'bg-transparent py-4'
       }`}
     >
-      {/* Progress bar */}
       <motion.div
         className="h-1 bg-legado-gold fixed top-0 left-0 z-[60]"
         style={{ width: `${scrollProgress}%` }}
@@ -47,7 +46,6 @@ export default function Navbar() {
             <img src={logo} alt="Legado" className="h-10 md:h-12" />
           </a>
 
-          {/* Desktop nav */}
           <div className="hidden md:flex items-center space-x-6">
             {navLinks.map(({ href, label }) => (
               <a
@@ -66,7 +64,6 @@ export default function Navbar() {
             </a>
           </div>
 
-          {/* Mobile menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden text-legado-dark hover:text-legado-gold transition-colors"
@@ -76,7 +73,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile nav */}
         <AnimatePresence>
           {isOpen && (
             <motion.div

@@ -7,7 +7,6 @@ const Features = () => {
   return (
     <section id="recursos" className="py-24 bg-legado-mid bg-opacity-10">
       <div className="container mx-auto px-6 lg:px-16">
-        {/* Heading */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-legado-dark">
             Recursos do <span className="text-legado-gold">Aplicativo</span>
@@ -17,9 +16,7 @@ const Features = () => {
           </p>
         </div>
 
-        {/* Bloco 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-20">
-          {/* Texto e itens */}
           <div className="space-y-8">
             <h3 className="text-2xl font-serif font-semibold text-legado-dark mb-4">Recordações Digitais</h3>
             {[
@@ -54,7 +51,6 @@ const Features = () => {
             ))}
           </div>
 
-          {/* Imagem */}
           <div className="flex justify-center max-w-lg w-full">
             <div className="relative w-full overflow-hidden">
               <div className="absolute -inset-3 md:-inset-6 bg-legado-gold/10 rounded-full blur-xl"></div>
@@ -67,9 +63,7 @@ const Features = () => {
           </div>
         </div>
 
-        {/* Bloco 2 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Imagem de suporte */}
           <div className="flex justify-center order-2 lg:order-1 max-w-lg w-full">
             <div className="relative w-full overflow-hidden">
               <div className="absolute -inset-3 md:-inset-6 bg-legado-gold/10 rounded-full blur-xl"></div>
