@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const testimonials = [
   {
@@ -28,6 +27,12 @@ export default function Testimonials() {
   const next = () => setIndex((i) => (i + 1) % testimonials.length);
   const prev = () => setIndex((i) => (i - 1 + testimonials.length) % testimonials.length);
 
+  // Optional autoPlay
+  useEffect(() => {
+    const interval = setInterval(next, 8000); // muda a cada 8s
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section id="depoimentos" className="py-24 bg-legado-mid bg-opacity-10">
       <div className="container mx-auto px-6 lg:px-8 text-center">
@@ -38,71 +43,49 @@ export default function Testimonials() {
           Histórias reais de pessoas que encontraram conforto e valor com o APP Legado.
         </p>
 
-        <div className="relative max-w-2xl mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6 }}
-              className="relative bg-legado-white rounded-3xl shadow-2xl p-8 md:p-12 overflow-hidden"
+        <div className="relative max-w-2xl mx-auto bg-white rounded-3xl shadow-lg p-8 md:p-12 transition-all duration-500">
+          <p className="text-lg text-legado-dark italic mb-8 leading-relaxed">{content}</p>
+          <div className="flex items-center justify-center space-x-4">
+            <img
+              src={image}
+              alt={name}
+              loading="lazy"
+              className="h-20 w-20 rounded-full object-cover border-4 border-legado-gold"
+            />
+            <div className="text-left">
+              <h4 className="text-legado-dark font-semibold text-lg">{name}</h4>
+              <p className="text-legado-gold text-sm">{role}</p>
+            </div>
+          </div>
+
+          {/* Controles */}
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              onClick={prev}
+              className="p-2 bg-legado-white rounded-full shadow hover:bg-legado-light transition"
+              aria-label="Anterior"
             >
-              {/* Accent background shape */}
-              <div className="absolute inset-0 bg-legado-gold/10 rotate-6 origin-center scale-150"></div>
+              <ChevronLeft className="text-legado-dark" />
+            </button>
 
-              <div className="relative z-10">
-                
-                <p className="text-lg text-legado-dark italic mb-8 leading-relaxed">
-                  {content}
-                </p>
-                <div className="flex items-center justify-center space-x-4">
-                  <img
-                    src={image}
-                    alt={name}
-                    className="h-20 w-20 rounded-full object-cover border-4 border-legado-gold"
-                  />
-                  <div className="text-left">
-                    <h4 className="text-legado-dark font-semibold text-lg">
-                      {name}
-                    </h4>
-                    <p className="text-legado-gold text-sm">{role}</p>
-                  </div>
-                </div>
+            <div className="flex space-x-3">
+              {testimonials.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setIndex(idx)}
+                  className={`h-3 w-3 rounded-full transition-all duration-300 ${idx === index ? 'bg-legado-gold scale-125' : 'bg-legado-gold/40'}`}
+                />
+              ))}
+            </div>
 
-                {/* Navigation controls */}
-                <div className="mt-8 flex items-center justify-between">
-                  <button
-                    onClick={prev}
-                    className="p-2 bg-legado-white rounded-full shadow-lg hover:bg-legado-light transition-colors"
-                    aria-label="Anterior"
-                  >
-                    <ChevronLeft className="text-legado-dark" />
-                  </button>
-
-                  <div className="flex space-x-3">
-                    {testimonials.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setIndex(idx)}
-                        className={`h-3 w-3 rounded-full transition-transform duration-300 ${idx === index ? 'bg-legado-gold scale-125' : 'bg-legado-gold/40'
-                          }`}
-                        aria-label={`Depoimento ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={next}
-                    className="p-2 bg-legado-white rounded-full shadow-lg hover:bg-legado-light transition-colors"
-                    aria-label="Próximo"
-                  >
-                    <ChevronRight className="text-legado-dark" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+            <button
+              onClick={next}
+              className="p-2 bg-legado-white rounded-full shadow hover:bg-legado-light transition"
+              aria-label="Próximo"
+            >
+              <ChevronRight className="text-legado-dark" />
+            </button>
+          </div>
         </div>
       </div>
     </section>
