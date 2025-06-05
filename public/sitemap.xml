@@ -1,8 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Página principal -->
   <url>
     <loc>https://legadoeconforto.com.br/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- Palavras-chave relacionadas -->
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=memorial-digital</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=homenagem-póstuma</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=recordações-eternas</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=legado-familiar</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=como-homenagear-um-falecido</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Termos locais e geográficos -->
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=homenagens-em-cascavel</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=funerária-digital-paraná</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=recordações-para-plano-funerário</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Termos com intenção comercial ou de app -->
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=aplicativo-homenagens</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=criar-memorial-online</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://legadoeconforto.com.br/?utm_source=seo&amp;query=guardar-memórias-de-familiares</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>
