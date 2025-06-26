@@ -1,0 +1,105 @@
+.legado-app-wrapper {
+  background-color: #e3f1eb;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.legado-form-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.legado-form-card label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4f665a;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.legado-input {
+  width: 100%;
+  border: 1px solid #eceb9c;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.95rem;
+  background-color: #f9f9f9;
+  color: #2d2d2d;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: border 0.2s;
+}
+
+.legado-input:focus {
+  outline: none;
+  border-color: #5ba58c;
+}
+
+.legado-button {
+  background-color: #5ba58c;
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background 0.2s ease-in-out;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+}
+
+.legado-button:hover {
+  background-color: #4c947e;
+}
+
+.legado-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.legado-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #5ba58c;
+}
+
+.legado-alert {
+  margin-top: 1rem;
+  background-color: #4c947e;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.legado-logo {
+  width: 200px;
+  height: auto;
+  border-radius: 16px;
+  margin: 0 auto 24px auto;
+  display: block;
+  background-color: #fff;
+}
+
+@media (max-width: 480px) {
+  .legado-form-card {
+    padding: 20px;
+  }
+
+  .legado-input {
+    font-size: 0.9rem;
+  }
+
+  .legado-button {
+    font-size: 0.95rem;
+  }
+}
