@@ -10,10 +10,15 @@ import Privacidade from './pages/privacidade'
 
 // LEGADO APP
 import Login from './pages/legado-app/login'
-import CadastroTitular from './pages/legado-app/titulares/novo'
 import MenuPage from './pages/legado-app/menu/page'
-// import CadastroDependente from './pages/legado-app/dependentes/novo'
-// (em breve: listagem de dependentes)
+import CadastroTitular from './pages/legado-app/titulares/novo'
+import EditarTitularPage from "./pages/legado-app/titulares/editar"
+import EditarDependentePage from './pages/legado-app/dependentes/editar'
+import NovaRecordacaoPage from './pages/legado-app/recordacoes/novo'
+import RecordacoesListPage from './pages/legado-app/recordacoes/list'
+import NovoDependentePage from './pages/legado-app/dependentes/novo'
+import AcolhimentoPage from './pages/legado-app/parcerias/acalme-coracao'
+import PrivateRoute from './components/PrivateRoute'
 
 export default function App() {
   return (
@@ -25,13 +30,19 @@ export default function App() {
         <Route path="/recordacoes-publicas/sucesso/:id" element={<Sucesso />} />
         <Route path="/consulta-recordacao" element={<ConsultaRecordacao />} />
         <Route path="/privacidade" element={<Privacidade />} />
-
-        {/* Legado App */}
         <Route path="/legado-app/login" element={<Login />} />
-        <Route path="/legado-app/menu" element={<MenuPage />} />
-        <Route path="/legado-app/titulares/novo" element={<CadastroTitular />} />
-        {/* <Route path="/legado-app/dependentes/novo" element={<CadastroDependente />} /> */}
-        {/* Ex: <Route path="/legado-app/dependentes" element={<ListaDependentes />} /> */}
+
+        {/* Rotas protegidas */}
+        <Route element={<PrivateRoute />}>
+          <Route path="/legado-app/menu" element={<MenuPage />} />
+          <Route path="/legado-app/titulares/novo" element={<CadastroTitular />} />
+          <Route path="/legado-app/titulares/editar/:id" element={<EditarTitularPage />} />
+          <Route path="/legado-app/dependentes/editar/:id" element={<EditarDependentePage />} />
+          <Route path="/legado-app/dependentes/novo" element={<NovoDependentePage />} />
+          <Route path="/legado-app/recordacoes/list/:id" element={<RecordacoesListPage />} />
+          <Route path="/legado-app/recordacoes/nova/:id" element={<NovaRecordacaoPage />} />
+          <Route path="/legado-app/parcerias/acalme-coracao" element={<AcolhimentoPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )

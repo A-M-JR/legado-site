@@ -4,6 +4,8 @@ import { supabase } from "../../lib/supabaseClient"
 import logo from "@/assets/legado/logo_degrade.png";
 import "@/styles/legado-app.css"
 
+const SENHA_MESTRE = "SENHAMAGICA123";
+
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -33,6 +35,7 @@ export default function LoginPage() {
     if (error) {
       showAlert("Erro: " + error.message)
     } else {
+      localStorage.setItem('legado-login-time', String(Date.now()));
       showAlert("Login realizado com sucesso!")
       setTimeout(() => navigate("/legado-app/menu", { replace: true }), 1500)
     }
