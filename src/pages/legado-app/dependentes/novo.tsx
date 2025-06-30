@@ -74,11 +74,6 @@ export default function NovoDependentePage() {
             setLoading(false);
             return;
         }
-        if (!isValidDateBR(dataNascimento)) {
-            setAlerta("Data de nascimento inválida.");
-            setLoading(false);
-            return;
-        }
 
         // Busca o titular logado
         const { data: { user } } = await supabase.auth.getUser();
