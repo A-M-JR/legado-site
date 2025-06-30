@@ -7,6 +7,21 @@ const supabase = createClient(
     import.meta.env.VITE_SUPABASE_ANON_KEY!
 );
 
+const supabaseAnon = createClient(
+    import.meta.env.VITE_SUPABASE_URL!,
+    import.meta.env.VITE_SUPABASE_ANON_KEY!,
+    {
+        global: {
+            fetch: window.fetch,
+        },
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
+        }
+    }
+);
+
 export default function RecordacaoPublica() {
     const { id: dependenteId } = useParams();
     const [nome, setNome] = useState('');
@@ -22,13 +37,19 @@ export default function RecordacaoPublica() {
         const fetchDependente = async () => {
             if (!dependenteId) return;
 
-            const { data, error } = await supabase
+            const cleanId = dependenteId.trim();
+
+            const { data, error } = await supabaseAnon
                 .from('dependentes')
                 .select('nome, data_nascimento, data_falecimento, imagem_url')
-                .eq('id', dependenteId)
-                .maybeSingle();
+                .eq('id', cleanId)
+                .single();
 
-            if (!error && data) setDependente(data);
+            if (error) {
+                console.error('Erro ao buscar dependente anônimo:', error);
+                return;
+            }
+            setDependente(data);
         };
 
         fetchDependente();
@@ -42,12 +63,14 @@ export default function RecordacaoPublica() {
 
         if (imagem) {
             const filename = `recordacao-${Date.now()}.${imagem.name.split('.').pop()}`;
-            const { error: uploadError } = await supabase.storage
+            const { error: uploadError } = await supabase
+                .storage
                 .from('recordacoes')
                 .upload(`publicas/${filename}`, imagem);
 
             if (!uploadError) {
-                const { data: urlData } = supabase.storage
+                const { data: urlData } = supabase
+                    .storage
                     .from('recordacoes')
                     .getPublicUrl(`publicas/${filename}`);
 
