@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
+import { FaUserCircle } from 'react-icons/fa';
 
 const supabase = createClient(
     import.meta.env.VITE_SUPABASE_URL!,
@@ -18,7 +19,7 @@ const supabaseAnon = createClient(
             persistSession: false,
             autoRefreshToken: false,
             detectSessionInUrl: false,
-        }
+        },
     }
 );
 
@@ -28,6 +29,7 @@ export default function RecordacaoPublica() {
     const [mensagem, setMensagem] = useState('');
     const [anonimo, setAnonimo] = useState(false);
     const [imagem, setImagem] = useState<File | null>(null);
+    const [imagemPreview, setImagemPreview] = useState<string | null>(null);
     const [enviando, setEnviando] = useState(false);
     const [sucesso, setSucesso] = useState(false);
     const [dependente, setDependente] = useState<any>(null);
@@ -55,6 +57,20 @@ export default function RecordacaoPublica() {
         fetchDependente();
     }, [dependenteId]);
 
+    // Atualiza preview ao selecionar imagem
+    useEffect(() => {
+        if (!imagem) {
+            setImagemPreview(null);
+            return;
+        }
+        const url = URL.createObjectURL(imagem);
+        setImagemPreview(url);
+
+        return () => {
+            URL.revokeObjectURL(url);
+        };
+    }, [imagem]);
+
     const handleUpload = async () => {
         if (!dependenteId || !mensagem) return;
         setEnviando(true);
@@ -75,6 +91,10 @@ export default function RecordacaoPublica() {
                     .getPublicUrl(`publicas/${filename}`);
 
                 imagem_url = urlData?.publicUrl ?? null;
+            } else {
+                alert('Erro ao fazer upload da imagem.');
+                setEnviando(false);
+                return;
             }
         }
 
@@ -90,6 +110,10 @@ export default function RecordacaoPublica() {
 
         if (!insertError) {
             setSucesso(true);
+            setMensagem('');
+            setNome('');
+            setImagem(null);
+            setImagemPreview(null);
             setTimeout(() => navigate(`/recordacoes-publicas/sucesso/${dependenteId}`), 1800);
         } else {
             alert('Erro ao enviar a recordação.');
@@ -101,11 +125,18 @@ export default function RecordacaoPublica() {
             <div className="bg-white w-full max-w-xl p-6 rounded-2xl shadow-xl border border-[#D1F2EB] animate-fade-in">
                 {dependente && (
                     <div className="flex flex-col items-center mb-8">
-                        <img
-                            src={dependente.imagem_url || '/placeholder.jpg'}
-                            alt={dependente.nome}
-                            className="w-28 h-28 rounded-full object-cover mb-3 border-4 border-[#5BA58C] shadow-md"
-                        />
+                        {dependente.imagem_url ? (
+                            <img
+                                src={dependente.imagem_url}
+                                alt={dependente.nome}
+                                className="w-28 h-28 rounded-full object-cover mb-3 border-4 border-[#5BA58C] shadow-md"
+                            />
+                        ) : (
+                            <FaUserCircle
+                                size={112}
+                                className="text-gray-400 mb-3"
+                            />
+                        )}
                         <h2 className="text-xl font-bold text-[#007080]">{dependente.nome}</h2>
                         <div className="text-sm text-gray-600 mt-1 text-center">
                             {dependente.data_nascimento && <p>Nascimento: {dependente.data_nascimento}</p>}
@@ -130,6 +161,27 @@ export default function RecordacaoPublica() {
                     type="file"
                     accept="image/*"
                     className="mb-4 text-sm text-gray-600 block w-full"
+                    onChange={(e) => setImagem(e.target.files?.[0] || null)}
+                />
+
+                {imagemPreview && (
+                    <img
+                        src={imagemPreview}
+                        alt="Preview da imagem selecionada"
+                        className="w-48 h-48 object-cover rounded-lg mb-4 mx-auto border border-gray-300"
+                    />
+                )}
+                <label
+                    htmlFor="inputImagem"
+                    className="block cursor-pointer mb-4 text-center py-3 bg-[#5BA58C] text-white rounded-lg font-semibold hover:bg-[#4a8c75] transition"
+                >
+                    Selecionar imagem
+                </label>
+                <input
+                    id="inputImagem"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
                     onChange={(e) => setImagem(e.target.files?.[0] || null)}
                 />
 
