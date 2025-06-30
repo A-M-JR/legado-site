@@ -80,11 +80,6 @@ export default function EditarDependentePage() {
             return;
         }
 
-        if (!isValidDateBR(dataNascimento)) {
-            showError('Data de nascimento inválida!')
-            return
-        }
-
         setLoading(true);
 
         // Upload imagem para Supabase Storage (ajuste se já tiver função pronta)
