@@ -70,54 +70,66 @@ export default function EditarDependentePage() {
 
     // Salvar
     async function handleSalvar(e: React.FormEvent) {
-        e.preventDefault();
-        if (!nome || !telefone || !dataNascimento) {
-            showError("Preencha todos os campos obrigatórios.");
-            return;
-        }
-        if (!validarCPF(cpf)) {
-            showError("CPF inválido.");
-            return;
-        }
+  e.preventDefault();
 
-        setLoading(true);
+  if (!nome || !telefone || !dataNascimento) {
+    showError("Preencha todos os campos obrigatórios.");
+    return;
+  }
+  if (!validarCPF(cpf)) {
+    showError("CPF inválido.");
+    return;
+  }
 
-        // Upload imagem para Supabase Storage (ajuste se já tiver função pronta)
-        let imagemUrl = imagemAtual;
-        if (imagem) {
-            const formData = new FormData();
-            formData.append("file", imagem);
-            // Aqui pode colocar o endpoint da sua API de upload, ex:
-            // const resp = await fetch("/api/upload/dependentes", { method: "POST", body: formData });
-            // imagemUrl = await resp.text();
-            // Por enquanto só simula:
-            imagemUrl = imagemAtual; // Troque por URL real!
-        }
+  setLoading(true);
 
-        // Atualiza dados no Supabase
-        const { error: updateError } = await supabase
-            .from("dependentes")
-            .update({
-                nome,
-                telefone,
-                cpf,
-                data_nascimento: dataNascimento,
-                usuario_mestre: isMaster,
-                email: isMaster ? email : null,
-                imagem_url: imagemUrl
-            })
-            .eq("id", id);
+  try {
+    let imagemUrl = imagemAtual;
 
-        setLoading(false);
+    if (imagem && id) {
+      const fileExt = imagem.name.split(".").pop();
+      const fileName = `dependente-${id}.${fileExt}`;
+      const filePath = `dependentes/${fileName}`;
 
-        if (updateError) {
-            showError("Erro ao salvar alterações.");
-        } else {
-            setAlerta("Dados salvos com sucesso!");
-            setShowAlert(true);
-            setTimeout(() => navigate(-1), 1600);
-        }
+      // Upload no bucket (ex: 'public')
+      const { error: uploadError } = await supabase.storage
+        .from("public")
+        .upload(filePath, imagem, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Obter URL pública
+      const { data: urlData } = supabase.storage.from("public").getPublicUrl(filePath);
+      imagemUrl = urlData.publicUrl;
+      setImagemAtual(imagemUrl);
     }
+
+    // Atualiza dados no banco com a URL da imagem atualizada
+    const { error: updateError } = await supabase
+      .from("dependentes")
+      .update({
+        nome,
+        telefone,
+        cpf,
+        data_nascimento: dataNascimento,
+        usuario_mestre: isMaster,
+        email: isMaster ? email : null,
+        imagem_url: imagemUrl,
+      })
+      .eq("id", id);
+
+    if (updateError) throw updateError;
+
+    setAlerta("Dados salvos com sucesso!");
+    setShowAlert(true);
+    setTimeout(() => navigate(-1), 1600);
+
+  } catch (error: any) {
+    showError("Erro ao salvar alterações: " + error.message);
+  } finally {
+    setLoading(false);
+  }
+}
 
     return (
         <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-4">
