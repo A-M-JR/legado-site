@@ -70,66 +70,67 @@ export default function EditarDependentePage() {
 
     // Salvar
     async function handleSalvar(e: React.FormEvent) {
-  e.preventDefault();
+        e.preventDefault();
 
-  if (!nome || !telefone || !dataNascimento) {
-    showError("Preencha todos os campos obrigatórios.");
-    return;
-  }
-  if (!validarCPF(cpf)) {
-    showError("CPF inválido.");
-    return;
-  }
+        if (!nome || !telefone || !dataNascimento) {
+            showError("Preencha todos os campos obrigatórios.");
+            return;
+        }
+        if (!validarCPF(cpf)) {
+            showError("CPF inválido.");
+            return;
+        }
 
-  setLoading(true);
+        setLoading(true);
 
-  try {
-    let imagemUrl = imagemAtual;
+        try {
+            let imagemUrl = imagemAtual;
 
-    if (imagem && id) {
-      const fileExt = imagem.name.split(".").pop();
-      const fileName = `dependente-${id}.${fileExt}`;
-      const filePath = `dependentes/${fileName}`;
+            if (imagem && id) {
+                const fileExt = imagem.name.split(".").pop();
+                const fileName = `dependente-${id}.${fileExt}`;
+                const filePath = `dependentes/${fileName}`;
 
-      // Upload no bucket (ex: 'public')
-      const { error: uploadError } = await supabase.storage
-        .from("public")
-        .upload(filePath, imagem, { upsert: true });
+                // Upload no bucket (ex: 'public')
+                const { error: uploadError } = await supabase.storage
+                    .from("dependentes")
+                    .upload(filePath, imagem, { upsert: true });
 
-      if (uploadError) throw uploadError;
+                if (uploadError) throw uploadError;
 
-      // Obter URL pública
-      const { data: urlData } = supabase.storage.from("public").getPublicUrl(filePath);
-      imagemUrl = urlData.publicUrl;
-      setImagemAtual(imagemUrl);
+                // Obter URL pública
+                const { data: urlData } = supabase.storage.from("dependentes").getPublicUrl(filePath);
+                imagemUrl = urlData.publicUrl;
+                setImagemAtual(imagemUrl);
+            }
+
+            // Atualiza dados no banco com a URL da imagem atualizada
+            
+            const { error: updateError } = await supabase
+                .from("dependentes")
+                .update({
+                    nome,
+                    telefone,
+                    cpf,
+                    data_nascimento: dataNascimento,
+                    usuario_mestre: isMaster,
+                    email: isMaster ? email : null,
+                    imagem_url: imagemUrl,
+                })
+                .eq("id", id);
+
+            if (updateError) throw updateError;
+
+            setAlerta("Dados salvos com sucesso!");
+            setShowAlert(true);
+            setTimeout(() => navigate(-1), 1600);
+
+        } catch (error: any) {
+            showError("Erro ao salvar alterações: " + error.message);
+        } finally {
+            setLoading(false);
+        }
     }
-
-    // Atualiza dados no banco com a URL da imagem atualizada
-    const { error: updateError } = await supabase
-      .from("dependentes")
-      .update({
-        nome,
-        telefone,
-        cpf,
-        data_nascimento: dataNascimento,
-        usuario_mestre: isMaster,
-        email: isMaster ? email : null,
-        imagem_url: imagemUrl,
-      })
-      .eq("id", id);
-
-    if (updateError) throw updateError;
-
-    setAlerta("Dados salvos com sucesso!");
-    setShowAlert(true);
-    setTimeout(() => navigate(-1), 1600);
-
-  } catch (error: any) {
-    showError("Erro ao salvar alterações: " + error.message);
-  } finally {
-    setLoading(false);
-  }
-}
 
     return (
         <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-4">
