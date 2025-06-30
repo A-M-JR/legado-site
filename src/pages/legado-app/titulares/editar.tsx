@@ -86,72 +86,72 @@ export default function EditarTitularPage() {
     }
 
     // Salvar alterações
-   async function handleSalvar() {
-  if (!nome || !telefone || !dataNascimento || !email) {
-    setAlerta("Preencha todos os campos obrigatórios.");
-    return;
-  }
-  if (!validarCPF(cpf)) {
-    setAlerta("CPF inválido.");
-    return;
-  }
-  setLoading(true);
+    async function handleSalvar() {
+        if (!nome || !telefone || !dataNascimento || !email) {
+            setAlerta("Preencha todos os campos obrigatórios.");
+            return;
+        }
+        if (!validarCPF(cpf)) {
+            setAlerta("CPF inválido.");
+            return;
+        }
+        setLoading(true);
 
-  const dataIso = dataNascimento.split("/").reverse().join("-");
+        const dataIso = dataNascimento.split("/").reverse().join("-");
 
-  try {
-    // Atualiza os dados do titular (sem imagem ainda)
-    const { error: updateError } = await supabase
-      .from("titulares")
-      .update({
-        nome,
-        telefone,
-        data_nascimento: dataIso,
-        email,
-        cpf,
-      })
-      .eq("id", id);
+        try {
+            // Atualiza os dados do titular (sem imagem ainda)
+            const { error: updateError } = await supabase
+                .from("titulares")
+                .update({
+                    nome,
+                    telefone,
+                    data_nascimento: dataIso,
+                    email,
+                    cpf,
+                })
+                .eq("id", id);
 
-    if (updateError) throw updateError;
+            if (updateError) throw updateError;
 
-    // Se tem nova imagem selecionada, faz upload
-    if (imagem && id) {
-      // Nome do arquivo único, ex: titulares/perfil-123.jpg
-      const fileExt = imagem.name.split(".").pop();
-      const fileName = `perfil-${id}.${fileExt}`;
-      const filePath = `titulares/${fileName}`;
+            // Se tem nova imagem selecionada, faz upload
+            if (imagem && id) {
+                // Nome do arquivo único, ex: titulares/perfil-123.jpg
+                const fileExt = imagem.name.split(".").pop();
+                const fileName = `perfil-${id}.${fileExt}`;
+                const filePath = `titulares/${fileName}`;
 
-      // Faz upload no bucket 'public' (ajuste se o seu bucket for outro)
-      const { error: uploadError } = await supabase.storage
-        .from("public")   // Mude para seu bucket real
-        .upload(filePath, imagem, {
-          upsert: true,
-        });
+                // Faz upload no bucket 'public' (ajuste se o seu bucket for outro)
+                const { error: uploadError } = await supabase.storage
+                    .from("titulares")   // Mude para seu bucket real
+                    .upload(filePath, imagem, {
+                        upsert: true,
+                    });
 
-      if (uploadError) throw uploadError;
+                if (uploadError) throw uploadError;
 
-      // Obter URL pública da imagem
-      const { data: urlData } = supabase.storage.from("public").getPublicUrl(filePath);
+                // Obter URL pública da imagem
+                const { data: urlData } = supabase.storage.from("titulares").getPublicUrl(filePath);
 
-      // Atualiza a coluna imagem_url no banco
-      const { error: urlUpdateError } = await supabase
-        .from("titulares")
-        .update({ imagem_url: urlData.publicUrl })
-        .eq("id", id);
+                // Atualiza a coluna imagem_url no banco
+                const { error: urlUpdateError } = await supabase
+                    .from("titulares")
+                    .update({ imagem_url: urlData.publicUrl })
+                    .eq("id", id);
 
-      if (urlUpdateError) throw urlUpdateError;
+                if (urlUpdateError) throw urlUpdateError;
 
-      setImagemUrl(urlData.publicUrl); // Atualiza estado para exibir
+                setImagemUrl(urlData.publicUrl); // Atualiza estado para exibir
+            }
+
+            setAlerta("Dados atualizados com sucesso.");
+            setTimeout(() => navigate(-1), 1500);
+        } catch (error: any) {
+            setAlerta("Erro ao salvar dados: " + error.message);
+        } finally {
+            setLoading(false);
+        }
     }
-
-    setAlerta("Dados atualizados com sucesso.");
-    setTimeout(() => navigate(-1), 1500);
-  } catch (error: any) {
-    setAlerta("Erro ao salvar dados: " + error.message);
-  } finally {
-    setLoading(false);
-  }
-}
 
     // Modal de senha
     async function handleTrocarSenha() {
