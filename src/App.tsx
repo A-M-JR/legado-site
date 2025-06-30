@@ -35,7 +35,6 @@ export default function App() {
         {/* Rotas protegidas */}
         <Route element={<PrivateRoute />}>
           <Route path="/legado-app/menu" element={<MenuPage />} />
-          <Route path="/legado-app/titulares/novo" element={<CadastroTitular />} />
           <Route path="/legado-app/titulares/editar/:id" element={<EditarTitularPage />} />
           <Route path="/legado-app/dependentes/editar/:id" element={<EditarDependentePage />} />
           <Route path="/legado-app/dependentes/novo" element={<NovoDependentePage />} />
@@ -43,6 +42,7 @@ export default function App() {
           <Route path="/legado-app/recordacoes/nova/:id" element={<NovaRecordacaoPage />} />
           <Route path="/legado-app/parcerias/acalme-coracao" element={<AcolhimentoPage />} />
         </Route>
+        <Route path="/legado-app/titulares/novo" element={<CadastroTitular />} />
       </Routes>
     </BrowserRouter>
   )
