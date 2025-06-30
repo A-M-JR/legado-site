@@ -46,12 +46,6 @@ export default function CadastroTitular() {
             return;
         }
 
-        if (!isValidDateBR(dataNascimento)) {
-            setAlerta("Data de nascimento inválida.");
-            setLoading(false);
-            return;
-        }
-
         if (!validarCPF(cpf)) {
             setAlerta("CPF inválido.");
             setLoading(false);
