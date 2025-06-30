@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="container mx-auto px-6 lg:px-14 py-14 grid grid-cols-1 md:grid-cols-4 gap-10 items-start">
         {/* Logo e frase */}
         <div className="flex flex-col gap-5">
-          <img src={logo} alt="Legado Logo" className="h-11 mb-1" />
+          <img src={logo} alt="Legado Logo" />
           <p className="text-sm text-white/80 leading-relaxed">
             Transformamos memórias em legados digitais que conectam gerações e amenizam a dor da perda.
           </p>
