@@ -296,7 +296,17 @@ export default function EditarTitularPage() {
                 </form>
                 {/* Alerta */}
                 {alerta && (
-                    <div className="legado-alert mt-2">{alerta}</div>
+                    <div
+                        className="legado-alert mt-2"
+                        style={{
+                            backgroundColor: alerta.toLowerCase().includes("sucesso") ? "#d1f2eb" : "#f8d7da",
+                            color: alerta.toLowerCase().includes("sucesso") ? "#256e5c" : "#842029",
+                            border: `1px solid ${alerta.toLowerCase().includes("sucesso") ? "#b8ebe0" : "#f5c2c7"}`,
+                            fontWeight: 500
+                        }}
+                    >
+                        {alerta}
+                    </div>
                 )}
             </div>
             {/* Modal de senha */}

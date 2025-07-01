@@ -238,22 +238,16 @@ export default function CadastroTitular() {
 
                 {/* Alerta */}
                 {alerta && (
-                    <div className="legado-alert" style={{ marginTop: 12 }}>
+                    <div
+                        className="legado-alert mt-2"
+                        style={{
+                            backgroundColor: alerta.toLowerCase().includes("sucesso") ? "#d1f2eb" : "#f8d7da",
+                            color: alerta.toLowerCase().includes("sucesso") ? "#256e5c" : "#842029",
+                            border: `1px solid ${alerta.toLowerCase().includes("sucesso") ? "#b8ebe0" : "#f5c2c7"}`,
+                            fontWeight: 500
+                        }}
+                    >
                         {alerta}
-                        <button
-                            style={{
-                                marginLeft: 8,
-                                background: "none",
-                                border: "none",
-                                color: "#fff",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                            }}
-                            type="button"
-                            onClick={() => setAlerta(null)}
-                        >
-                            x
-                        </button>
                     </div>
                 )}
             </form>

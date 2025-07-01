@@ -81,6 +81,11 @@ export default function EditarDependentePage() {
             return;
         }
 
+        if (!isValidDateBR(dataNascimento)) {
+            showError('Data de nascimento inválida!')
+            return
+        }
+
         setLoading(true);
 
         try {
@@ -105,7 +110,7 @@ export default function EditarDependentePage() {
             }
 
             // Atualiza dados no banco com a URL da imagem atualizada
-            
+
             const { error: updateError } = await supabase
                 .from("dependentes")
                 .update({
@@ -267,7 +272,15 @@ export default function EditarDependentePage() {
 
                 {/* ALERTA */}
                 {showAlert && (
-                    <div className="legado-alert" style={{ marginTop: 14 }}>
+                    <div
+                        className="legado-alert"
+                        style={{
+                            marginTop: 14,
+                            backgroundColor: alerta.includes("sucesso") ? "#d1f2eb" : "#f8d7da",
+                            color: alerta.includes("sucesso") ? "#256e5c" : "#842029",
+                            border: `1px solid ${alerta.includes("sucesso") ? "#b8ebe0" : "#f5c2c7"}`
+                        }}
+                    >
                         {alerta}
                     </div>
                 )}

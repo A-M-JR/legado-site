@@ -21,27 +21,41 @@ export default function LoginPage() {
   }
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     if (!email || !password) {
-      showAlert("Preencha todos os campos.")
-      setLoading(false)
-      return
+      showAlert("Preencha todos os campos.");
+      setLoading(false);
+      return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    // Se for senha mestre, simula login direto
+    if (password === SENHA_MESTRE) {
+      localStorage.setItem("legado-login-time", String(Date.now()));
+      showAlert("Login realizado com sucesso!");
+
+      // Aguarda um pouco para exibir o alerta, depois navega
+      setTimeout(() => {
+        navigate("/legado-app/menu", { replace: true });
+      }, 1000); // 1 segundo de delay
+      setLoading(false);
+      return;
+    }
+
+    // Login normal com Supabase
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      showAlert("Erro: " + error.message)
+      showAlert("Erro: " + error.message);
     } else {
-      localStorage.setItem('legado-login-time', String(Date.now()));
-      showAlert("Login realizado com sucesso!")
-      setTimeout(() => navigate("/legado-app/menu", { replace: true }), 1500)
+      localStorage.setItem("legado-login-time", String(Date.now()));
+      showAlert("Login realizado com sucesso!");
+      setTimeout(() => navigate("/legado-app/menu", { replace: true }), 1500);
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const handleForgotPassword = async () => {
     if (!email) {
