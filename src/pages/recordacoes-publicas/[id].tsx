@@ -38,18 +38,29 @@ export default function RecordacaoPublica() {
     useEffect(() => {
         const fetchDependente = async () => {
             if (!dependenteId) return;
-
             const cleanId = dependenteId.trim();
-
-            const { data, error } = await supabaseAnon
+            // Tenta buscar como dependente
+            let { data, error } = await supabaseAnon
                 .from('dependentes')
                 .select('nome, data_nascimento, data_falecimento, imagem_url')
                 .eq('id', cleanId)
                 .single();
 
-            if (error) {
-                console.error('Erro ao buscar dependente anônimo:', error);
-                return;
+            if (!data || error) {
+                // Se não achar, tenta como titular
+                const { data: titularData, error: titularError } = await supabaseAnon
+                    .from('titulares')
+                    .select('nome, data_nascimento, data_falecimento, imagem_url')
+                    .eq('id', cleanId)
+                    .single();
+
+                if (titularData && !titularError) {
+                    setDependente(titularData);
+                    return;
+                } else {
+                    setDependente(null);
+                    return;
+                }
             }
             setDependente(data);
         };
@@ -75,6 +86,42 @@ export default function RecordacaoPublica() {
         if (!dependenteId || !mensagem) return;
         setEnviando(true);
 
+        // 1. Tenta encontrar como dependente
+        let found = false;
+        let tipo = ""; // "dependente" ou "titular"
+
+        const { data: dep, error: depError } = await supabase
+            .from('dependentes')
+            .select('id')
+            .eq('id', dependenteId)
+            .maybeSingle();
+
+        if (dep && !depError) {
+            found = true;
+            tipo = "dependente";
+        }
+
+        // 2. Se não encontrou como dependente, tenta titular
+        if (!found) {
+            const { data: tit, error: titError } = await supabase
+                .from('titulares')
+                .select('id')
+                .eq('id', dependenteId)
+                .maybeSingle();
+
+            if (tit && !titError) {
+                found = true;
+                tipo = "titular";
+            }
+        }
+
+        if (!found) {
+            alert("Pessoa não encontrada (titular ou dependente). Não é possível enviar recordação.");
+            setEnviando(false);
+            return;
+        }
+
+        // prossegue upload normalmente...
         let imagem_url: string | null = null;
 
         if (imagem) {
@@ -89,7 +136,6 @@ export default function RecordacaoPublica() {
                     .storage
                     .from('recordacoes')
                     .getPublicUrl(`publicas/${filename}`);
-
                 imagem_url = urlData?.publicUrl ?? null;
             } else {
                 alert('Erro ao fazer upload da imagem.');

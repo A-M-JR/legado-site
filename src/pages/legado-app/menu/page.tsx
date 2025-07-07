@@ -2,10 +2,8 @@
 import { useRef, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
-import { format } from "date-fns";
-import InputMask from "react-input-mask";
-import { Edit, Skull, Plus, UserPlus, UserCircle, Flower2 } from "lucide-react";
-import { isValidDateBR, formatBR } from "../../../utils/formatDateToBR";
+import { Edit, Plus, UserPlus, UserCircle, Flower2 } from "lucide-react";
+import { isValidDateBR, checkValidDateBR, formatBR } from "../../../utils/formatDateToBR";
 import "@/styles/legado-app.css";
 
 // Tipagem
@@ -33,7 +31,10 @@ export default function MenuPage() {
     const [titular, setTitular] = useState<Titular | null>(null);
     const [dependentes, setDependentes] = useState<Dependente[]>([]);
     const [filtro, setFiltro] = useState<"todos" | "vivos" | "falecidos">("todos");
+
+    // Modal para data de falecimento
     const [modalOpen, setModalOpen] = useState(false);
+    const [modalTarget, setModalTarget] = useState<null | "titular" | "dependente">(null);
     const [modalDepId, setModalDepId] = useState<string | null>(null);
     const [modalData, setModalData] = useState<string>("");
     const [dataErro, setDataErro] = useState<string>("");
@@ -61,14 +62,13 @@ export default function MenuPage() {
         })();
     }, []);
 
-    const inputRef = useRef(null);
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
         if (modalOpen && inputRef.current) {
             inputRef.current.focus();
         }
-    }, [modalOpen, modalDepId]);
-
+    }, [modalOpen, modalDepId, modalTarget]);
 
     // Filtro
     const dependentesFiltrados = useMemo(() => {
@@ -76,16 +76,70 @@ export default function MenuPage() {
         return dependentes.filter((d) => (filtro === "vivos" ? !d.falecido : d.falecido));
     }, [filtro, dependentes]);
 
-    // Encerrar ciclo titular (marcar como falecido)
-    async function encerrarCicloTitular() {
-        if (!titular) return;
-        const hoje = new Date().toISOString();
-        const { error } = await supabase
-            .from("titulares")
-            .update({ falecido: true, data_falecimento: hoje })
-            .eq("id", titular.id);
-        if (!error) setTitular({ ...titular, falecido: true, data_falecimento: hoje });
+    // Modal: abrir para dependente
+    function abrirModalFalecimentoDependente(depId: string) {
+        setModalTarget("dependente");
+        setModalDepId(depId);
+        setModalData("");
+        setDataErro("");
+        setModalOpen(true);
     }
+
+    // Modal: abrir para titular
+    function abrirModalFalecimentoTitular() {
+        setModalTarget("titular");
+        setModalDepId(null);
+        setModalData("");
+        setDataErro("");
+        setModalOpen(true);
+    }
+
+    // Modal: salvar (titular ou dependente)
+    async function salvarFalecimento() {
+        const result = checkValidDateBR(modalData);
+        if (!result.valid) {
+            setDataErro(result.error);
+            return;
+        }
+        setDataErro("");
+        const [d, m, y] = modalData.split("/");
+        const dataISO = `${y}-${m}-${d}`;
+
+        if (modalTarget === "dependente" && modalDepId) {
+            const { error } = await supabase
+                .from("dependentes")
+                .update({
+                    falecido: true,
+                    data_falecimento: dataISO,
+                })
+                .eq("id", modalDepId);
+            if (!error) {
+                setDependentes((prev) =>
+                    prev.map((dep) =>
+                        dep.id === modalDepId
+                            ? { ...dep, falecido: true, data_falecimento: dataISO }
+                            : dep
+                    )
+                );
+                setModalOpen(false);
+                setModalData("");
+            }
+        } else if (modalTarget === "titular" && titular) {
+            const { error } = await supabase
+                .from("titulares")
+                .update({
+                    falecido: true,
+                    data_falecimento: dataISO,
+                })
+                .eq("id", titular.id);
+            if (!error) {
+                setTitular({ ...titular, falecido: true, data_falecimento: dataISO });
+                setModalOpen(false);
+                setModalData("");
+            }
+        }
+    }
+
 
     // Reativar titular
     async function reativarTitular() {
@@ -95,78 +149,6 @@ export default function MenuPage() {
             .update({ falecido: false, data_falecimento: null })
             .eq("id", titular.id);
         if (!error) setTitular({ ...titular, falecido: false, data_falecimento: undefined });
-    }
-
-    // Marcar dependente como falecido (abre modal)
-    function abrirModalFalecimento(depId: string) {
-        setModalDepId(depId);
-        setModalData("");
-        setDataErro("");
-        setModalOpen(true);
-    }
-
-    function validarDataBR(data: string) {
-        // Regex para dd/mm/aaaa simples e depois checagem de datas reais:
-        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(data)) return false;
-        const [dia, mes, ano] = data.split("/").map(Number);
-        const dataObj = new Date(ano, mes - 1, dia);
-        return (
-            dataObj.getFullYear() === ano &&
-            dataObj.getMonth() === mes - 1 &&
-            dataObj.getDate() === dia
-        );
-    }
-
-    function formatarData(valor: string) {
-        // Remove tudo que não é número
-        valor = valor.replace(/\D/g, '');
-        // Adiciona a barra após o segundo e quarto dígito
-        if (valor.length > 2 && valor.length <= 4) {
-            valor = valor.replace(/(\d{2})(\d+)/, '$1/$2');
-        } else if (valor.length > 4) {
-            valor = valor.replace(/(\d{2})(\d{2})(\d+)/, '$1/$2/$3');
-        }
-        return valor.slice(0, 10); // Limita a 10 caracteres
-    }
-
-    // No onClick do salvar:
-    <button
-        className="legado-button w-full mb-2"
-        disabled={!validarDataBR(modalData)}
-        onClick={salvarFalecimento}
-    >
-        Salvar
-    </button>
-
-    // Salvar data de falecimento do dependente
-    async function salvarFalecimento() {
-        if (!modalDepId) return;
-        if (!validarDataBR(modalData)) {
-            setDataErro("Data inválida. Use o formato DD/MM/AAAA.");
-            return;
-        }
-        setDataErro("");
-        if (!modalDepId || !validarDataBR(modalData)) return;
-        const [d, m, y] = modalData.split("/");
-        const dataISO = `${y}-${m}-${d}`;
-        const { error } = await supabase
-            .from("dependentes")
-            .update({
-                falecido: true,
-                data_falecimento: dataISO,
-            })
-            .eq("id", modalDepId);
-        if (!error) {
-            setDependentes((prev) =>
-                prev.map((dep) =>
-                    dep.id === modalDepId
-                        ? { ...dep, falecido: true, data_falecimento: dataISO }
-                        : dep
-                )
-            );
-            setModalOpen(false);
-            setModalData("");
-        }
     }
 
     // Reativar dependente
@@ -189,13 +171,28 @@ export default function MenuPage() {
         }
     }
 
+    function formatarData(valor: string) {
+        valor = valor.replace(/\D/g, '');
+        if (valor.length > 2 && valor.length <= 4) {
+            valor = valor.replace(/(\d{2})(\d+)/, '$1/$2');
+        } else if (valor.length > 4) {
+            valor = valor.replace(/(\d{2})(\d{2})(\d+)/, '$1/$2/$3');
+        }
+        return valor.slice(0, 10);
+    }
+
     return (
         <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-4">
             <div className="legado-form-card w-full max-w-md relative">
 
                 {/* TITULAR */}
                 {titular && (
-                    <div className="legado-titular-container mb-6">
+                    <div
+                        className="legado-titular-container mb-6 cursor-pointer"
+                        onClick={() => navigate(`/legado-app/recordacoes/list/${titular.id}`)}
+                        style={{ transition: "background 0.2s" }}
+                        tabIndex={0}
+                    >
                         {titular.imagem_url ? (
                             <img src={titular.imagem_url} alt="Titular" className="mb-2" />
                         ) : (
@@ -214,14 +211,19 @@ export default function MenuPage() {
                         <div className="legado-perfil-actions">
                             <button
                                 className="legado-button"
-                                onClick={() => navigate(`/legado-app/titulares/editar/${titular.id}`)}
+                                onClick={e => { e.stopPropagation(); navigate(`/legado-app/titulares/editar/${titular.id}`); }}
                             >
                                 <Edit size={16} className="inline mr-1" /> Editar
                             </button>
                             <button
                                 className="legado-button"
                                 style={{ backgroundColor: titular.falecido ? "#3cb371" : "#dc3545" }}
-                                onClick={titular.falecido ? reativarTitular : encerrarCicloTitular}
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    titular.falecido
+                                        ? reativarTitular()
+                                        : abrirModalFalecimentoTitular();
+                                }}
                             >
                                 {titular.falecido ? (
                                     <>
@@ -291,7 +293,7 @@ export default function MenuPage() {
                             <button
                                 onClick={e => {
                                     e.stopPropagation();
-                                    dep.falecido ? reativarDependente(dep.id) : abrirModalFalecimento(dep.id);
+                                    dep.falecido ? reativarDependente(dep.id) : abrirModalFalecimentoDependente(dep.id);
                                 }}
                                 title={dep.falecido ? "Reativar" : "Encerrar ciclo"}
                                 className={dep.falecido ? "" : "lapide"}
@@ -313,13 +315,13 @@ export default function MenuPage() {
                     </button>
                 </div>
 
-                {/* Modal de data de falecimento */}
+                {/* Modal de data de falecimento (titular ou dependente) */}
                 {modalOpen && (
                     <div
                         className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
                         onClick={() => setModalOpen(false)}
                         style={{ animation: "fadeIn .2s" }}
-                        key={modalDepId}
+                        key={modalDepId ?? "titular"}
                     >
                         <div
                             className="bg-white rounded-xl p-6 max-w-xs w-full shadow-lg"
@@ -335,8 +337,10 @@ export default function MenuPage() {
                                 className="legado-input mb-3"
                                 value={modalData}
                                 onChange={e => {
-                                    setModalData(formatarData(e.target.value));
-                                    setDataErro(""); // Limpa erro ao digitar
+                                    const value = formatarData(e.target.value);
+                                    setModalData(value);
+                                    const res = checkValidDateBR(value);
+                                    setDataErro(res.valid ? "" : res.error || "");
                                 }}
                                 autoFocus
                                 ref={inputRef}
@@ -348,7 +352,7 @@ export default function MenuPage() {
                             )}
                             <button
                                 className="legado-button w-full mb-2"
-                                disabled={modalData.length !== 10}
+                                disabled={!checkValidDateBR(modalData).valid}
                                 onClick={salvarFalecimento}
                             >
                                 Salvar
