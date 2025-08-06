@@ -158,7 +158,7 @@ export default function RecordacoesListPage() {
                 {/* Lista */}
                 <div
                     className="overflow-y-auto"
-                    style={{ maxHeight: "calc(60vh - 90px)", paddingBottom: 0 }}
+                    style={{ maxHeight: "calc(80vh - 90px)", paddingBottom: 0 }}
                 >
                     {loading ? (
                         <div className="text-center my-10 text-[#007080]">Carregando...</div>
@@ -196,7 +196,7 @@ export default function RecordacoesListPage() {
                     )}
                 </div>
 
-                <div className="pt-2 pb-4 flex flex-col items-center gap-2 w-full">
+                <div className="pt-2 p-4 flex flex-col items-center gap-2 w-full">
                     <button
                         className="bg-[#FFADB2] px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2 mb-1"
                         style={{ fontSize: 16, width: "80%" }}
