@@ -11,6 +11,7 @@ const PSICOLOGAS = [
         wa: "5545999785006",
         instagram: "https://www.instagram.com/deiserosa_psicoterapeuta/", // novo campo
         video: "https://www.youtube.com/embed/2OjFgFg9MBU",
+        video2: "",
         especialidade: "Psicóloga especializada no atendimento ao Luto.",
         link_curso: "",
     },
@@ -20,6 +21,7 @@ const PSICOLOGAS = [
         wa: "5561982418183",
         instagram: "https://www.instagram.com/psicologa.rosepasa/", // novo campo
         video: "https://www.youtube.com/embed/txrJuDN3bcY",
+        video2: "https://www.youtube.com/embed/PISTGuunCBg",
         especialidade: "Psicóloga especializada no atendimento ao Luto.",
         link_curso: "",
     },
@@ -110,7 +112,22 @@ export default function AcolhimentoPage() {
                                                 width="100%"
                                                 height="215"
                                                 src={psic.video}
-                                                title={`Vídeo de acolhimento de ${psic.nome}`}
+                                                title={`Vídeo de acolhimento de ${psic.nome} - 1`}
+                                                frameBorder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                allowFullScreen
+                                                className="rounded-xl shadow-md"
+                                            ></iframe>
+                                        </div>
+                                    )}
+
+                                    {psic.video2 && (
+                                        <div className="rounded-xl overflow-hidden mt-2">
+                                            <iframe
+                                                width="100%"
+                                                height="215"
+                                                src={psic.video2}
+                                                title={`Vídeo de acolhimento de ${psic.nome} - 2`}
                                                 frameBorder="0"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowFullScreen
