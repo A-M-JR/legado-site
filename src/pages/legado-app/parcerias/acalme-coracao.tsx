@@ -9,17 +9,19 @@ const PSICOLOGAS = [
         nome: "Dra. Deise Rosa",
         fone: "45 99978-5006",
         wa: "5545999785006",
+        instagram: "https://www.instagram.com/deiserosa_psicoterapeuta/", // novo campo
         video: "https://www.youtube.com/embed/2OjFgFg9MBU",
         especialidade: "Psicóloga especializada no atendimento ao Luto.",
-        link_curso: "", // Quando tiver o link, só preencher aqui!
+        link_curso: "",
     },
     {
-        nome: "Mariana Gabriele Ribeiro",
-        fone: "45 99976-1826",
-        wa: "554599761826",
-        video: "https://www.youtube.com/embed/somevideoid", // Coloque o link correto depois
+        nome: "Rose Pasa",
+        fone: "61 98241-8183",
+        wa: "5561982418183",
+        instagram: "https://www.instagram.com/psicologa.rosepasa/", // novo campo
+        video: "https://www.youtube.com/embed/txrJuDN3bcY",
         especialidade: "Psicóloga especializada no atendimento ao Luto.",
-        link_curso: "", // Futuro link do curso
+        link_curso: "",
     },
 ];
 
@@ -79,7 +81,9 @@ export default function AcolhimentoPage() {
                                         {psic.especialidade}
                                     </div>
                                     <a
-                                        href={`https://wa.me/${psic.wa}?text=Olá, vim pelo aplicativo do Legado e Conforto e gostaria de saber mais sobre seu trabalho.`}
+                                        href={`https://wa.me/${psic.wa}?text=${encodeURIComponent(
+                                            "Olá, vim pelo aplicativo do Legado e Conforto e gostaria de saber mais sobre seu trabalho."
+                                        )}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="flex items-center gap-2 bg-[#d1f2eb] hover:bg-[#b8ebe0] px-3 py-2 rounded-xl font-semibold text-[#007080] text-sm no-underline transition mb-2"
@@ -87,6 +91,19 @@ export default function AcolhimentoPage() {
                                         <MessageCircle size={18} className="text-[#5ba58c]" />
                                         {psic.nome} — ({psic.fone})
                                     </a>
+                                    {psic.instagram && (
+                                        <a
+                                            href={psic.instagram}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 bg-[#fbe8ff] hover:bg-[#f6d6fa] px-3 py-2 rounded-xl font-semibold text-[#9b4d96] text-sm no-underline transition mb-2"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="18" height="18" className="text-[#9b4d96]">
+                                                <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5zM12 7a5 5 0 1 1 0 10a5 5 0 0 1 0-10zm0 1.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7zm5.25-.75a1 1 0 1 1 0 2a1 1 0 0 1 0-2z" />
+                                            </svg>
+                                            Instagram
+                                        </a>
+                                    )}
                                     {psic.video && (
                                         <div className="rounded-xl overflow-hidden mt-2">
                                             <iframe
