@@ -99,6 +99,12 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <div className="text-center mt-4">
+          <a href="/legado-app/titulares/novo" className="text-sm underline text-gray-600">
+            Ainda não possui uma conta? Cadastre-se
+          </a>
+        </div>
+        
         <div className="text-center mt-2">
           <button onClick={handleForgotPassword} className="text-sm text-gray-600 underline">
             Esqueci minha senha
