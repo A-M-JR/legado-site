@@ -19,6 +19,11 @@ import RecordacoesListPage from './pages/legado-app/recordacoes/list'
 import NovoDependentePage from './pages/legado-app/dependentes/novo'
 import AcolhimentoPage from './pages/legado-app/parcerias/acalme-coracao'
 import PrivateRoute from './components/PrivateRoute'
+import DiarioListPage from './pages/legado-app/diario/DiarioListPage'
+import DiarioFormPage from './pages/legado-app/diario/DiarioFormPage'
+import ExercicioDetailPage from './pages/legado-app/exercicios/ExercicioDetailPage'
+import ExerciciosListPage from './pages/legado-app/exercicios/ExerciciosListPage'
+import ExerciciosHistoricoPage from './pages/legado-app/exercicios/ExerciciosHistoricoPage'
 
 export default function App() {
   return (
@@ -41,6 +46,12 @@ export default function App() {
           <Route path="/legado-app/recordacoes/list/:id" element={<RecordacoesListPage />} />
           <Route path="/legado-app/recordacoes/nova/:id" element={<NovaRecordacaoPage />} />
           <Route path="/legado-app/parcerias/acalme-coracao" element={<AcolhimentoPage />} />
+          <Route path="/legado-app/diario" element={<DiarioListPage />} />
+          <Route path="/legado-app/diario/novo" element={<DiarioFormPage />} />
+          <Route path="/legado-app/diario/editar/:id" element={<DiarioFormPage />} />
+          <Route path="/legado-app/exercicios/:id" element={<ExercicioDetailPage />} />
+          <Route path="/legado-app/exercicios" element={<ExerciciosListPage />} />
+          <Route path="/legado-app/exercicios/historico" element={<ExerciciosHistoricoPage />} />
         </Route>
         <Route path="/legado-app/titulares/novo" element={<CadastroTitular />} />
       </Routes>

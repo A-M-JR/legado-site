@@ -1,5 +1,5 @@
 // src/pages/legado-app/recordacoes/list.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import {
@@ -10,7 +10,11 @@ import {
     User,
     PlusCircle,
     HeartHandshake,
+    Heart,
+    NotebookPen,
+    Sparkles,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import QRCode from "react-qr-code";
 import "@/styles/legado-app.css";
 
@@ -94,10 +98,7 @@ export default function RecordacoesListPage() {
 
     async function excluirRecordacao(recordacaoId: string) {
         if (!window.confirm("Deseja realmente excluir esta recordação?")) return;
-        const { error } = await supabase
-            .from("recordacoes")
-            .delete()
-            .eq("id", recordacaoId);
+        const { error } = await supabase.from("recordacoes").delete().eq("id", recordacaoId);
         if (error) {
             setAlerta("Não foi possível excluir a recordação.");
             return;
@@ -112,19 +113,17 @@ export default function RecordacoesListPage() {
         });
     }
 
-    const qrLink = `https://legadoeconforto.com.br/recordacoes-publicas/${dependenteId}`;
+    const qrLink = useMemo(
+        () => (dependenteId ? `https://legadoeconforto.com.br/recordacoes-publicas/${dependenteId}` : ""),
+        [dependenteId]
+    );
 
     function filtroLabel() {
-        return filtro === "todos"
-            ? "Exibindo: Todos"
-            : filtro === "7dias"
-                ? "Últimos 7 dias"
-                : "Últimos 30 dias";
+        return filtro === "todos" ? "Exibindo: Todos" : filtro === "7dias" ? "Últimos 7 dias" : "Últimos 30 dias";
     }
 
-    // ----------- AQUI COMEÇA O JSX MODERNO ----------- //
     return (
-        <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-2">
+        <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-4 pb-20">
             <div className="legado-form-card w-full max-w-md relative">
 
                 {/* Header */}
@@ -133,6 +132,7 @@ export default function RecordacoesListPage() {
                         type="button"
                         onClick={() => navigate(-1)}
                         className="text-[#5BA58C] hover:bg-[#def0e8] rounded-full p-2 transition"
+                        aria-label="Voltar"
                     >
                         <ArrowLeft size={24} />
                     </button>
@@ -141,61 +141,72 @@ export default function RecordacoesListPage() {
                     </h2>
                 </div>
 
-                {/* Filtro */}
-                <button
-                    className="flex items-center justify-center gap-2 bg-[#eafcf9] border border-[#5BA58C] rounded-full py-2 px-4 font-semibold text-[#007080] mx-auto mb-3"
-                    style={{ minWidth: 170 }}
-                    onClick={() =>
-                        setFiltro((prev) =>
-                            prev === "todos" ? "7dias" : prev === "7dias" ? "30dias" : "todos"
-                        )
-                    }
-                >
-                    <Filter size={18} />
-                    {filtroLabel()}
-                </button>
+                {/* Microcopy acolhedor */}
+                <p className="text-sm text-gray-600 text-center mb-3">
+                    Um espaço para celebrar memórias, mensagens e imagens que aquecem o coração.
+                </p>
 
-                {/* Lista */}
-                <div
-                    className="overflow-y-auto"
-                    style={{ maxHeight: "calc(80vh - 90px)", paddingBottom: 0 }}
-                >
+                {/* Filtro central */}
+                <div className="w-full flex justify-center">
+                    <button
+                        className="flex items-center justify-center gap-2 bg-[#eafcf9] border border-[#5BA58C] rounded-full py-2 px-4 font-semibold text-[#007080] mb-3"
+                        style={{ minWidth: 180 }}
+                        onClick={() =>
+                            setFiltro((prev) => (prev === "todos" ? "7dias" : prev === "7dias" ? "30dias" : "todos"))
+                        }
+                    >
+                        <Filter size={18} />
+                        {filtroLabel()}
+                    </button>
+                </div>
+
+                {/* Lista / Estados */}
+                <div className="overflow-y-auto" style={{ maxHeight: "calc(80vh - 90px)", paddingBottom: 0 }}>
                     {loading ? (
-                        <div className="text-center my-10 text-[#007080]">Carregando...</div>
+                        <div className="space-y-3">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="skeleton-card" />
+                            ))}
+                        </div>
                     ) : recordacoes.length === 0 ? (
                         <div className="text-center my-10 text-[#555]">
-                            Nenhuma recordação encontrada.
+                            <p className="font-semibold">Ainda não há recordações por aqui.</p>
+                            <p className="text-sm mt-1">Convide alguém especial para deixar uma lembrança.</p>
                         </div>
                     ) : (
-                        recordacoes.map((item) => (
-                            <div key={item.id} className="legado-recordacao-card">
-                                <div className="top-row">
-                                    <span className="autor flex items-center gap-2">
-                                        <User size={22} className="text-[#255f4f]" />
-                                        {item.mensagem?.split("\n\n– ")?.[1] || "Anônimo"}
-                                    </span>
-                                    <button className="delete-btn" onClick={() => excluirRecordacao(item.id)}>
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                                <div className="msg">{item.mensagem?.split("\n\n– ")?.[0].trim()}</div>
-                                {item.imagem_url && (
-                                    <div className="mb-2 flex justify-center">
-                                        <img
-                                            src={item.imagem_url}
-                                            alt="Imagem recordação"
-                                            className="rounded-lg max-h-48 cursor-pointer"
-                                            onClick={() => setImagemExpandida(item.imagem_url!)}
-                                            style={{ objectFit: "contain" }}
-                                        />
+                        recordacoes.map((item) => {
+                            const [texto, autor] = item.mensagem?.split("\n\n– ") ?? ["", "Anônimo"];
+                            return (
+                                <div key={item.id} className="legado-recordacao-card">
+                                    <div className="top-row">
+                                        <span className="autor flex items-center gap-2">
+                                            <User size={22} className="text-[#255f4f]" />
+                                            {autor || "Anônimo"}
+                                        </span>
+                                        <button className="delete-btn" onClick={() => excluirRecordacao(item.id)} aria-label="Excluir">
+                                            <Trash2 size={18} />
+                                        </button>
                                     </div>
-                                )}
-                                <div className="date">Enviado em: {formatarData(item.created_at)}</div>
-                            </div>
-                        ))
+                                    <div className="msg">{(texto || "").trim()}</div>
+                                    {item.imagem_url && (
+                                        <div className="mb-2 flex justify-center">
+                                            <img
+                                                src={item.imagem_url}
+                                                alt="Imagem recordação"
+                                                className="rounded-lg max-h-48 cursor-pointer"
+                                                onClick={() => setImagemExpandida(item.imagem_url!)}
+                                                style={{ objectFit: "contain" }}
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="date">Enviado em: {formatarData(item.created_at)}</div>
+                                </div>
+                            );
+                        })
                     )}
                 </div>
 
+                {/* Ações */}
                 <div className="pt-2 p-4 flex flex-col items-center gap-2 w-full">
                     <button
                         className="bg-[#FFADB2] px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2 mb-1"
@@ -224,6 +235,7 @@ export default function RecordacoesListPage() {
                         </button>
                     </div>
                 </div>
+
                 {/* Preview imagem expandida */}
                 {imagemExpandida && (
                     <div
@@ -234,7 +246,7 @@ export default function RecordacoesListPage() {
                             src={imagemExpandida}
                             alt="Preview"
                             className="max-h-[80vh] max-w-[90vw] rounded-2xl border-4 border-white"
-                            onClick={e => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
                         />
                     </div>
                 )}
@@ -245,26 +257,19 @@ export default function RecordacoesListPage() {
                         className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
                         onClick={() => setQrVisible(false)}
                     >
-                        <div
-                            className="bg-white rounded-xl p-8 flex flex-col items-center relative"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="text-lg font-bold text-[#007080] mb-3">
-                                Compartilhe uma recordação 💙
-                            </div>
-                            <QRCode value={qrLink} style={{ width: 180, height: 180 }} />
-                            <a
-                                href={qrLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block text-[#007080] underline mt-4"
-                            >
-                                {qrLink}
-                            </a>
+                        <div className="bg-white rounded-xl p-8 flex flex-col items-center relative" onClick={(e) => e.stopPropagation()}>
+                            <div className="text-lg font-bold text-[#007080] mb-3">Compartilhe uma recordação 💙</div>
+                            {qrLink && <QRCode value={qrLink} style={{ width: 180, height: 180 }} />}
+                            {qrLink && (
+                                <a href={qrLink} target="_blank" rel="noopener noreferrer" className="block text-[#007080] underline mt-4">
+                                    {qrLink}
+                                </a>
+                            )}
                             <button
-                                className="absolute top-2 right-2 text-lg text-[#007080] bg-none border-none"
+                                className="absolute top-2 right-2 text-lg text-[#007080]"
                                 style={{ background: "none", border: "none", cursor: "pointer" }}
                                 onClick={() => setQrVisible(false)}
+                                aria-label="Fechar"
                             >
                                 ×
                             </button>
@@ -277,21 +282,31 @@ export default function RecordacoesListPage() {
                     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#dc3545] text-white py-2 px-6 rounded-lg shadow-xl z-50 font-bold">
                         {alerta}
                         <button
-                            style={{
-                                marginLeft: 8,
-                                background: "none",
-                                border: "none",
-                                color: "#fff",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                            }}
+                            style={{ marginLeft: 8, background: "none", border: "none", color: "#fff", fontWeight: 700, cursor: "pointer" }}
                             onClick={() => setAlerta(null)}
+                            aria-label="Fechar alerta"
                         >
                             x
                         </button>
                     </div>
                 )}
             </div>
+
+            {/* Bottom nav */}
+            <nav
+                className="fixed bottom-3 left-0 right-0 mx-auto max-w-md bg-white/90 backdrop-blur border rounded-xl shadow-sm px-3 py-2 flex items-center justify-around"
+                style={{ zIndex: 40 }}
+            >
+                <button className="text-[#255f4f] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/menu")}>
+                    <Heart size={18} /> Menu
+                </button>
+                <button className="text-[#6c63ff] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/diario")}>
+                    <NotebookPen size={18} /> Diário
+                </button>
+                <button className="text-[#ff9a56] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/exercicios")}>
+                    <Sparkles size={18} /> Exercícios
+                </button>
+            </nav>
         </div>
     );
 }
