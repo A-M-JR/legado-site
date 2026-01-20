@@ -1,20 +1,20 @@
 // src/pages/legado-app/acolhimento/index.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HeartHandshake, ArrowLeft, MessageCircle, ChevronDown, ChevronUp, ExternalLink, Heart, NotebookPen, Sparkles, BookOpen } from "lucide-react"; // Adicionei BookOpen
+import { HeartHandshake, ArrowLeft, MessageCircle, ChevronDown, ChevronUp, ExternalLink, Heart, NotebookPen, Sparkles, BookOpen } from "lucide-react";
 import "@/styles/legado-app.css";
 
 type Psicologa = {
     nome: string;
     fone: string;
-    wa: string; // número no formato internacional sem sinais
+    wa: string;
     instagram?: string;
     video?: string;
     video2?: string;
-    video3?: string; // NOVO: Adicionado suporte para um terceiro vídeo
+    video3?: string;
     especialidade?: string;
     link_curso?: string;
-    avatar_url?: string; // opcional para futuras fotos
+    avatar_url?: string;
 };
 
 const PSICOLOGAS: Psicologa[] = [
@@ -23,12 +23,12 @@ const PSICOLOGAS: Psicologa[] = [
         fone: "45 99978-5006",
         wa: "5545999785006",
         instagram: "https://www.instagram.com/deiserosa_psicoterapeuta/",
-        // VÍDEOS E LINK DE CURSO ATUALIZADOS PARA DEISE
-        video: "https://www.youtube.com/embed/2OjFgFg9MBU", // Vídeo original
-        video2: "https://www.youtube.com/embed/KPeOTmn1B5s", // Deise conta quem ela é
-        video3: "https://www.youtube.com/embed/QDej1haLSPo", // Link do vídeo no YT
+
+        video: "https://www.youtube.com/embed/2OjFgFg9MBU",
+        video2: "https://www.youtube.com/embed/KPeOTmn1B5s",
+        video3: "https://www.youtube.com/embed/QDej1haLSPo",
         especialidade: "Psicóloga especializada no atendimento ao Luto.",
-        link_curso: "https://pay.kiwify.com.br/AGX2aYg", // Link de compra do programa do luto
+        link_curso: "https://pay.kiwify.com.br/AGX2aYg",
     },
     {
         nome: "Rose Pasa",
@@ -46,20 +46,20 @@ const PSICOLOGAS: Psicologa[] = [
         fone: "",
         wa: "",
         instagram: "",
-        video: "https://www.youtube.com/embed/AwGS4qtkPX4", // Apresentação do livro
-        video2: "https://www.youtube.com/embed/hg1cvibTmz8", // Short da parceria (ID: hg1cvibTmz8)
+        video: "https://www.youtube.com/embed/AwGS4qtkPX4",
+        video2: "https://www.youtube.com/embed/hg1cvibTmz8",
         especialidade: "",
-        link_curso: "https://ressignificandoperdas.com.br/", // Link para comprar o livro
+        link_curso: "https://ressignificandoperdas.com.br/",
     },
     {
         nome: "Cartas para o Céu",
         fone: "",
         wa: "",
         instagram: "",
-        video: "https://www.youtube.com/embed/7bzYip7puk4", // Vídeo da parceria no YT do Legado
+        video: "https://www.youtube.com/embed/7bzYip7puk4",
         video2: "",
         especialidade: "",
-        link_curso: "https://essencialmaeditora.com.br/p1/", // Link da VSL do Protocolo Ressignificar
+        link_curso: "https://essencialmaeditora.com.br/p1/",
     },
 ];
 
@@ -103,9 +103,8 @@ export default function AcolhimentoPage() {
                         return (
                             <div
                                 key={psic.nome}
-                                className={`rounded-2xl border shadow-md p-5 transition-all bg-white ${isOpen ? "ring-4 ring-[#5ba58c] shadow-lg" : "border-[#e6f2ee]"}`} // Destaque maior ao abrir
+                                className={`rounded-2xl border shadow-md p-5 transition-all bg-white ${isOpen ? "ring-4 ring-[#5ba58c] shadow-lg" : "border-[#e6f2ee]"}`}
                             >
-                                {/* Cabeçalho do card (clicável) - Fontes maiores */}
                                 <button
                                     className="w-full flex items-center justify-between"
                                     onClick={() => toggle(idx)}
@@ -113,21 +112,19 @@ export default function AcolhimentoPage() {
                                     aria-controls={`section-${idx}`}
                                 >
                                     <div className="flex items-center gap-4 text-left">
-                                        <div className="w-10 h-10 rounded-full bg-[#e9f8f4] flex items-center justify-center flex-shrink-0"> {/* Ícone levemente maior */}
+                                        <div className="w-10 h-10 rounded-full bg-[#e9f8f4] flex items-center justify-center flex-shrink-0">
                                             <HeartHandshake className="text-[#5ba58c]" size={20} />
                                         </div>
                                         <div>
-                                            <div className="font-extrabold text-lg text-[#255f4f]">{psic.nome}</div> {/* Nome maior */}
-                                            {psic.especialidade && <div className="text-sm text-[#337b68] mt-0.5">{psic.especialidade}</div>} {/* Especialidade maior */}
+                                            <div className="font-extrabold text-lg text-[#255f4f]">{psic.nome}</div>
+                                            {psic.especialidade && <div className="text-sm text-[#337b68] mt-0.5">{psic.especialidade}</div>}
                                         </div>
                                     </div>
-                                    {isOpen ? <ChevronUp size={20} className="flex-shrink-0" /> : <ChevronDown size={20} className="flex-shrink-0" />} {/* Ícone maior */}
+                                    {isOpen ? <ChevronUp size={20} className="flex-shrink-0" /> : <ChevronDown size={20} className="flex-shrink-0" />}
                                 </button>
 
-                                {/* Conteúdo expandido */}
                                 {isOpen && (
                                     <div id={`section-${idx}`} className="mt-4 pt-2 border-t border-[#e6f2ee] animate-fade-in">
-                                        {/* Ações principais - Botões maiores e mais visíveis */}
                                         <div className="flex flex-col gap-3">
                                             <a
                                                 href={waLink(psic.wa)}
@@ -146,7 +143,6 @@ export default function AcolhimentoPage() {
                                                     rel="noopener noreferrer"
                                                     className="flex items-center justify-center gap-2 bg-[#fbe8ff] hover:bg-[#f6d6fa] px-3 py-3 rounded-xl font-semibold text-[#9b4d96] text-base no-underline transition shadow-sm" // Botão Instagram maior
                                                 >
-                                                    {/* Ícone simples do Instagram em SVG */}
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" className="text-[#9b4d96]" fill="currentColor" aria-hidden="true">
                                                         <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5zM12 7a5 5 0 1 1 0 10a5 5 0 0 1 0-10zm0 1.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7zm5.25-.75a1 1 0 1 1 0 2a1 1 0 0 1 0-2z" />
                                                     </svg>
@@ -156,7 +152,6 @@ export default function AcolhimentoPage() {
                                             )}
                                         </div>
 
-                                        {/* Vídeos */}
                                         {(psic.video || psic.video2 || psic.video3) && (
                                             <div className="mt-4 space-y-3">
                                                 <span className="block text-[#255f4f] font-extrabold mb-1">▶️ Vídeos e Conteúdos</span>
@@ -164,7 +159,7 @@ export default function AcolhimentoPage() {
                                                     <div className="rounded-xl overflow-hidden shadow-md">
                                                         <iframe
                                                             width="100%"
-                                                            height="225" // Altura um pouco maior
+                                                            height="225"
                                                             src={psic.video}
                                                             title={`Vídeo de acolhimento de ${psic.nome} - 1`}
                                                             frameBorder={0}
@@ -178,7 +173,7 @@ export default function AcolhimentoPage() {
                                                     <div className="rounded-xl overflow-hidden shadow-md">
                                                         <iframe
                                                             width="100%"
-                                                            height="225" // Altura um pouco maior
+                                                            height="225"
                                                             src={psic.video2}
                                                             title={`Vídeo de acolhimento de ${psic.nome} - 2`}
                                                             frameBorder={0}
@@ -188,12 +183,12 @@ export default function AcolhimentoPage() {
                                                         />
                                                     </div>
                                                 )}
-                                                {/* NOVO: Renderiza o terceiro vídeo se existir */}
+
                                                 {psic.video3 && (
                                                     <div className="rounded-xl overflow-hidden shadow-md">
                                                         <iframe
                                                             width="100%"
-                                                            height="225" // Altura um pouco maior
+                                                            height="225"
                                                             src={psic.video3}
                                                             title={`Vídeo de acolhimento de ${psic.nome} - 3`}
                                                             frameBorder={0}
@@ -206,7 +201,6 @@ export default function AcolhimentoPage() {
                                             </div>
                                         )}
 
-                                        {/* Painel de cursos - Destaque com separador visual */}
                                         <div className="mt-4 pt-3 border-t border-[#e6f2ee]">
                                             <span className="block text-[#255f4f] font-extrabold mb-2">📚 Cursos e Conteúdos Exclusivos</span>
                                             {psic.link_curso ? (
