@@ -3,12 +3,27 @@ import { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import InputMask from "react-input-mask";
 import { supabase } from "../../../lib/supabaseClient";
-import { CheckCircle, ArrowLeft, Image as ImageIcon, Eye, EyeOff, Heart, NotebookPen, Sparkles } from "lucide-react";
+import {
+    CheckCircle,
+    ArrowLeft,
+    User,
+    Phone,
+    CreditCard,
+    Calendar,
+    Mail,
+    Lock,
+    Camera,
+    Loader2,
+    Eye,
+    EyeOff
+} from "lucide-react";
 import { validarCPF } from "../../../utils/validarCPF";
-import "@/styles/legado-app.css";
+import { useToast } from "@/hooks/use-toast";
+import logo from "@/assets/Legado - Branco.png";
 
 export default function CadastroTitular() {
     const navigate = useNavigate();
+    const { toast } = useToast();
     const [nome, setNome] = useState("");
     const [telefone, setTelefone] = useState("");
     const [cpf, setCpf] = useState("");
@@ -18,7 +33,6 @@ export default function CadastroTitular() {
     const [mostrarSenha, setMostrarSenha] = useState(false);
     const [imagem, setImagem] = useState<File | null>(null);
     const [imagemPreview, setImagemPreview] = useState<string | null>(null);
-    const [alerta, setAlerta] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -27,7 +41,11 @@ export default function CadastroTitular() {
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 2 * 1024 * 1024) {
-                setAlerta("Selecione uma imagem com até 2MB.");
+                toast({
+                    variant: "destructive",
+                    title: "Imagem muito grande",
+                    description: "Selecione uma imagem com até 2MB.",
+                });
                 return;
             }
             setImagem(file);
@@ -47,59 +65,72 @@ export default function CadastroTitular() {
 
     const forca = useMemo(() => senhaForca(senha), [senha]);
 
+    const forcaConfig = [
+        { label: "Fraca", color: "#ef4444" },
+        { label: "Razoável", color: "#f97316" },
+        { label: "Boa", color: "#eab308" },
+        { label: "Forte", color: "#22c55e" },
+    ];
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
-        setAlerta(null);
 
         if (!nome || !telefone || !dataNascimento || !email || !senha) {
-            setAlerta("Preencha todos os campos obrigatórios.");
+            toast({
+                variant: "destructive",
+                title: "Campos obrigatórios",
+                description: "Preencha todos os campos para continuar.",
+            });
             setLoading(false);
             return;
         }
 
         if (!validarCPF(cpf)) {
-            setAlerta("CPF inválido.");
+            toast({
+                variant: "destructive",
+                title: "CPF inválido",
+                description: "Verifique o CPF informado.",
+            });
             setLoading(false);
             return;
         }
 
-        // Validação de data simples (DD/MM/AAAA)
         const parts = dataNascimento.split("/");
         if (parts.length !== 3) {
-            setAlerta("Data de nascimento inválida.");
+            toast({
+                variant: "destructive",
+                title: "Data inválida",
+                description: "Use o formato DD/MM/AAAA.",
+            });
             setLoading(false);
             return;
         }
         const [d, m, y] = parts;
         const dataNascISO = `${y}-${m}-${d}`;
 
-        // 1) Cria usuário
         const { data, error } = await supabase.auth.signUp({ email, password: senha });
         if (error || !data.user) {
-            setAlerta("Erro ao cadastrar usuário: " + (error?.message || "tente novamente"));
+            toast({
+                variant: "destructive",
+                title: "Erro ao cadastrar",
+                description: error?.message || "Tente novamente.",
+            });
             setLoading(false);
             return;
         }
 
-        // 2) Upload imagem (opcional)
         let imagem_url: string | null = null;
         if (imagem) {
             const { data: upload, error: uploadErr } = await supabase.storage
                 .from("titulares")
                 .upload(`${data.user.id}/perfil.jpg`, imagem, { upsert: true });
 
-            if (uploadErr) {
-                setAlerta("Erro ao fazer upload da imagem.");
-                setLoading(false);
-                return;
+            if (!uploadErr) {
+                imagem_url = supabase.storage.from("titulares").getPublicUrl(upload.path).data.publicUrl;
             }
-            imagem_url = upload?.path
-                ? supabase.storage.from("titulares").getPublicUrl(upload.path).data.publicUrl
-                : null;
         }
 
-        // 3) Insere titular
         const { error: insertError } = await supabase.from("titulares").insert({
             nome,
             telefone,
@@ -114,15 +145,21 @@ export default function CadastroTitular() {
         setLoading(false);
 
         if (insertError) {
-            setAlerta("Erro ao cadastrar titular: " + insertError.message);
+            toast({
+                variant: "destructive",
+                title: "Erro ao cadastrar",
+                description: insertError.message,
+            });
             return;
         }
 
-        setAlerta("Titular cadastrado com sucesso!");
+        toast({
+            title: "✅ Cadastro realizado!",
+            description: "Redirecionando para o login...",
+        });
         setTimeout(() => navigate("/legado-app/login", { replace: true }), 1200);
     }
 
-    // Sugere nome a partir do e-mail se nome estiver vazio
     function sugerirNomeSeVazio() {
         if (!nome && email.includes("@")) {
             const sugest = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -131,144 +168,163 @@ export default function CadastroTitular() {
     }
 
     return (
-        <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-4 pb-20">
-            <form className="legado-form-card w-full max-w-md" onSubmit={handleSubmit} autoComplete="off">
+        <div className="min-h-screen bg-slate-50 sm:bg-gradient-to-br sm:from-legado-primary/5 sm:via-white sm:to-legado-primary/10 flex items-center justify-center px-4 py-6 sm:py-10">
+            <div className="bg-white rounded-2xl sm:rounded-[2rem] shadow-xl sm:shadow-2xl w-full max-w-[500px] border border-gray-100 overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-3 mt-2">
-                    <button type="button" onClick={() => navigate(-1)} className="legado-icon-button" aria-label="Voltar">
-                        <ArrowLeft size={18} />
-                    </button>
-                    <h2 className="text-lg font-semibold text-[#255f4f]">Cadastro de Titular</h2>
-                    <div style={{ width: 36 }} />
-                </div>
-
-                <p className="text-sm text-gray-600 text-center mb-4">
-                    Preencha seus dados para começarmos. Você pode alterar depois, se precisar.
-                </p>
-
-                {/* Imagem */}
-                <div className="flex flex-col items-center mb-5">
-                    <div className="relative flex flex-col items-center">
-                        <label className="cursor-pointer group">
-                            {imagemPreview ? (
-                                <img src={imagemPreview} alt="Preview" className="rounded-full w-28 h-28 object-cover border-2 border-[#5BA58C]" />
-                            ) : (
-                                <div className="rounded-full w-28 h-28 flex items-center justify-center border-2 border-[#5BA58C]">
-                                    <ImageIcon size={40} className="text-[#5BA58C]" />
-                                </div>
-                            )}
-                            <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageChange} />
-                        </label>
-                        <button
-                            type="button"
-                            className="flex items-center gap-2 px-4 py-2 bg-[#d1f2eb] rounded-full shadow font-semibold transition hover:bg-[#b8ebe0] text-[#007080] mt-3"
-                            style={{ fontWeight: 600, fontSize: 15 }}
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <ImageIcon size={18} className="text-[#007080]" />
-                            Selecionar imagem
-                        </button>
-                    </div>
-                </div>
-
-                {/* Inputs */}
-                <label className="legado-label">Nome *</label>
-                <input className="legado-input mb-3" value={nome} onChange={(e) => setNome(e.target.value)} />
-
-                <label className="legado-label">Telefone *</label>
-                <InputMask mask="(99) 99999-9999" value={telefone} onChange={(e) => setTelefone(e.target.value)}>
-                    {(inputProps: any) => <input {...inputProps} className="legado-input mb-3" placeholder="(99) 99999-9999" />}
-                </InputMask>
-
-                <label className="legado-label">CPF *</label>
-                <InputMask mask="999.999.999-99" value={cpf} onChange={(e) => setCpf(e.target.value)}>
-                    {(inputProps: any) => <input {...inputProps} className="legado-input mb-3" placeholder="999.999.999-99" />}
-                </InputMask>
-
-                <label className="legado-label">Data de nascimento *</label>
-                <InputMask mask="99/99/9999" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)}>
-                    {(inputProps: any) => <input {...inputProps} className="legado-input mb-3" placeholder="DD/MM/AAAA" />}
-                </InputMask>
-
-                <label className="legado-label">E-mail *</label>
-                <input
-                    className="legado-input mb-3"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onBlur={sugerirNomeSeVazio}
-                    type="email"
-                />
-
-                <label className="legado-label">Senha *</label>
-                <div className="relative mb-1">
-                    <input
-                        className="legado-input pr-10"
-                        value={senha}
-                        onChange={(e) => setSenha(e.target.value)}
-                        type={mostrarSenha ? "text" : "password"}
-                        autoComplete="new-password"
-                    />
+                <div className="bg-gradient-to-br from-legado-primary to-legado-primary-dark p-6 sm:p-8 pb-24 sm:pb-28 text-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/5"></div>
+                    {/* Botão de Voltar - Área de clique maior e funcional */}
                     <button
                         type="button"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#eafcf9]"
-                        onClick={() => setMostrarSenha((v) => !v)}
-                        aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+                        onClick={() => navigate("/legado-app/login")}
+                        className="absolute top-4 left-4 z-30 p-3 sm:p-3.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white transition-all active:scale-90 active:bg-white/40 shadow-lg"
+                        aria-label="Voltar"
                     >
-                        {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                        <ArrowLeft size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
                     </button>
-                </div>
-
-                {/* Indicador de força da senha */}
-                <div className="flex gap-1 mb-4 justify-center" aria-hidden>
-                    {[0, 1, 2, 3].map((i) => (
-                        <span
-                            key={i}
-                            style={{
-                                width: 36,
-                                height: 6,
-                                borderRadius: 999,
-                                background: i < forca ? ["#f87171", "#fb923c", "#fbbf24", "#34d399"][forca - 1] : "#e5e7eb",
-                            }}
+                    <div className="relative z-10">
+                        {/* Aumentei de w-24/28 para w-36/44 */}
+                        <img
+                            src={logo}
+                            alt="Logo"
+                            className="mx-auto w-36 sm:w-44 h-auto mb-4 drop-shadow-lg"
                         />
-                    ))}
+                        <h1 className="text-white text-2xl sm:text-3xl font-bold tracking-tight">
+                            Criar Conta
+                        </h1>
+                        <p className="text-white/80 text-sm sm:text-base mt-1 font-medium">
+                            Preencha seus dados para começar
+                        </p>
+                    </div>
                 </div>
 
-                <button type="submit" className="legado-button w-full flex items-center justify-center gap-2" disabled={loading}>
-                    {loading ? <span className="animate-spin"><CheckCircle size={20} /></span> : <CheckCircle size={20} />}
-                    Cadastrar
-                </button>
-
-                {/* Alerta */}
-                {alerta && (
-                    <div
-                        className="legado-alert mt-2"
-                        style={{
-                            backgroundColor: alerta.toLowerCase().includes("sucesso") ? "#d1f2eb" : "#f8d7da",
-                            color: alerta.toLowerCase().includes("sucesso") ? "#256e5c" : "#842029",
-                            border: `1px solid ${alerta.toLowerCase().includes("sucesso") ? "#b8ebe0" : "#f5c2c7"}`,
-                            fontWeight: 500,
-                        }}
-                    >
-                        {alerta}
+                {/* Formulário */}
+                <form onSubmit={handleSubmit} className="p-6 sm:p-8 pt-0 space-y-4 sm:space-y-5">
+                    <div className="flex flex-col items-center mb-4 sm:mb-6">
+                        <div className="relative -mt-14 sm:-mt-16 z-20">
+                            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white">
+                                {imagemPreview ? (
+                                    <img src={imagemPreview} alt="Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                                        <User size={36} className="text-legado-primary/30 sm:w-14 sm:h-14" />
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="absolute bottom-0 right-0 p-2.5 bg-legado-primary hover:bg-legado-primary-dark text-white rounded-full shadow-lg transition-all active:scale-95 border-2 border-white"
+                            >
+                                <Camera size={18} />
+                            </button>
+                            <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageChange} />
+                        </div>
+                        <p className="text-[10px] sm:text-xs font-bold text-gray-400 mt-3 uppercase tracking-widest">
+                            Foto de perfil
+                        </p>
                     </div>
-                )}
-            </form>
+                    {/* Campos de Input */}
+                    {[
+                        { label: "Nome completo", icon: User, value: nome, setter: setNome, placeholder: "Seu nome completo", type: "text" },
+                        { label: "Telefone", icon: Phone, value: telefone, setter: setTelefone, placeholder: "(99) 99999-9999", mask: "(99) 99999-9999" },
+                        { label: "CPF", icon: CreditCard, value: cpf, setter: setCpf, placeholder: "000.000.000-00", mask: "999.999.999-99" },
+                        { label: "Data de nascimento", icon: Calendar, value: dataNascimento, setter: setDataNascimento, placeholder: "DD/MM/AAAA", mask: "99/99/9999" },
+                        { label: "E-mail", icon: Mail, value: email, setter: setEmail, placeholder: "seu@email.com", type: "email", onBlur: sugerirNomeSeVazio }
+                    ].map((field, idx) => (
+                        <div key={idx} className="space-y-1.5">
+                            <label className="text-xs sm:text-sm font-semibold text-gray-700 ml-1 flex items-center gap-2">
+                                <field.icon size={14} className="text-legado-primary sm:w-4 sm:h-4" />
+                                {field.label} *
+                            </label>
+                            {field.mask ? (
+                                <InputMask mask={field.mask} value={field.value} onChange={(e) => field.setter(e.target.value)}>
+                                    {(inputProps: any) => (
+                                        <input {...inputProps} className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-gray-200 focus:border-legado-primary focus:ring-2 focus:ring-legado-primary/20 outline-none transition-all text-base" placeholder={field.placeholder} />
+                                    )}
+                                </InputMask>
+                            ) : (
+                                <input
+                                    type={field.type}
+                                    className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-gray-200 focus:border-legado-primary focus:ring-2 focus:ring-legado-primary/20 outline-none transition-all text-base"
+                                    value={field.value}
+                                    onChange={(e) => field.setter(e.target.value)}
+                                    onBlur={field.onBlur}
+                                    placeholder={field.placeholder}
+                                />
+                            )}
+                        </div>
+                    ))}
 
-            {/* Bottom nav (consistente) */}
-            <nav
-                className="fixed bottom-3 left-0 right-0 mx-auto max-w-md bg-white/90 backdrop-blur border rounded-xl shadow-sm px-3 py-2 flex items-center justify-around"
-                style={{ zIndex: 40 }}
-            >
-                <button className="text-[#255f4f] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/menu")}>
-                    <Heart size={18} /> Menu
-                </button>
-                <button className="text-[#6c63ff] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/diario")}>
-                    <NotebookPen size={18} /> Diário
-                </button>
-                <button className="text-[#ff9a56] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/exercicios")}>
-                    <Sparkles size={18} /> Exercícios
-                </button>
-            </nav>
+                    {/* Senha */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs sm:text-sm font-semibold text-gray-700 ml-1 flex items-center gap-2">
+                            <Lock size={14} className="text-legado-primary sm:w-4 sm:h-4" />
+                            Senha *
+                        </label>
+                        <div className="relative">
+                            <input
+                                className="w-full px-4 py-3 sm:py-3.5 pr-12 rounded-xl border border-gray-200 focus:border-legado-primary focus:ring-2 focus:ring-legado-primary/20 outline-none transition-all text-base"
+                                value={senha}
+                                onChange={(e) => setSenha(e.target.value)}
+                                type={mostrarSenha ? "text" : "password"}
+                                placeholder="Mínimo 8 caracteres"
+                            />
+                            <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-legado-primary transition-colors"
+                                onClick={() => setMostrarSenha((v) => !v)}
+                            >
+                                {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
+                        {/* Força da Senha */}
+                        {senha && (
+                            <div className="mt-2 px-1">
+                                <div className="flex gap-1.5">
+                                    {[0, 1, 2, 3].map((i) => (
+                                        <div key={i} className="h-1.5 flex-1 rounded-full transition-all" style={{ backgroundColor: i < forca ? forcaConfig[forca - 1].color : "#e5e7eb" }} />
+                                    ))}
+                                </div>
+                                <p className="text-[10px] sm:text-xs font-bold mt-1" style={{ color: forcaConfig[forca - 1].color }}>
+                                    Senha {forcaConfig[forca - 1].label}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Botão de Cadastro */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-gradient-to-r from-legado-primary to-legado-primary-dark text-white py-3.5 sm:py-4 rounded-xl font-bold text-sm sm:text-base shadow-lg shadow-legado-primary/20 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-4 sm:mt-6"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 size={18} className="animate-spin sm:w-5 sm:h-5" />
+                                Criando conta...
+                            </>
+                        ) : (
+                            <>
+                                <CheckCircle size={18} className="sm:w-5 sm:h-5" />
+                                Criar minha conta
+                            </>
+                        )}
+                    </button>
+
+                    {/* Link para Login */}
+                    <div className="text-center pt-2 sm:pt-4">
+                        <button
+                            type="button"
+                            onClick={() => navigate("/legado-app/login")}
+                            className="text-xs sm:text-sm text-gray-600 hover:text-legado-primary font-medium transition-colors"
+                        >
+                            Já possui uma conta? <span className="font-bold">Fazer login</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

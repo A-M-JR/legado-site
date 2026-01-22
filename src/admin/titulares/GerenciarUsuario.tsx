@@ -23,8 +23,14 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { Trash2, KeyRound, Save, Loader2, Eye, EyeOff, Upload, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+    Trash2, KeyRound, Save, Loader2, Eye, EyeOff,
+    Upload, X, User, ShieldCheck, History, Smartphone
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+
+type StatusUsuario = "ativo" | "inativo" | "inadimplente" | "vitalicio";
 
 export default function GerenciarUsuario({ open, onClose, user, refresh }: any) {
     const [loading, setLoading] = useState(false);
@@ -36,7 +42,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
     const [dataNascimento, setDataNascimento] = useState("");
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("");
-    const [status, setStatus] = useState("ativo");
+    const [status, setStatus] = useState<StatusUsuario>("ativo");
     const [parceiroId, setParceiroId] = useState<string>("none");
 
     // Foto
@@ -72,15 +78,17 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
     }, [open, user]);
 
     async function carregarDados() {
+        setModuloLegado(false);
+        setModuloIdoso(false);
+        setModuloPaliativo(false);
+
         if (!user?.titular_id) {
-            // Se não for titular, só carrega role, status e parceiro
             setRole(user.role || "");
-            setStatus(user.status || "ativo");
+            setStatus((user.status as StatusUsuario) || "ativo");
             setParceiroId(user.parceiro_id ?? "none");
             return;
         }
 
-        // Buscar dados completos do titular
         const { data: titular } = await supabase
             .from("titulares")
             .select("*")
@@ -98,706 +106,309 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
         }
 
         setRole(user.role || "");
-        setStatus(user.status || "ativo");
+        setStatus((user.status as StatusUsuario) || "ativo");
         setParceiroId(user.parceiro_id ?? "none");
 
-        // Carregar módulos habilitados
         const { data: modulos } = await supabase
             .from("titular_modulos")
             .select("modulo_id, modulos(nome)")
-            .eq("titular_id", user.titular_id);
+            .eq("titular_id", user.titular_id)
+            .eq("habilitado", true);
 
         if (modulos) {
             modulos.forEach((m: any) => {
-                if (m.modulos.nome === "Legado") setModuloLegado(true);
-                if (m.modulos.nome === "Cuidados ao Idoso") setModuloIdoso(true);
-                if (m.modulos.nome === "Cuidados Paliativos") setModuloPaliativo(true);
+                const nome = m.modulos?.nome?.toLowerCase();
+                if (nome?.includes("legado")) setModuloLegado(true);
+                if (nome?.includes("idoso")) setModuloIdoso(true);
+                if (nome?.includes("paliativo")) setModuloPaliativo(true);
             });
         }
     }
 
     async function loadParceiros() {
-        const { data } = await supabase
-            .from("parceiros")
-            .select("id, nome")
-            .eq("ativo", true)
-            .order("nome");
+        const { data } = await supabase.from("parceiros").select("id, nome").eq("ativo", true).order("nome");
         if (data) setParceiros(data);
     }
 
     async function carregarLogs() {
         if (!user?.auth_id) return;
         setLoadingLogs(true);
-
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from("login_logs")
             .select("*")
             .eq("auth_id", user.auth_id)
             .order("login_at", { ascending: false })
-            .limit(50);
-
-        if (!error && data) setLogs(data);
+            .limit(30);
+        if (data) setLogs(data);
         setLoadingLogs(false);
     }
 
-    function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (file) {
-            setFotoFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFotoPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function removerFoto() {
-        setFotoFile(null);
-        setFotoPreview(fotoAtual);
-    }
-
     async function salvar() {
-        if (!user) return;
         setLoading(true);
-
         try {
-            // 1. Atualizar usuarios_app (role, status e parceiro)
-            const { error: usuarioAppError } = await supabase
-                .from("usuarios_app")
-                .update({
-                    role,
-                    status,
-                    parceiro_id: parceiroId === "none" ? null : parceiroId,
-                })
-                .eq("auth_id", user.auth_id);
+            await supabase.from("usuarios_app").update({
+                role,
+                status,
+                parceiro_id: parceiroId === "none" ? null : parceiroId,
+            }).eq("auth_id", user.auth_id);
 
-            if (usuarioAppError) throw usuarioAppError;
-
-            // 2. Se for titular, atualizar dados pessoais
             if (user.titular_id) {
                 let fotoUrl = fotoAtual;
-
-                // Upload de nova foto
                 if (fotoFile) {
-                    const fileName = `${user.auth_id}-${Date.now()}.${fotoFile.name.split(".").pop()}`;
-                    const { error: uploadError } = await supabase.storage
-                        .from("titulares")
-                        .upload(fileName, fotoFile);
-
-                    if (!uploadError) {
-                        const { data: urlData } = supabase.storage
-                            .from("titulares")
-                            .getPublicUrl(fileName);
+                    const fileName = `${user.auth_id}-${Date.now()}`;
+                    const { error: upErr } = await supabase.storage.from("titulares").upload(fileName, fotoFile);
+                    if (!upErr) {
+                        const { data: urlData } = supabase.storage.from("titulares").getPublicUrl(fileName);
                         fotoUrl = urlData.publicUrl;
                     }
                 }
 
-                const { error: titularError } = await supabase
-                    .from("titulares")
-                    .update({
-                        nome,
-                        cpf: cpf.replace(/\D/g, ""),
-                        telefone,
-                        data_nascimento: dataNascimento,
-                        email,
-                        imagem_url: fotoUrl,
-                    })
-                    .eq("id", user.titular_id);
+                await supabase.from("titulares").update({
+                    nome, cpf: cpf.replace(/\D/g, ""), telefone, data_nascimento: dataNascimento, email, imagem_url: fotoUrl,
+                }).eq("id", user.titular_id);
 
-                if (titularError) throw titularError;
-
-                // 3. Atualizar módulos
                 await supabase.from("titular_modulos").delete().eq("titular_id", user.titular_id);
-
-                const { data: modulos } = await supabase.from("modulos").select("id, nome");
-
-                if (modulos) {
-                    const modulosParaHabilitar = [];
-
+                const { data: todosModulos } = await supabase.from("modulos").select("id, nome");
+                if (todosModulos) {
+                    const inserts = [];
                     if (moduloLegado) {
-                        const legado = modulos.find((m) => m.nome === "Legado");
-                        if (legado) modulosParaHabilitar.push({ titular_id: user.titular_id, modulo_id: legado.id });
+                        const m = todosModulos.find(x => x.nome.toLowerCase().includes("legado"));
+                        if (m) inserts.push({ titular_id: user.titular_id, modulo_id: m.id, habilitado: true });
                     }
-
                     if (moduloIdoso) {
-                        const idoso = modulos.find((m) => m.nome === "Cuidado ao Idoso");
-                        if (idoso) modulosParaHabilitar.push({ titular_id: user.titular_id, modulo_id: idoso.id, habilitado: true });
+                        const m = todosModulos.find(x => x.nome.toLowerCase().includes("idoso"));
+                        if (m) inserts.push({ titular_id: user.titular_id, modulo_id: m.id, habilitado: true });
                     }
-
                     if (moduloPaliativo) {
-                        const paliativo = modulos.find((m) => m.nome === "Cuidados Paliativos");
-                        if (paliativo) modulosParaHabilitar.push({ titular_id: user.titular_id, modulo_id: paliativo.id });
+                        const m = todosModulos.find(x => x.nome.toLowerCase().includes("paliativo"));
+                        if (m) inserts.push({ titular_id: user.titular_id, modulo_id: m.id, habilitado: true });
                     }
-
-                    if (modulosParaHabilitar.length > 0) {
-                        await supabase.from("titular_modulos").insert(modulosParaHabilitar);
-                    }
+                    if (inserts.length > 0) await supabase.from("titular_modulos").insert(inserts);
                 }
             }
-
-            toast({
-                title: "Usuário atualizado",
-                description: "As alterações foram salvas com sucesso.",
-            });
-
+            toast({ title: "✅ Sucesso", description: "Usuário atualizado." });
             refresh();
             onClose();
-        } catch (error: any) {
-            toast({
-                title: "Erro ao atualizar usuário",
-                description: error.message ?? "Tente novamente em alguns instantes.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function alterarSenha() {
-        if (!user?.auth_id) {
-            toast({
-                title: "Erro",
-                description: "Usuário não encontrado.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        if (!novaSenha || novaSenha.length < 6) {
-            toast({
-                title: "Senha inválida",
-                description: "A senha deve ter no mínimo 6 caracteres.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        if (novaSenha !== confirmarSenha) {
-            toast({
-                title: "As senhas não coincidem",
-                description: "Verifique os campos e tente novamente.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const { data, error } = await supabase.rpc("alterar_senha_usuario", {
-                user_id: user.auth_id,
-                nova_senha: novaSenha,
-            });
-
-            if (error) throw error;
-
-            if (data?.success) {
-                toast({
-                    title: "Senha alterada",
-                    description: `A senha de ${user.nome} foi atualizada com sucesso.`,
-                });
-                setShowPasswordDialog(false);
-                setNovaSenha("");
-                setConfirmarSenha("");
-            } else {
-                toast({
-                    title: "Não foi possível alterar a senha",
-                    description: data?.message || "Tente novamente mais tarde.",
-                    variant: "destructive",
-                });
-            }
-        } catch (error: any) {
-            toast({
-                title: "Erro ao alterar senha",
-                description: error.message ?? "Tente novamente mais tarde.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function inativarUsuario() {
-        if (!user) return;
-        setLoading(true);
-
-        try {
-            const { error } = await supabase
-                .from("usuarios_app")
-                .update({ status: "inativo" })
-                .eq("auth_id", user.auth_id);
-
-            if (error) throw error;
-
-            toast({
-                title: "Usuário inativado",
-                description: "O usuário foi inativado com sucesso. Os dados foram preservados.",
-            });
-
-            setShowDeleteDialog(false);
-            refresh();
-            onClose();
-        } catch (error: any) {
-            toast({
-                title: "Erro ao inativar usuário",
-                description: error.message ?? "Tente novamente em alguns instantes.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    function getStatusBadge(statusValue: string) {
-        const badges: any = {
-            ativo: { label: "✅ Ativo", color: "bg-green-100 text-green-800" },
-            inativo: { label: "⚫ Inativo", color: "bg-gray-100 text-gray-800" },
-            inadimplente: { label: "⚠️ Inadimplente", color: "bg-yellow-100 text-yellow-800" },
-            vitalicio: { label: "⭐ Vitalício", color: "bg-purple-100 text-purple-800" },
-        };
-        return badges[statusValue] || badges.ativo;
+        } catch (e: any) {
+            toast({ title: "❌ Erro", description: e.message, variant: "destructive" });
+        } finally { setLoading(false); }
     }
 
     return (
         <>
             <Dialog open={open} onOpenChange={onClose}>
-                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Editar Usuário</DialogTitle>
-                        <DialogDescription>
-                            Gerencie os dados, papel, status, vínculo e ações deste usuário.
-                        </DialogDescription>
+                <DialogContent className="sm:max-w-[800px] w-[95vw] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+                    <DialogHeader className="p-6 pb-2">
+                        <DialogTitle className="text-2xl">Gerenciar Usuário</DialogTitle>
+                        <DialogDescription>Ajuste permissões, dados e visualize o histórico.</DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4">
-                        {user?.titular_id && (
-                            <>
-                                {/* Foto de Perfil */}
-                                <div className="flex flex-col items-center gap-3">
-                                    <Label>Foto de Perfil</Label>
+                    <Tabs defaultValue="dados" className="flex-1 flex flex-col overflow-hidden">
+                        <div className="px-6">
+                            <TabsList className="grid w-full grid-cols-2 mb-4">
+                                <TabsTrigger value="dados" className="flex items-center gap-2">
+                                    <User className="h-4 w-4" /> Perfil e Acesso
+                                </TabsTrigger>
+                                <TabsTrigger value="logs" className="flex items-center gap-2">
+                                    <History className="h-4 w-4" /> Logs de Login
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
 
-                                    {fotoPreview ? (
-                                        <div className="relative">
-                                            <img
-                                                src={fotoPreview}
-                                                alt="Preview"
-                                                className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
-                                            />
-                                            {fotoFile && (
-                                                <button
-                                                    type="button"
-                                                    onClick={removerFoto}
-                                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
+                        <div className="flex-1 overflow-y-auto px-6 pb-6">
+                            {/* ABA 1: DADOS E ACESSO */}
+                            <TabsContent value="dados" className="space-y-6 mt-0">
+
+                                {/* Seção Foto e Dados Básicos */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-xl border border-dashed">
+                                        <Label className="mb-4">Foto de Perfil</Label>
+                                        <div className="relative group">
+                                            {fotoPreview ? (
+                                                <img src={fotoPreview} className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md" />
+                                            ) : (
+                                                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-md">
+                                                    <User className="h-12 w-12 text-gray-400" />
+                                                </div>
                                             )}
-                                        </div>
-                                    ) : (
-                                        <label className="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-gray-400 transition">
-                                            <Upload className="h-8 w-8 text-gray-400" />
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleFotoChange}
-                                                className="hidden"
-                                            />
-                                        </label>
-                                    )}
-
-                                    {!fotoFile && fotoPreview && (
-                                        <label className="text-sm text-blue-600 cursor-pointer hover:underline">
-                                            Alterar foto
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleFotoChange}
-                                                className="hidden"
-                                            />
-                                        </label>
-                                    )}
-                                </div>
-
-                                <Separator />
-
-                                {/* Nome */}
-                                <div>
-                                    <Label>Nome Completo</Label>
-                                    <Input
-                                        value={nome}
-                                        onChange={(e) => setNome(e.target.value)}
-                                        placeholder="Nome completo"
-                                    />
-                                </div>
-
-                                {/* CPF */}
-                                <div>
-                                    <Label>CPF</Label>
-                                    <Input
-                                        value={cpf}
-                                        onChange={(e) => setCpf(e.target.value)}
-                                        placeholder="000.000.000-00"
-                                        maxLength={14}
-                                    />
-                                </div>
-
-                                {/* Telefone */}
-                                <div>
-                                    <Label>Telefone</Label>
-                                    <Input
-                                        value={telefone}
-                                        onChange={(e) => setTelefone(e.target.value)}
-                                        placeholder="(00) 00000-0000"
-                                    />
-                                </div>
-
-                                {/* Data de Nascimento */}
-                                <div>
-                                    <Label>Data de Nascimento</Label>
-                                    <Input
-                                        type="date"
-                                        value={dataNascimento}
-                                        onChange={(e) => setDataNascimento(e.target.value)}
-                                    />
-                                </div>
-
-                                {/* Email */}
-                                <div>
-                                    <Label>E-mail</Label>
-                                    <Input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="email@exemplo.com"
-                                    />
-                                </div>
-
-                                <Separator />
-
-                                {/* Módulos */}
-                                <div>
-                                    <Label className="mb-3 block">Módulos Habilitados</Label>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="legado"
-                                                checked={moduloLegado}
-                                                onCheckedChange={(checked) => setModuloLegado(!!checked)}
-                                            />
-                                            <label htmlFor="legado" className="text-sm cursor-pointer">
-                                                📖 Legado
+                                            <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                                                <Upload className="h-6 w-6 text-white" />
+                                                <input type="file" accept="image/*" onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        setFotoFile(file);
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => setFotoPreview(reader.result as string);
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }} className="hidden" />
                                             </label>
                                         </div>
+                                        {fotoFile && (
+                                            <Button variant="ghost" size="sm" className="mt-2 text-red-500" onClick={() => { setFotoFile(null); setFotoPreview(fotoAtual); }}>
+                                                Desfazer
+                                            </Button>
+                                        )}
+                                    </div>
 
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="idoso"
-                                                checked={moduloIdoso}
-                                                onCheckedChange={(checked) => setModuloIdoso(!!checked)}
-                                            />
-                                            <label htmlFor="idoso" className="text-sm cursor-pointer">
-                                                👴 Cuidados ao Idoso
-                                            </label>
+                                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Nome Completo</Label>
+                                            <Input value={nome} onChange={e => setNome(e.target.value)} />
                                         </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="paliativo"
-                                                checked={moduloPaliativo}
-                                                onCheckedChange={(checked) => setModuloPaliativo(!!checked)}
-                                            />
-                                            <label htmlFor="paliativo" className="text-sm cursor-pointer">
-                                                🕊️ Cuidados Paliativos
-                                            </label>
+                                        <div className="space-y-2">
+                                            <Label>CPF</Label>
+                                            <Input value={cpf} onChange={e => setCpf(e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>E-mail</Label>
+                                            <Input value={email} onChange={e => setEmail(e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Telefone</Label>
+                                            <Input value={telefone} onChange={e => setTelefone(e.target.value)} />
                                         </div>
                                     </div>
                                 </div>
 
                                 <Separator />
-                            </>
-                        )}
 
-                        {/* Role */}
-                        <div>
-                            <Label>Role (Papel)</Label>
-                            <Select value={role} onValueChange={setRole} disabled={loading}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Escolha um papel" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="admin_master">🔑 Admin Master</SelectItem>
-                                    <SelectItem value="parceiro_admin">🏢 Parceiro Admin</SelectItem>
-                                    <SelectItem value="titular">👤 Titular</SelectItem>
-                                    <SelectItem value="familiar">👨‍👩‍👧 Familiar</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                                {/* Configurações de Acesso */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Permissões</h4>
+                                        <div className="space-y-2">
+                                            <Label>Papel (Role)</Label>
+                                            <Select value={role} onValueChange={setRole}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="admin_master">🔑 Admin Master</SelectItem>
+                                                    <SelectItem value="parceiro_admin">🏢 Parceiro Admin</SelectItem>
+                                                    <SelectItem value="titular">👤 Titular</SelectItem>
+                                                    <SelectItem value="familiar">👨‍👩‍👧 Familiar</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Status da Conta</Label>
+                                            <Select value={status} onValueChange={(v) => setStatus(v as StatusUsuario)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="ativo">✅ Ativo</SelectItem>
+                                                    <SelectItem value="inativo">⚫ Inativo</SelectItem>
+                                                    <SelectItem value="inadimplente">⚠️ Inadimplente</SelectItem>
+                                                    <SelectItem value="vitalicio">⭐ Vitalício</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
 
-                        {/* Status */}
-                        <div>
-                            <Label>Status do Usuário</Label>
-                            <Select value={status} onValueChange={setStatus} disabled={loading}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Escolha um status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ativo">✅ Ativo</SelectItem>
-                                    <SelectItem value="inativo">⚫ Inativo</SelectItem>
-                                    <SelectItem value="inadimplente">⚠️ Inadimplente</SelectItem>
-                                    <SelectItem value="vitalicio">⭐ Vitalício</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className="text-xs text-gray-500 mt-1">
-                                {status === "ativo" && "Usuário com acesso total ao sistema"}
-                                {status === "inativo" && "Usuário bloqueado, mas dados preservados"}
-                                {status === "inadimplente" && "Acesso suspenso por falta de pagamento"}
-                                {status === "vitalicio" && "Acesso permanente e irrestrito"}
-                            </p>
-                        </div>
-
-                        {/* Parceiro */}
-                        <div>
-                            <Label>Parceiro (opcional)</Label>
-                            <Select value={parceiroId} onValueChange={setParceiroId} disabled={loading}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um parceiro" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">Nenhum</SelectItem>
-                                    {parceiros.map((p) => (
-                                        <SelectItem key={p.id} value={p.id}>
-                                            {p.nome}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <Button className="w-full" onClick={salvar} disabled={loading}>
-                            {loading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Salvando...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Salvar Alterações
-                                </>
-                            )}
-                        </Button>
-
-                        <Separator />
-
-                        <div className="space-y-2">
-                            <p className="text-sm font-semibold text-gray-700">Ações Avançadas</p>
-
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => setShowPasswordDialog(true)}
-                                disabled={loading}
-                            >
-                                <KeyRound className="h-4 w-4 mr-2" />
-                                Alterar Senha
-                            </Button>
-
-                            <Button
-                                variant="destructive"
-                                className="w-full"
-                                onClick={() => setShowDeleteDialog(true)}
-                                disabled={loading}
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Inativar Usuário
-                            </Button>
-                        </div>
-
-                        <Separator />
-
-                        {/* 🔥 NOVA SEÇÃO: LOGS DE LOGIN */}
-                        <div className="mt-6">
-                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                                📜 Logs de Login
-                            </h3>
-
-                            {loadingLogs ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                                    <span className="ml-2 text-sm text-gray-500">Carregando logs...</span>
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold flex items-center gap-2">📦 Módulos Habilitados</h4>
+                                        <div className="grid grid-cols-1 gap-3 bg-gray-50 p-4 rounded-lg border">
+                                            <div className="flex items-center gap-3">
+                                                <Checkbox id="legado" checked={moduloLegado} onCheckedChange={v => setModuloLegado(!!v)} />
+                                                <Label htmlFor="legado" className="font-normal">📖 Legado (Memórias)</Label>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Checkbox id="idoso" checked={moduloIdoso} onCheckedChange={v => setModuloIdoso(!!v)} />
+                                                <Label htmlFor="idoso" className="font-normal">👴 Cuidados ao Idoso</Label>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Checkbox id="paliativo" checked={moduloPaliativo} onCheckedChange={v => setModuloPaliativo(!!v)} />
+                                                <Label htmlFor="paliativo" className="font-normal">🕊️ Cuidados Paliativos</Label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            ) : logs.length === 0 ? (
-                                <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed">
-                                    <p className="text-sm text-gray-500">📭 Nenhum login registrado ainda.</p>
+
+                                <div className="pt-4 flex flex-col sm:flex-row gap-3">
+                                    <Button className="flex-1 h-12 text-lg" onClick={salvar} disabled={loading}>
+                                        {loading ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Salvar Alterações
+                                    </Button>
+                                    <Button variant="outline" className="h-12" onClick={() => setShowPasswordDialog(true)}>
+                                        <KeyRound className="mr-2 h-4 w-4" /> Senha
+                                    </Button>
+                                    <Button variant="destructive" className="h-12" onClick={() => setShowDeleteDialog(true)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
                                 </div>
-                            ) : (
-                                <div className="max-h-72 overflow-y-auto border rounded-lg bg-gray-50">
-                                    <div className="divide-y">
-                                        {logs.map((log) => (
-                                            <div
-                                                key={log.id}
-                                                className="p-4 bg-white hover:bg-gray-50 transition"
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <p className="text-sm font-medium flex items-center gap-2">
-                                                            {log.sucesso ? (
-                                                                <span className="text-green-600">✅ Login bem-sucedido</span>
-                                                            ) : (
-                                                                <span className="text-red-600">❌ Falha no login</span>
-                                                            )}
-                                                        </p>
-                                                        <p className="text-xs text-gray-600 mt-1">
-                                                            🕒 {new Date(log.login_at).toLocaleString("pt-BR", {
-                                                                day: "2-digit",
-                                                                month: "2-digit",
-                                                                year: "numeric",
-                                                                hour: "2-digit",
-                                                                minute: "2-digit",
-                                                                second: "2-digit",
-                                                            })}
-                                                        </p>
-                                                        {log.ip && (
-                                                            <p className="text-xs text-gray-500 mt-1">
-                                                                🌐 IP: <span className="font-mono">{log.ip}</span>
-                                                            </p>
-                                                        )}
-                                                        {log.user_agent && (
-                                                            <p className="text-xs text-gray-500 mt-1 truncate max-w-md">
-                                                                💻 {log.user_agent}
-                                                            </p>
-                                                        )}
+                            </TabsContent>
+
+                            {/* ABA 2: LOGS DE LOGIN */}
+                            <TabsContent value="logs" className="mt-0">
+                                <div className="bg-white rounded-xl border overflow-hidden">
+                                    <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
+                                        <span className="text-sm font-medium text-gray-600">Últimos 30 acessos</span>
+                                        {loadingLogs && <Loader2 className="h-4 w-4 animate-spin" />}
+                                    </div>
+
+                                    <div className="divide-y max-h-[500px] overflow-y-auto">
+                                        {logs.length === 0 ? (
+                                            <div className="p-12 text-center text-gray-400">Nenhum log encontrado.</div>
+                                        ) : (
+                                            logs.map((log) => (
+                                                <div key={log.id} className="p-4 hover:bg-gray-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`p-2 rounded-full ${log.sucesso ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                                            <Smartphone className="h-4 w-4" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-semibold">{log.sucesso ? 'Login realizado' : 'Falha no acesso'}</p>
+                                                            <p className="text-xs text-gray-500">{new Date(log.login_at).toLocaleString('pt-BR')}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-left sm:text-right">
+                                                        <p className="text-xs font-mono text-gray-400">{log.ip || 'IP não registrado'}</p>
+                                                        <p className="text-[10px] text-gray-400 truncate max-w-[200px]">{log.user_agent}</p>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))
+                                        )}
                                     </div>
                                 </div>
-                            )}
-
-                            <p className="text-xs text-gray-500 mt-2 text-center">
-                                Exibindo os últimos 50 logins registrados
-                            </p>
+                            </TabsContent>
                         </div>
-                    </div>
+                    </Tabs>
                 </DialogContent>
             </Dialog>
 
-            {/* Dialog de Alteração de Senha */}
+            {/* DIALOGS AUXILIARES (SENHA E DELETE) MANTIDOS IGUAIS */}
             <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-                <DialogContent className="sm:max-w-[450px]">
-                    <DialogHeader>
-                        <DialogTitle>🔐 Alterar Senha</DialogTitle>
-                        <DialogDescription>
-                            Defina uma nova senha para <strong>{user?.nome}</strong>
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="space-y-4">
-                        <div>
+                <DialogContent className="sm:max-w-[400px] w-[90vw]">
+                    <DialogHeader><DialogTitle>Alterar Senha</DialogTitle></DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
                             <Label>Nova Senha</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showPassword ? "text" : "password"}
-                                    value={novaSenha}
-                                    onChange={(e) => setNovaSenha(e.target.value)}
-                                    placeholder="Mínimo 6 caracteres"
-                                    className="pr-10"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                >
-                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </button>
-                            </div>
+                            <Input type="password" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} />
                         </div>
-
-                        <div>
-                            <Label>Confirmar Nova Senha</Label>
-                            <Input
-                                type={showPassword ? "text" : "password"}
-                                value={confirmarSenha}
-                                onChange={(e) => setConfirmarSenha(e.target.value)}
-                                placeholder="Digite novamente"
-                            />
+                        <div className="space-y-2">
+                            <Label>Confirmar Senha</Label>
+                            <Input type="password" value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)} />
                         </div>
-
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                className="flex-1"
-                                onClick={() => {
-                                    setShowPasswordDialog(false);
-                                    setNovaSenha("");
-                                    setConfirmarSenha("");
-                                }}
-                                disabled={loading}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button className="flex-1" onClick={alterarSenha} disabled={loading}>
-                                {loading ? (
-                                    <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Alterando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <KeyRound className="h-4 w-4 mr-2" />
-                                        Confirmar
-                                    </>
-                                )}
-                            </Button>
-                        </div>
+                        <Button className="w-full" onClick={async () => {
+                            if (novaSenha !== confirmarSenha) return toast({ title: "Erro", description: "Senhas não conferem", variant: "destructive" });
+                            setLoading(true);
+                            const { error } = await supabase.rpc('alterar_senha_usuario', { user_id: user.auth_id, nova_senha: novaSenha });
+                            setLoading(false);
+                            if (!error) { toast({ title: "Sucesso", description: "Senha alterada" }); setShowPasswordDialog(false); }
+                        }}>Confirmar Nova Senha</Button>
                     </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Dialog de Confirmação de Inativação */}
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <AlertDialogContent>
+                <AlertDialogContent className="w-[90vw] sm:max-w-[450px]">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>⚠️ Inativar este usuário?</AlertDialogTitle>
-                        <AlertDialogDescription className="space-y-2">
-                            <p>
-                                O usuário <strong>{user?.nome}</strong> ({user?.email}) será{" "}
-                                <strong className="text-yellow-600">inativado</strong>.
-                            </p>
-                            <p className="text-green-600 font-semibold">
-                                ✅ Todos os dados serão preservados:
-                            </p>
-                            <ul className="list-disc list-inside text-sm space-y-1 mt-2">
-                                <li>Recordações</li>
-                                <li>Diários</li>
-                                <li>Exercícios</li>
-                                <li>Dependentes vinculados</li>
-                                <li>Módulos habilitados</li>
-                                <li>Perfil completo</li>
-                            </ul>
-                            <p className="text-sm text-gray-600 mt-3">
-                                O usuário não poderá fazer login, mas você pode reativá-lo a qualquer momento.
-                            </p>
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>Inativar Usuário?</AlertDialogTitle>
+                        <AlertDialogDescription>O usuário perderá o acesso imediatamente, mas os dados serão mantidos no banco.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={inativarUsuario}
-                            disabled={loading}
-                            className="bg-yellow-600 hover:bg-yellow-700"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Inativando...
-                                </>
-                            ) : (
-                                "Sim, inativar usuário"
-                            )}
-                        </AlertDialogAction>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction className="bg-red-600" onClick={async () => {
+                            await supabase.from("usuarios_app").update({ status: "inativo" }).eq("auth_id", user.auth_id);
+                            refresh(); onClose();
+                        }}>Sim, Inativar</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

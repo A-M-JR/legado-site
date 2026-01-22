@@ -209,25 +209,22 @@ export default function RecordacoesListPage() {
                 {/* Ações */}
                 <div className="pt-2 p-4 flex flex-col items-center gap-2 w-full">
                     <button
-                        className="bg-[#FFADB2] px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2 mb-1"
-                        style={{ fontSize: 16, width: "80%" }}
+                        className="bg-[#FFADB2] px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2 mb-1 w-4/5 text-base"
                         onClick={() => navigate("/legado-app/parcerias/acalme-coracao")}
                     >
                         <HeartHandshake className="text-[#b22222]" size={18} />
                         Acalme seu coração
                     </button>
-                    <div className="flex gap-2 w-full justify-center">
+                    <div className="flex gap-2 w-full justify-center px-4">
                         <button
-                            className="bg-[#D1F2EB] flex items-center gap-2 px-4 py-2 rounded-xl text-[#007080] font-bold shadow"
-                            style={{ fontSize: 15, width: "40%" }}
+                            className="bg-[#D1F2EB] flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[#007080] font-bold shadow text-[15px]"
                             onClick={() => setQrVisible(true)}
                         >
                             <QrCode size={18} />
                             QR Code
                         </button>
                         <button
-                            className="bg-[#5BA58C] flex items-center gap-2 px-4 py-2 rounded-xl text-white font-bold shadow"
-                            style={{ fontSize: 15, width: "40%" }}
+                            className="bg-[#5BA58C] flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-bold shadow text-[15px]"
                             onClick={() => navigate(`/legado-app/recordacoes/nova/${dependenteId}`)}
                         >
                             <PlusCircle size={18} />

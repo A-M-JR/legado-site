@@ -42,7 +42,7 @@ export default function Testimonials() {
           Histórias reais de pessoas que encontraram conforto e valor com o APP Legado.
         </p>
 
-        <div className="relative max-w-2xl mx-auto bg-white rounded-3xl shadow-lg p-8 md:p-12 transition-all duration-500">
+        <div className="relative max-w-2xl mx-auto bg-white rounded-3xl shadow-lg p-6 md:p-12 transition-all duration-500">
           <p className="text-lg text-legado-dark italic mb-8 leading-relaxed">{content}</p>
           <div className="flex items-center justify-center space-x-4">
             <img
