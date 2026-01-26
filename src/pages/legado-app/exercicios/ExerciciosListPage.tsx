@@ -3,11 +3,20 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import {
-    Sparkles, Wind, Footprints, Heart, Eye,
-    Palette, MessageCircle, Moon, Clock, ArrowLeft, History,
+    Sparkles,
+    Wind,
+    Footprints,
+    Heart,
+    Eye,
+    Palette,
+    MessageCircle,
+    Moon,
+    Clock,
+    History,
     FileText,
-    NotebookPen
+    NotebookPen,
 } from "lucide-react";
+import LegadoLayout from "../../../components/legado/LegadoLayout";
 import "@/styles/legado-app.css";
 
 type Exercicio = {
@@ -16,9 +25,9 @@ type Exercicio = {
     descricao: string;
     categoria: string;
     duracao_minutos: number;
-    icone: string;
+    icone?: string | null;
     ordem: number;
-    grupo: string;
+    grupo?: string | null;
 };
 
 type ExercicioRealizado = {
@@ -27,7 +36,14 @@ type ExercicioRealizado = {
 };
 
 const iconMap: Record<string, any> = {
-    Wind, Footprints, Heart, Eye, Palette, MessageCircle, Sparkles, Moon
+    Wind,
+    Footprints,
+    Heart,
+    Eye,
+    Palette,
+    MessageCircle,
+    Sparkles,
+    Moon,
 };
 
 const grupoEmojis: Record<string, string> = {
@@ -35,7 +51,7 @@ const grupoEmojis: Record<string, string> = {
     "Cuidado com o corpo e com o hoje": "🌸",
     "Memórias e significado": "💬",
     "Espiritualidade e esperança": "🌻",
-    "Rotina de encerramento do dia": "🌙"
+    "Rotina de encerramento do dia": "🌙",
 };
 
 const categoriaColors: Record<string, string> = {
@@ -44,7 +60,7 @@ const categoriaColors: Record<string, string> = {
     gratidao: "#FF6B9D",
     mindfulness: "#9B59B6",
     criatividade: "#F39C12",
-    conexao: "#2ECC71"
+    conexao: "#2ECC71",
 };
 
 export default function ExerciciosListPage() {
@@ -55,60 +71,64 @@ export default function ExerciciosListPage() {
 
     useEffect(() => {
         (async () => {
-            const { data: exData } = await supabase
-                .from("exercicios_autocuidado")
-                .select("*")
-                .eq("ativo", true)
-                .order("ordem");
+            try {
+                const { data: exData } = await supabase
+                    .from("exercicios_autocuidado")
+                    .select("*")
+                    .eq("ativo", true)
+                    .order("ordem");
 
-            const { data: { user } } = await supabase.auth.getUser();
-            let realData: ExercicioRealizado[] = [];
+                const { data: { user } = {} as any } = await supabase.auth.getUser();
+                let realData: ExercicioRealizado[] = [];
 
-            if (user) {
-                const hoje = new Date().toISOString().split("T")[0];
-                const { data: rData } = await supabase
-                    .from("exercicios_realizados")
-                    .select("exercicio_id, realizado_em")
-                    .eq("auth_id", user.id)
-                    .gte("realizado_em", hoje);
-                realData = (rData as ExercicioRealizado[]) || [];
+                if (user) {
+                    const hoje = new Date().toISOString().split("T")[0];
+                    const { data: rData } = await supabase
+                        .from("exercicios_realizados")
+                        .select("exercicio_id, realizado_em")
+                        .eq("auth_id", user.id)
+                        .gte("realizado_em", hoje);
+                    realData = (rData as ExercicioRealizado[]) || [];
+                }
+
+                setExercicios((exData as Exercicio[]) || []);
+                setRealizados(realData);
+            } catch (err) {
+                console.error("Erro carregando exercícios:", err);
+            } finally {
+                setLoading(false);
             }
-
-            setExercicios((exData as Exercicio[]) || []);
-            setRealizados(realData);
-            setLoading(false);
         })();
     }, []);
 
     function foiRealizado(exId: string) {
-        return realizados.some(r => r.exercicio_id === exId);
+        return realizados.some((r) => r.exercicio_id === exId);
     }
 
-    // Agrupar exercícios por grupo
+    // Agrupar exercícios por grupo (usa "Sem grupo" quando não há valor válido)
     const exerciciosPorGrupo = exercicios.reduce((acc, ex) => {
-        if (!acc[ex.grupo]) acc[ex.grupo] = [];
-        acc[ex.grupo].push(ex);
+        const grupoKey = ex.grupo && ex.grupo.toString().trim() ? ex.grupo.toString().trim() : "Sem grupo";
+        if (!acc[grupoKey]) acc[grupoKey] = [];
+        acc[grupoKey].push(ex);
         return acc;
     }, {} as Record<string, Exercicio[]>);
 
     return (
-        <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-4 py-6">
-            <div className="legado-form-card w-full max-w-md">
-                <div className="flex items-center justify-between mb-3">
+        <LegadoLayout title="Exercícios para Melhorar o Dia" backPath="/legado-app/menu">
+            <div className="w-full max-w-md mx-auto">
+                <div className="mb-3 flex items-start justify-between">
                     <h2 className="text-xl font-semibold text-[#255f4f] flex items-center gap-2">
-                        <Sparkles size={22} /> Exercícios para Melhorar o Dia
+                        <Sparkles size={20} /> Exercícios para Melhorar o Dia
                     </h2>
 
                     <div className="flex items-center gap-2">
                         <button
-                            className="legado-button"
+                            className="legado-button !px-3 !py-1.5 text-sm"
                             onClick={() => navigate("/legado-app/exercicios/historico")}
                             title="Ver histórico de exercícios realizados"
                             style={{ backgroundColor: "#2563eb" }}
                         >
-                            {/* Use History se disponível; senão, FileText */}
-                            {/* <History size={16} className="inline mr-1" /> */}
-                            <FileText size={16} className="inline mr-1" />
+                            <FileText size={14} className="inline mr-1" />
                             Histórico
                         </button>
                     </div>
@@ -119,79 +139,72 @@ export default function ExerciciosListPage() {
                 </p>
 
                 {loading ? (
-                    <p>Carregando...</p>
+                    <p className="text-center text-gray-500">Carregando...</p>
+                ) : exercicios.length === 0 ? (
+                    <div className="p-6 rounded-lg bg-white/60 backdrop-blur-sm border border-white/30 text-center">
+                        <p className="text-gray-700 mb-2">Ainda não há exercícios disponíveis.</p>
+                        <p className="text-sm text-gray-500">Volte mais tarde ou confira o histórico.</p>
+                    </div>
                 ) : (
                     <div className="space-y-6">
-                        {Object.entries(exerciciosPorGrupo).map(([grupo, exs]) => (
-                            <div key={grupo}>
-                                <div className="space-y-3">
-                                    {exs.map(ex => {
-                                        const Icon = iconMap[ex.icone] || Sparkles;
-                                        const realizado = foiRealizado(ex.id);
-                                        const cor = categoriaColors[ex.categoria] || "#6c63ff";
+                        {Object.entries(exerciciosPorGrupo).map(([grupo, exs]) => {
+                            const emoji = grupoEmojis[grupo] || "✨";
+                            const displayGroup = grupo || "Sem grupo";
+                            return (
+                                <div key={grupo}>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="text-lg">{emoji}</div>
+                                        <h3 className="font-semibold text-[#255f4f]">{displayGroup}</h3>
+                                    </div>
 
-                                        return (
-                                            <div
-                                                key={ex.id}
-                                                className="p-4 rounded-lg border bg-white cursor-pointer hover:shadow-md transition-shadow"
-                                                onClick={() => navigate(`/legado-app/exercicios/${ex.id}`)}
-                                                style={{ borderLeft: `4px solid ${cor}` }}
-                                            >
-                                                <div className="flex items-start gap-3">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        {exs.map((ex) => {
+                                            const Icon = (ex.icone && iconMap[ex.icone]) || Sparkles;
+                                            const realizado = foiRealizado(ex.id);
+                                            const cor = categoriaColors[ex.categoria] || "#6c63ff";
+
+                                            return (
+                                                <button
+                                                    key={ex.id}
+                                                    onClick={() => navigate(`/legado-app/exercicios/${ex.id}`)}
+                                                    className="text-left p-4 rounded-xl border bg-white/80 backdrop-blur-sm hover:shadow-md transition-shadow flex items-start gap-3 w-full"
+                                                    style={{ borderLeft: `4px solid ${cor}` }}
+                                                >
                                                     <div
                                                         className="p-2 rounded-full flex-shrink-0"
-                                                        style={{ backgroundColor: `${cor}20` }}
+                                                        style={{ backgroundColor: `${cor}22` }}
                                                     >
-                                                        <Icon size={24} style={{ color: cor }} />
+                                                        <Icon size={20} style={{ color: cor }} />
                                                     </div>
+
                                                     <div className="flex-1">
-                                                        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                                                            {ex.titulo}
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <h4 className="font-medium text-gray-800 text-sm line-clamp-2">{ex.titulo}</h4>
                                                             {realizado && (
-                                                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                                                <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                                                                     ✓ Feito hoje
                                                                 </span>
                                                             )}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                                                            {ex.descricao}
-                                                        </p>
-                                                        <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
+                                                        </div>
+
+                                                        <p className="text-sm text-gray-600 mt-1 line-clamp-3">{ex.descricao}</p>
+
+                                                        <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
                                                             <Clock size={14} />
-                                                            {ex.duracao_minutos} min
+                                                            <span>{ex.duracao_minutos} min</span>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 
-                <div className="w-full flex justify-center mt-6 gap-2">
-
-                </div>
             </div>
-            <nav
-                className="fixed bottom-3 left-0 right-0 mx-auto max-w-md bg-white/90 backdrop-blur border rounded-xl shadow-sm px-3 py-2 flex items-center justify-around"
-                style={{ zIndex: 40 }}
-            >
-                <button className="text-[#255f4f] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/menu")}>
-                    <Heart size={18} /> Menu
-                </button>
-                <button className="text-[#6c63ff] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/diario")}>
-                    <NotebookPen size={18} /> Diário
-                </button>
-                <button className="text-[#ff9a56] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/exercicios")}>
-                    <Sparkles size={18} /> Exercícios
-                </button>
-                <button className="text-[#2563eb] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/exercicios/historico")}>
-                    <History size={18} /> Histórico
-                </button>
-            </nav>
-        </div>
+        </LegadoLayout>
     );
 }

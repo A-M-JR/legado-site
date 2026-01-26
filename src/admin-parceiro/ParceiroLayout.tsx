@@ -1,4 +1,4 @@
-// src/admin/AdminLayout.tsx
+// src/admin-parceiro/ParceiroLayout.tsx
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -15,96 +15,127 @@ import {
     SidebarFooter,
 } from "@/components/ui/sidebar";
 import {
-    Building2,
     Users,
     Settings,
     LogOut,
     LayoutDashboard,
     ShieldCheck,
     ChevronRight,
-    History as HistoryIcon,
-    Puzzle,
 } from "lucide-react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-// Logo padrão do Legado
 import logoPadrao from "@/assets/legado/logo_degrade.png";
 
 const menuItems = [
-    {
-        title: "Visão Geral",
-        icon: LayoutDashboard,
-        path: "/admin/dashboard",
-    },
-    {
-        title: "Parceiros",
-        icon: Building2,
-        path: "/admin/parceiros",
-    },
-    {
-        title: "Gestão de Usuários",
-        icon: Users,
-        path: "/admin/titulares",
-    },
-    {
-        title: "Configurações",
-        icon: Settings,
-        path: "/admin/configuracoes",
-    },
+    { title: "Meus Clientes", icon: Users, path: "/admin-parceiro/dashboard" },
+    { title: "Configurações", icon: Settings, path: "/admin-parceiro/configuracoes" },
 ];
 
-interface ConfigSistema {
-    nome_sistema: string | null;
-    logo_url: string | null;
-}
-
-interface AdminProfile {
+interface ParceiroProfile {
     nome: string | null;
     email: string | null;
+    logo_url: string | null;
+    parceiro_id: string | null;
 }
 
-export default function AdminLayout() {
+export default function ParceiroLayout() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [config, setConfig] = useState<ConfigSistema | null>(null);
-    const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
+    const [parceiroProfile, setParceiroProfile] = useState<ParceiroProfile | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function loadAdminData() {
+        async function loadParceiroData() {
             try {
-                // 1) Usuário autenticado
-                const { data: { user } } = await supabase.auth.getUser();
+                setLoading(true);
 
-                if (user) {
-                    // Busca nome/email da tabela usuarios_app
-                    const { data: perfilApp, error: perfilError } = await supabase
-                        .from("usuarios_app")
-                        .select("nome, email, role")
-                        .eq("auth_id", user.id)
-                        .maybeSingle();
-
-                    setAdminProfile({
-                        nome: perfilApp?.nome || user.user_metadata?.full_name || "Administrador",
-                        email: perfilApp?.email || user.email || "master@legado.com",
+                const { data: authRes, error: authErr } = await supabase.auth.getUser();
+                if (authErr) {
+                    console.error("supabase.auth.getUser error:", authErr);
+                }
+                const user = authRes?.user;
+                if (!user) {
+                    setParceiroProfile({
+                        nome: "Acesso Administrativo",
+                        email: null,
+                        logo_url: null,
+                        parceiro_id: null,
                     });
+                    setLoading(false);
+                    return;
                 }
 
-                // 2) Configuração global do sistema
-                const { data: configData } = await supabase
-                    .from("config_sistema")
-                    .select("nome_sistema, logo_url")
-                    .limit(1)
+                // 1) buscar vínculo em usuarios_app — selecionar apenas colunas existentes
+                const { data: perfilApp, error: perfilErr } = await supabase
+                    .from("usuarios_app")
+                    .select("parceiro_id, role, titular_id, auth_id")
+                    .eq("auth_id", user.id)
                     .maybeSingle();
 
-                if (configData) setConfig(configData);
+                if (perfilErr) {
+                    console.error("Erro query usuarios_app:", perfilErr);
+                    // Mostra fallback administrativo para evitar bloquear a UI
+                    setParceiroProfile({
+                        nome: "Acesso Administrativo",
+                        email: user.email || null,
+                        logo_url: null,
+                        parceiro_id: null,
+                    });
+                    setLoading(false);
+                    return;
+                }
+
+                // Se tem parceiro_id, buscar dados do parceiro (nome + logo_url)
+                if (perfilApp?.parceiro_id) {
+                    // Selecionar somente colunas que existem na tabela 'parceiros'
+                    const { data: dadosParceiro, error: dadosErr } = await supabase
+                        .from("parceiros")
+                        .select("nome, logo_url")
+                        .eq("id", perfilApp.parceiro_id)
+                        .maybeSingle();
+
+                    if (dadosErr) {
+                        console.error("Erro query parceiros:", dadosErr);
+                        setParceiroProfile({
+                            nome: perfilApp?.parceiro_id ? "Parceiro" : "Acesso Administrativo",
+                            email: user.email || null,
+                            logo_url: null,
+                            parceiro_id: perfilApp?.parceiro_id || null,
+                        });
+                    } else {
+                        setParceiroProfile({
+                            nome: dadosParceiro?.nome || "Parceiro",
+                            // email não está na tabela parceiros; usar email do auth como fallback
+                            email: user.email || null,
+                            logo_url: dadosParceiro?.logo_url || null,
+                            parceiro_id: perfilApp.parceiro_id,
+                        });
+                    }
+                } else {
+                    // usuário sem vínculo de parceiro (admin)
+                    setParceiroProfile({
+                        nome: "Acesso Administrativo",
+                        email: user.email || null,
+                        logo_url: null,
+                        parceiro_id: null,
+                    });
+                }
             } catch (err) {
-                console.error("Erro ao carregar dados do AdminLayout:", err);
+                console.error("Erro ao carregar dados do ParceiroLayout:", err);
+                setParceiroProfile({
+                    nome: "Acesso Administrativo",
+                    email: null,
+                    logo_url: null,
+                    parceiro_id: null,
+                });
+            } finally {
+                setLoading(false);
             }
         }
 
-        loadAdminData();
+        loadParceiroData();
     }, []);
 
     const handleLogout = async () => {
@@ -112,35 +143,31 @@ export default function AdminLayout() {
         navigate("/legado-app/login");
     };
 
-    const currentMenuTitle =
-        menuItems.find((i) => i.path === location.pathname)?.title || "Painel";
-
-    const logoParaExibir = config?.logo_url || logoPadrao;
-    const nomeSistema = config?.nome_sistema || "Legado & Conforto";
-
-    const iniciaisAdmin =
-        adminProfile?.nome
+    const currentMenuTitle = menuItems.find((i) => i.path === location.pathname)?.title || "Painel Parceiro";
+    const logoParaExibir = parceiroProfile?.logo_url || logoPadrao;
+    const nomeExibicao = parceiroProfile?.nome || "Carregando...";
+    const iniciais =
+        parceiroProfile?.nome
             ?.split(" ")
             .map((p) => p[0])
             .join("")
-            .toUpperCase() || "AM";
+            .toUpperCase() || "PA";
 
     return (
         <SidebarProvider>
             <div className="flex min-h-screen w-full bg-[#e3f1eb]">
                 <Sidebar className="border-r border-[#d1e5dc] shadow-xl bg-white/90 backdrop-blur">
                     <SidebarContent className="bg-white">
-                        {/* Header da Sidebar com Logo/Nome */}
                         <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-[#e0f0ea]">
                             <div className="h-11 w-11 rounded-2xl bg-[#5ba58c] flex items-center justify-center shadow-md shadow-[#5ba58c33]">
                                 <ShieldCheck className="h-6 w-6 text-white" />
                             </div>
                             <div>
                                 <h2 className="text-xs font-extrabold text-[#255f4f] leading-tight uppercase tracking-[0.18em]">
-                                    {nomeSistema}
+                                    {nomeExibicao}
                                 </h2>
                                 <p className="text-[10px] font-semibold text-[#5ba58c] uppercase tracking-[0.25em] mt-1">
-                                    Admin Master
+                                    Painel Parceiro
                                 </p>
                             </div>
                         </div>
@@ -168,17 +195,11 @@ export default function AdminLayout() {
                                                     <item.icon
                                                         className={cn(
                                                             "h-5 w-5 transition-colors",
-                                                            isActive
-                                                                ? "text-[#5ba58c]"
-                                                                : "text-[#9db4aa] group-hover:text-[#5ba58c]"
+                                                            isActive ? "text-[#5ba58c]" : "text-[#9db4aa] group-hover:text-[#5ba58c]"
                                                         )}
                                                     />
-                                                    <span className="font-medium text-sm">
-                                                        {item.title}
-                                                    </span>
-                                                    {isActive && (
-                                                        <ChevronRight className="ml-auto h-4 w-4 text-[#5ba58c]" />
-                                                    )}
+                                                    <span className="font-medium text-sm">{item.title}</span>
+                                                    {isActive && <ChevronRight className="ml-auto h-4 w-4 text-[#5ba58c]" />}
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
                                         );
@@ -188,35 +209,17 @@ export default function AdminLayout() {
                         </SidebarGroup>
                     </SidebarContent>
 
-                    {/* Footer da Sidebar com Perfil, botão de Seleção de Jornadas e Logout */}
                     <SidebarFooter className="p-4 border-t border-[#e0f0ea] bg-[#f5fbf8]">
-                        <div className="flex items-center gap-3 px-2 py-3 mb-3 rounded-xl bg-white border border-[#e0f0ea] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                        <div className="flex items-center gap-3 px-2 py-3 mb-2 rounded-xl bg-white border border-[#e0f0ea] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                             <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
                                 <AvatarImage src={logoParaExibir} />
-                                <AvatarFallback className="bg-[#d7efe5] text-[#255f4f] font-bold text-xs">
-                                    {iniciaisAdmin}
-                                </AvatarFallback>
+                                <AvatarFallback className="bg-[#d7efe5] text-[#255f4f] font-bold text-xs">{iniciais}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1 overflow-hidden">
-                                <p className="text-sm font-semibold text-[#255f4f] truncate">
-                                    {adminProfile?.nome || "Administrador"}
-                                </p>
-                                <p className="text-xs text-[#6b8c7d] truncate">
-                                    {adminProfile?.email || "master@legado.com"}
-                                </p>
+                                <p className="text-sm font-semibold text-[#255f4f] truncate">{parceiroProfile?.nome || "Parceiro"}</p>
+                                <p className="text-xs text-[#6b8c7d] truncate">{parceiroProfile?.email || ""}</p>
                             </div>
                         </div>
-
-                        {/* NOVO: Botão para ir à Seleção de Módulos
-                        <button
-                            onClick={() => navigate("/legado-app/selecao-modulos")}
-                            aria-label="Ir para seleção de jornadas"
-                            className="flex items-center gap-2 px-3 py-2 mb-3 text-sm font-semibold text-white bg-[#5ba58c] hover:bg-[#4a8a75] rounded-md transition-all w-full justify-center shadow-md"
-                        >
-                            <Puzzle className="h-4 w-4" />
-                            Selecionar Jornada
-                        </button> */}
-
                         <button
                             onClick={handleLogout}
                             className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-[#885555] hover:text-[#b91c1c] hover:bg-[#fee2e2] rounded-md transition-all w-full group"
@@ -228,27 +231,21 @@ export default function AdminLayout() {
                 </Sidebar>
 
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    {/* Header Superior Refinado */}
                     <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#d1e5dc] px-8 flex items-center justify-between sticky top-0 z-10">
                         <div className="flex items-center gap-4">
                             <SidebarTrigger className="text-[#6b8c7d] hover:text-[#255f4f] transition-colors" />
                             <div className="h-4 w-[1px] bg-[#d1e5dc] mx-2 hidden sm:block" />
-                            <h1 className="text-sm font-semibold text-[#255f4f] hidden sm:block">
-                                {currentMenuTitle}
-                            </h1>
+                            <h1 className="text-sm font-semibold text-[#255f4f] hidden sm:block">{currentMenuTitle}</h1>
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-[#166534] bg-[#bbf7d0] px-3 py-1 rounded-full uppercase tracking-widest">
-                                Sistema Online
-                            </span>
+                            <span className="text-[10px] font-bold text-[#166534] bg-[#bbf7d0] px-3 py-1 rounded-full uppercase tracking-widest">Painel Parceiro</span>
                         </div>
                     </header>
 
-                    {/* Área de Conteúdo */}
                     <div className="flex-1 overflow-auto p-8 custom-scrollbar">
                         <div className="max-w-7xl mx-auto animate-in fade-in duration-500">
-                            <Outlet />
+                            <Outlet context={{ userProfile: parceiroProfile }} />
                         </div>
                     </div>
                 </main>

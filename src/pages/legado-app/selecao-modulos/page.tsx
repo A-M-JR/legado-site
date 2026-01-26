@@ -70,7 +70,7 @@ export default function SelecaoModulosPage() {
     const direcionarParaModulo = (nome: string) => {
         const n = nome.toLowerCase();
         if (n.includes("legado")) navigate("/legado-app/menu");
-        else if (n.includes("idoso")) navigate("/idoso-app/menu");
+        else if (n.includes("idoso")) navigate("/melhor-idade");
         else if (n.includes("paliativo")) navigate("/paliativo-app/menu");
     };
 

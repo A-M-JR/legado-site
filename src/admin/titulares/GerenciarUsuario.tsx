@@ -1,3 +1,4 @@
+// src/.../GerenciarUsuario.tsx
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
@@ -82,6 +83,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
         setModuloIdoso(false);
         setModuloPaliativo(false);
 
+        // Se o usuário não tem titular_id, usa informações diretas do user
         if (!user?.titular_id) {
             setRole(user.role || "");
             setStatus((user.status as StatusUsuario) || "ativo");
@@ -103,11 +105,16 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
             setEmail(titular.email || "");
             setFotoAtual(titular.imagem_url || null);
             setFotoPreview(titular.imagem_url || null);
+
+            // Preencher parceiroId caso exista no titular
+            if ((titular.parceiro_id)) {
+                setParceiroId(titular.parceiro_id);
+            }
         }
 
         setRole(user.role || "");
         setStatus((user.status as StatusUsuario) || "ativo");
-        setParceiroId(user.parceiro_id ?? "none");
+        setParceiroId(user.parceiro_id ?? parceiroId);
 
         const { data: modulos } = await supabase
             .from("titular_modulos")
@@ -145,13 +152,25 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
 
     async function salvar() {
         setLoading(true);
+
+        // Validação: se for parceiro_admin obrigar seleção de parceiro
+        if (role === "parceiro_admin" && (!parceiroId || parceiroId === "none")) {
+            toast({ title: "Erro", description: "Selecione a empresa parceira para o papel Parceiro Admin", variant: "destructive" });
+            setLoading(false);
+            return;
+        }
+
         try {
-            await supabase.from("usuarios_app").update({
+            // Atualiza usuários_app
+            const { error: uErr } = await supabase.from("usuarios_app").update({
                 role,
                 status,
                 parceiro_id: parceiroId === "none" ? null : parceiroId,
             }).eq("auth_id", user.auth_id);
 
+            if (uErr) throw uErr;
+
+            // Se houver titular, atualiza dados do titular (incluindo parceiro_id)
             if (user.titular_id) {
                 let fotoUrl = fotoAtual;
                 if (fotoFile) {
@@ -163,34 +182,46 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                     }
                 }
 
-                await supabase.from("titulares").update({
-                    nome, cpf: cpf.replace(/\D/g, ""), telefone, data_nascimento: dataNascimento, email, imagem_url: fotoUrl,
+                const { error: tErr } = await supabase.from("titulares").update({
+                    nome,
+                    cpf: cpf.replace(/\D/g, ""),
+                    telefone,
+                    data_nascimento: dataNascimento,
+                    email,
+                    imagem_url: fotoUrl,
                 }).eq("id", user.titular_id);
 
+                if (tErr) throw tErr;
+
+                // Atualiza módulos do titular
                 await supabase.from("titular_modulos").delete().eq("titular_id", user.titular_id);
                 const { data: todosModulos } = await supabase.from("modulos").select("id, nome");
                 if (todosModulos) {
-                    const inserts = [];
+                    const inserts: any[] = [];
                     if (moduloLegado) {
-                        const m = todosModulos.find(x => x.nome.toLowerCase().includes("legado"));
+                        const m = todosModulos.find((x: any) => x.nome.toLowerCase().includes("legado"));
                         if (m) inserts.push({ titular_id: user.titular_id, modulo_id: m.id, habilitado: true });
                     }
                     if (moduloIdoso) {
-                        const m = todosModulos.find(x => x.nome.toLowerCase().includes("idoso"));
+                        const m = todosModulos.find((x: any) => x.nome.toLowerCase().includes("idoso"));
                         if (m) inserts.push({ titular_id: user.titular_id, modulo_id: m.id, habilitado: true });
                     }
                     if (moduloPaliativo) {
-                        const m = todosModulos.find(x => x.nome.toLowerCase().includes("paliativo"));
+                        const m = todosModulos.find((x: any) => x.nome.toLowerCase().includes("paliativo"));
                         if (m) inserts.push({ titular_id: user.titular_id, modulo_id: m.id, habilitado: true });
                     }
-                    if (inserts.length > 0) await supabase.from("titular_modulos").insert(inserts);
+                    if (inserts.length > 0) {
+                        const { error: insErr } = await supabase.from("titular_modulos").insert(inserts);
+                        if (insErr) throw insErr;
+                    }
                 }
             }
+
             toast({ title: "✅ Sucesso", description: "Usuário atualizado." });
             refresh();
             onClose();
         } catch (e: any) {
-            toast({ title: "❌ Erro", description: e.message, variant: "destructive" });
+            toast({ title: "❌ Erro", description: e.message || "Erro ao salvar usuário", variant: "destructive" });
         } finally { setLoading(false); }
     }
 
@@ -280,7 +311,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                                         <div className="space-y-2">
                                             <Label>Papel (Role)</Label>
                                             <Select value={role} onValueChange={setRole}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectTrigger><SelectValue placeholder="Selecione um papel" /></SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="admin_master">🔑 Admin Master</SelectItem>
                                                     <SelectItem value="parceiro_admin">🏢 Parceiro Admin</SelectItem>
@@ -300,6 +331,28 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                                                     <SelectItem value="vitalicio">⭐ Vitalício</SelectItem>
                                                 </SelectContent>
                                             </Select>
+                                        </div>
+
+                                        {/* Novo: Seleção de Parceiro */}
+                                        <div className="space-y-2">
+                                            <Label>Empresa Parceira (atribuir)</Label>
+                                            <Select value={parceiroId} onValueChange={(v) => setParceiroId(v)}>
+                                                <SelectTrigger><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="none">— Nenhuma —</SelectItem>
+                                                    {parceiros.map(p => (
+                                                        <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {parceiroId !== "none" && (
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    Selecionado: {parceiros.find(p => p.id === parceiroId)?.nome ?? "—"}
+                                                </div>
+                                            )}
+                                            <div className="text-xs text-gray-400 mt-1">
+                                                Observação: selecione uma empresa parceira quando o usuário for um administrador de parceiro.
+                                            </div>
                                         </div>
                                     </div>
 

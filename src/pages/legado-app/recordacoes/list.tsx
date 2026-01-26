@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import {
     ArrowLeft,
+    ChevronLeft,
     Filter,
     QrCode,
     Trash2,
@@ -14,7 +15,6 @@ import {
     NotebookPen,
     Sparkles,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import QRCode from "react-qr-code";
 import "@/styles/legado-app.css";
 
@@ -123,37 +123,43 @@ export default function RecordacoesListPage() {
     }
 
     return (
-        <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-4 pb-20">
-            <div className="legado-form-card w-full max-w-md relative">
+        <div className="legado-app-wrapper min-h-screen pb-32 pt-4 px-4 overflow-x-hidden bg-gradient-to-b from-[#e6f4f1] to-white">
 
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-2 mt-2">
-                    <button
-                        type="button"
-                        onClick={() => navigate(-1)}
-                        className="text-[#5BA58C] hover:bg-[#def0e8] rounded-full p-2 transition"
-                        aria-label="Voltar"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
-                    <h2 className="text-lg sm:text-xl font-bold text-[#255f4f] text-center flex-1">
-                        Recordações de {dependenteNome ?? ""}
-                    </h2>
+            {/* Top Bar - Botão Voltar ao Menu de Módulos */}
+            <div className="w-full max-w-md mx-auto mb-6 flex items-center justify-between animate-in fade-in slide-in-from-top duration-500">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-2 text-[#255f4f] font-bold text-sm bg-white/60 backdrop-blur-sm px-3 py-2 rounded-xl hover:bg-white transition-all active:scale-95 shadow-sm"
+                    aria-label="Voltar"
+                >
+                    <ChevronLeft size={18} />
+                    Voltar
+                </button>
+                <div className="opacity-20">
+                    <Heart size={20} className="text-[#255f4f]" />
+                </div>
+            </div>
+
+            <div className="w-full max-w-md mx-auto space-y-6">
+
+                {/* Saudação */}
+                <div className="text-center space-y-1 animate-in fade-in duration-700">
+                    <div className="flex items-center justify-center gap-2 text-[#255f4f]">
+                        <Heart size={22} fill="#255f4f" className="opacity-20" />
+                        <h2 className="text-2xl font-bold tracking-tight">Recordações de {dependenteNome ?? ""}</h2>
+                    </div>
+                    <p className="text-base text-[#4f665a] opacity-80">Um espaço para celebrar memórias, mensagens e imagens que aquecem o coração.</p>
                 </div>
 
-                {/* Microcopy acolhedor */}
-                <p className="text-sm text-gray-600 text-center mb-3">
-                    Um espaço para celebrar memórias, mensagens e imagens que aquecem o coração.
-                </p>
-
                 {/* Filtro central */}
-                <div className="w-full flex justify-center">
+                <div className="w-full flex justify-center mb-1">
                     <button
-                        className="flex items-center justify-center gap-2 bg-[#eafcf9] border border-[#5BA58C] rounded-full py-2 px-4 font-semibold text-[#007080] mb-3"
-                        style={{ minWidth: 180 }}
+                        className="flex items-center justify-center gap-2 bg-[#eafcf9] border border-[#5BA58C] rounded-full py-2 px-4 font-semibold text-[#007080] shadow-md hover:shadow-lg transition-shadow duration-300"
+                        style={{ minWidth: 160 }}
                         onClick={() =>
                             setFiltro((prev) => (prev === "todos" ? "7dias" : prev === "7dias" ? "30dias" : "todos"))
                         }
+                        aria-label="Filtrar recordações"
                     >
                         <Filter size={18} />
                         {filtroLabel()}
@@ -161,45 +167,67 @@ export default function RecordacoesListPage() {
                 </div>
 
                 {/* Lista / Estados */}
-                <div className="overflow-y-auto" style={{ maxHeight: "calc(80vh - 90px)", paddingBottom: 0 }}>
+                <div className="overflow-y-auto px-2" style={{ maxHeight: "calc(75vh - 120px)", paddingBottom: 0 }}>
                     {loading ? (
-                        <div className="space-y-3">
+                        <div className="space-y-4 px-4">
                             {[1, 2, 3].map((i) => (
-                                <div key={i} className="skeleton-card" />
+                                <div key={i} className="skeleton-card animate-pulse rounded-lg h-24" />
                             ))}
                         </div>
                     ) : recordacoes.length === 0 ? (
-                        <div className="text-center my-10 text-[#555]">
-                            <p className="font-semibold">Ainda não há recordações por aqui.</p>
+                        <div className="text-center my-16 text-[#555] px-4">
+                            <p className="font-semibold text-lg">Ainda não há recordações por aqui.</p>
                             <p className="text-sm mt-1">Convide alguém especial para deixar uma lembrança.</p>
                         </div>
                     ) : (
                         recordacoes.map((item) => {
-                            const [texto, autor] = item.mensagem?.split("\n\n– ") ?? ["", "Anônimo"];
+                            const [texto, autor] = item.mensagem?.split("\n\n– ") ?? [item.mensagem ?? "", "Anônimo"];
                             return (
-                                <div key={item.id} className="legado-recordacao-card">
-                                    <div className="top-row">
-                                        <span className="autor flex items-center gap-2">
-                                            <User size={22} className="text-[#255f4f]" />
-                                            {autor || "Anônimo"}
-                                        </span>
-                                        <button className="delete-btn" onClick={() => excluirRecordacao(item.id)} aria-label="Excluir">
-                                            <Trash2 size={18} />
-                                        </button>
+                                <div
+                                    key={item.id}
+                                    className="bg-white/90 border border-[#e6f4f1] rounded-2xl p-4 mb-4 shadow-sm hover:shadow-md transition-all legado-recordacao-card"
+                                    tabIndex={0}
+                                    role="button"
+                                    aria-label={`Recordação de ${autor || "Anônimo"}`}
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-[#f0fbf8] flex items-center justify-center text-[#255f4f]">
+                                                <User size={18} />
+                                            </div>
+                                            <div>
+                                                <div className="font-semibold text-[#255f4f]">{autor || "Anônimo"}</div>
+                                                <div className="text-sm text-[#6b6b6b] mt-1 whitespace-pre-wrap">{(texto || "").trim()}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col items-end gap-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    excluirRecordacao(item.id);
+                                                }}
+                                                className="text-[#c33] bg-white/50 hover:bg-[#fff0f0] p-2 rounded-md"
+                                                aria-label="Excluir recordação"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="msg">{(texto || "").trim()}</div>
+
                                     {item.imagem_url && (
-                                        <div className="mb-2 flex justify-center">
+                                        <div className="mt-3 flex justify-center">
                                             <img
                                                 src={item.imagem_url}
                                                 alt="Imagem recordação"
-                                                className="rounded-lg max-h-48 cursor-pointer"
+                                                className="rounded-lg max-h-56 w-auto object-contain shadow-md cursor-zoom-in border border-white"
+                                                loading="lazy"
                                                 onClick={() => setImagemExpandida(item.imagem_url!)}
-                                                style={{ objectFit: "contain" }}
                                             />
                                         </div>
                                     )}
-                                    <div className="date">Enviado em: {formatarData(item.created_at)}</div>
+
+                                    <div className="text-sm text-[#4f665a] text-right italic select-none mt-3">Enviado em: {formatarData(item.created_at)}</div>
                                 </div>
                             );
                         })
@@ -207,27 +235,31 @@ export default function RecordacoesListPage() {
                 </div>
 
                 {/* Ações */}
-                <div className="pt-2 p-4 flex flex-col items-center gap-2 w-full">
+                <div className="pt-2 px-2 flex flex-col items-center gap-3 w-full">
                     <button
-                        className="bg-[#FFADB2] px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2 mb-1 w-4/5 text-base"
+                        className="bg-[#FFADB2] px-5 py-3 rounded-xl font-extrabold flex items-center justify-center gap-3 w-full max-w-md text-base shadow-lg hover:shadow-xl transition"
                         onClick={() => navigate("/legado-app/parcerias/acalme-coracao")}
+                        aria-label="Acalme seu coração"
                     >
-                        <HeartHandshake className="text-[#b22222]" size={18} />
+                        <HeartHandshake className="text-[#b22222]" size={20} />
                         Acalme seu coração
                     </button>
-                    <div className="flex gap-2 w-full justify-center px-4">
+
+                    <div className="flex gap-3 w-full max-w-md justify-center px-2">
                         <button
-                            className="bg-[#D1F2EB] flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[#007080] font-bold shadow text-[15px]"
+                            className="bg-[#D1F2EB] flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-[#007080] font-extrabold shadow-md hover:shadow-lg transition"
                             onClick={() => setQrVisible(true)}
+                            aria-label="Mostrar QR Code"
                         >
-                            <QrCode size={18} />
+                            <QrCode size={20} />
                             QR Code
                         </button>
                         <button
-                            className="bg-[#5BA58C] flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-bold shadow text-[15px]"
+                            className="bg-[#5BA58C] flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-extrabold shadow-md hover:shadow-lg transition"
                             onClick={() => navigate(`/legado-app/recordacoes/nova/${dependenteId}`)}
+                            aria-label="Adicionar recordação"
                         >
-                            <PlusCircle size={18} />
+                            <PlusCircle size={20} />
                             Adicionar
                         </button>
                     </div>
@@ -236,13 +268,16 @@ export default function RecordacoesListPage() {
                 {/* Preview imagem expandida */}
                 {imagemExpandida && (
                     <div
-                        className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+                        className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
                         onClick={() => setImagemExpandida(null)}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Visualização da imagem ampliada"
                     >
                         <img
                             src={imagemExpandida}
                             alt="Preview"
-                            className="max-h-[80vh] max-w-[90vw] rounded-2xl border-4 border-white"
+                            className="max-h-[80vh] max-w-[90vw] rounded-2xl border-4 border-white shadow-lg"
                             onClick={(e) => e.stopPropagation()}
                         />
                     </div>
@@ -251,14 +286,25 @@ export default function RecordacoesListPage() {
                 {/* Modal QR Code */}
                 {qrVisible && (
                     <div
-                        className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+                        className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
                         onClick={() => setQrVisible(false)}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="QR Code para compartilhamento"
                     >
-                        <div className="bg-white rounded-xl p-8 flex flex-col items-center relative" onClick={(e) => e.stopPropagation()}>
-                            <div className="text-lg font-bold text-[#007080] mb-3">Compartilhe uma recordação 💙</div>
-                            {qrLink && <QRCode value={qrLink} style={{ width: 180, height: 180 }} />}
+                        <div
+                            className="bg-white rounded-xl p-6 flex flex-col items-center relative shadow-lg max-w-xs w-full animate-in zoom-in-95 duration-200"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h3 className="text-lg font-bold text-[#007080] mb-3 text-center">Compartilhe uma recordação 💙</h3>
+                            {qrLink && <QRCode value={qrLink} style={{ width: 160, height: 160 }} />}
                             {qrLink && (
-                                <a href={qrLink} target="_blank" rel="noopener noreferrer" className="block text-[#007080] underline mt-4">
+                                <a
+                                    href={qrLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block text-[#007080] underline mt-3 break-words text-center text-sm"
+                                >
                                     {qrLink}
                                 </a>
                             )}
@@ -266,7 +312,7 @@ export default function RecordacoesListPage() {
                                 className="absolute top-2 right-2 text-lg text-[#007080]"
                                 style={{ background: "none", border: "none", cursor: "pointer" }}
                                 onClick={() => setQrVisible(false)}
-                                aria-label="Fechar"
+                                aria-label="Fechar modal QR Code"
                             >
                                 ×
                             </button>
@@ -276,32 +322,37 @@ export default function RecordacoesListPage() {
 
                 {/* Alerta */}
                 {alerta && (
-                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#dc3545] text-white py-2 px-6 rounded-lg shadow-xl z-50 font-bold">
+                    <div
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#dc3545] text-white py-2 px-6 rounded-lg shadow-xl z-50 font-bold flex items-center gap-4"
+                        role="alert"
+                        aria-live="assertive"
+                    >
                         {alerta}
                         <button
-                            style={{ marginLeft: 8, background: "none", border: "none", color: "#fff", fontWeight: 700, cursor: "pointer" }}
                             onClick={() => setAlerta(null)}
                             aria-label="Fechar alerta"
+                            className="text-white font-bold text-xl leading-none focus:outline-none"
                         >
-                            x
+                            ×
                         </button>
                     </div>
                 )}
             </div>
 
-            {/* Bottom nav */}
             <nav
-                className="fixed bottom-3 left-0 right-0 mx-auto max-w-md bg-white/90 backdrop-blur border rounded-xl shadow-sm px-3 py-2 flex items-center justify-around"
-                style={{ zIndex: 40 }}
+                className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-md bg-white/95 backdrop-blur-md border border-[#d8e8e0] rounded-2xl shadow-2xl px-6 py-3.5 flex items-center justify-between z-50 animate-in slide-in-from-bottom duration-500"
             >
-                <button className="text-[#255f4f] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/menu")}>
-                    <Heart size={18} /> Menu
+                <button onClick={() => navigate("/legado-app/menu")} className="flex flex-col items-center gap-1 text-[#255f4f] group">
+                    <Heart size={22} className="group-active:scale-125 transition-transform" />
+                    <span className="text-[11px] font-bold uppercase tracking-tighter">Menu</span>
                 </button>
-                <button className="text-[#6c63ff] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/diario")}>
-                    <NotebookPen size={18} /> Diário
+                <button onClick={() => navigate("/legado-app/diario")} className="flex flex-col items-center gap-1 text-[#6c63ff] group">
+                    <NotebookPen size={22} className="group-active:scale-125 transition-transform" />
+                    <span className="text-[11px] font-bold uppercase tracking-tighter">Diário</span>
                 </button>
-                <button className="text-[#ff9a56] flex flex-col items-center text-xs" onClick={() => navigate("/legado-app/exercicios")}>
-                    <Sparkles size={18} /> Exercícios
+                <button onClick={() => navigate("/legado-app/exercicios")} className="flex flex-col items-center gap-1 text-[#ff9a56] group">
+                    <Sparkles size={22} className="group-active:scale-125 transition-transform" />
+                    <span className="text-[11px] font-bold uppercase tracking-tighter">Exercícios</span>
                 </button>
             </nav>
         </div>

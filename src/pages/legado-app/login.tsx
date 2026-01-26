@@ -118,7 +118,7 @@ export default function LoginPage() {
         if (profile.role === "admin_master") {
           navigate("/admin", { replace: true });
         } else if (profile.role === "parceiro_admin") {
-          navigate("/parceiro", { replace: true });
+          navigate("/admin-parceiro", { replace: true });
         } else {
           // titular ou familiar
           navigate("/legado-app/selecao-modulos", { replace: true });

@@ -1,12 +1,12 @@
 // src/pages/legado-app/dependentes/editar.tsx
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import InputMask from "react-input-mask";
 import { supabase } from "../../../lib/supabaseClient";
 import { validarCPF } from "../../../utils/validarCPF";
 import { isValidDateBR } from '../../../utils/formatDateToBR';
-import { UserCircle, ArrowLeft, CheckCircle, KeyRound } from "lucide-react";
+import { ArrowLeft, CheckCircle, Camera, Image as ImageIcon, Plus } from "lucide-react";
 import "@/styles/legado-app.css";
 
 export default function EditarDependentePage() {
@@ -20,6 +20,7 @@ export default function EditarDependentePage() {
     const [dataNascimento, setDataNascimento] = useState("");
     const [imagem, setImagem] = useState<File | null>(null);
     const [imagemAtual, setImagemAtual] = useState<string | null>(null);
+    const [imagemPreview, setImagemPreview] = useState<string | null>(null);
 
     // Usuário mestre (admin dependente)
     const [isMaster, setIsMaster] = useState(false);
@@ -29,7 +30,6 @@ export default function EditarDependentePage() {
 
     // Alerta
     const [alerta, setAlerta] = useState("");
-    const [showAlert, setShowAlert] = useState(false);
 
     // Carregar dependente
     useEffect(() => {
@@ -42,30 +42,36 @@ export default function EditarDependentePage() {
                 .single();
 
             if (error || !data) {
-                showError("Erro ao carregar dados.");
+                setAlerta("Erro ao carregar dados.");
                 return;
             }
             setNome(data.nome);
             setTelefone(data.telefone ?? "");
-            setDataNascimento(data.data_nascimento ?? "");
+            
+            // Formatar data de nascimento para DD/MM/AAAA
+            if (data.data_nascimento) {
+                const [y, m, d] = data.data_nascimento.split("-");
+                setDataNascimento(`${d}/${m}/${y}`);
+            }
+            
             setImagemAtual(data.imagem_url || null);
             setCpf(data.cpf || "");
             setIsMaster(data.usuario_mestre || false);
             setEmail(data.email || "");
         })();
-        // eslint-disable-next-line
     }, [id]);
 
-    function showError(msg: string) {
-        setAlerta(msg);
-        setShowAlert(true);
-        setTimeout(() => setShowAlert(false), 2500);
-    }
-
     // Upload imagem
-    async function handleImagem(event: React.ChangeEvent<HTMLInputElement>) {
-        const file = event.target.files?.[0];
-        if (file) setImagem(file);
+    function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 1024 * 1024) {
+                setAlerta("Selecione uma imagem com menos de 1MB.");
+                return;
+            }
+            setImagem(file);
+            setImagemPreview(URL.createObjectURL(file));
+        }
     }
 
     // Salvar
@@ -73,17 +79,18 @@ export default function EditarDependentePage() {
         e.preventDefault();
 
         if (!nome || !telefone || !dataNascimento) {
-            showError("Preencha todos os campos obrigatórios.");
-            return;
-        }
-        if (!validarCPF(cpf)) {
-            showError("CPF inválido.");
+            setAlerta("Preencha todos os campos obrigatórios.");
             return;
         }
 
         if (!isValidDateBR(dataNascimento)) {
-            showError('Data de nascimento inválida!')
-            return
+            setAlerta('Data de nascimento inválida!');
+            return;
+        }
+
+        if (cpf && !validarCPF(cpf)) {
+            setAlerta("CPF inválido.");
+            return;
         }
 
         setLoading(true);
@@ -93,10 +100,10 @@ export default function EditarDependentePage() {
 
             if (imagem && id) {
                 const fileExt = imagem.name.split(".").pop();
-                const fileName = `dependente-${id}.${fileExt}`;
-                const filePath = `dependentes/${fileName}`;
+                const fileName = `dependente_${id}_${Date.now()}.${fileExt}`;
+                const filePath = `perfil/${fileName}`;
 
-                // Upload no bucket (ex: 'public')
+                // Upload no bucket
                 const { error: uploadError } = await supabase.storage
                     .from("dependentes")
                     .upload(filePath, imagem, { upsert: true });
@@ -106,18 +113,20 @@ export default function EditarDependentePage() {
                 // Obter URL pública
                 const { data: urlData } = supabase.storage.from("dependentes").getPublicUrl(filePath);
                 imagemUrl = urlData.publicUrl;
-                setImagemAtual(imagemUrl);
             }
 
-            // Atualiza dados no banco com a URL da imagem atualizada
+            // Converte data para formato ISO
+            const [d, m, y] = dataNascimento.split("/");
+            const dataISO = `${y}-${m}-${d}`;
 
+            // Atualiza dados no banco
             const { error: updateError } = await supabase
                 .from("dependentes")
                 .update({
                     nome,
                     telefone,
-                    cpf,
-                    data_nascimento: dataNascimento,
+                    cpf: cpf || null,
+                    data_nascimento: dataISO,
                     usuario_mestre: isMaster,
                     email: isMaster ? email : null,
                     imagem_url: imagemUrl,
@@ -127,164 +136,167 @@ export default function EditarDependentePage() {
             if (updateError) throw updateError;
 
             setAlerta("Dados salvos com sucesso!");
-            setShowAlert(true);
             setTimeout(() => navigate(-1), 1600);
 
         } catch (error: any) {
-            showError("Erro ao salvar alterações: " + error.message);
+            setAlerta("Erro ao salvar alterações: " + error.message);
         } finally {
             setLoading(false);
         }
     }
 
     return (
-        <div className="legado-app-wrapper flex items-center justify-center min-h-screen px-4">
-            <form className="legado-form-card w-full max-w-md" onSubmit={handleSalvar} autoComplete="off">
-                {/* Header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 24 }}>
-                    <button onClick={() => navigate(-1)} className="legado-icon-button">
-                        <ArrowLeft />
+        <div className="legado-app-wrapper min-h-screen flex items-center justify-center px-4 py-8">
+            <div className="w-full max-w-md space-y-6">
+                
+                {/* Top Bar - Botão Voltar */}
+                <div className="flex items-center justify-between animate-in fade-in slide-in-from-top duration-500">
+                    <button 
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-1.5 text-[#255f4f] font-bold text-sm bg-white/50 backdrop-blur-sm px-3 py-2 rounded-xl hover:bg-white transition-all active:scale-95 shadow-sm"
+                    >
+                        <ArrowLeft size={18} />
+                        Voltar
                     </button>
-                    <h2 className="text-xl font-bold" style={{ color: "#356c6f", margin: 0 }}>
-                        Editar Dependente
-                    </h2>
-                </div>
-
-                {/* Avatar */}
-                <div style={{ textAlign: "center", marginBottom: 12 }}>
-                    {imagem ? (
-                        <img
-                            src={URL.createObjectURL(imagem)}
-                            alt="Preview"
-                            className="mx-auto w-24 h-24 rounded-full object-cover border-2 border-[#5ba58c]"
-                            style={{ marginBottom: 8 }}
-                        />
-                    ) : imagemAtual ? (
-                        <img
-                            src={imagemAtual}
-                            alt="Dependente"
-                            className="mx-auto w-24 h-24 rounded-full object-cover border-2 border-[#5ba58c]"
-                            style={{ marginBottom: 8 }}
-                        />
-                    ) : (
-                        <UserCircle size={96} className="mx-auto mb-2 text-gray-300" />
-                    )}
-                    <label
-                        className="block legado-button"
-                        style={{
-                            background: "#f1faf5",
-                            color: "#5ba58c",
-                            minWidth: 180,
-                            fontWeight: 600,
-                            margin: "0 auto",
-                            cursor: "pointer"
-                        }}
-                    >
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImagem}
-                            style={{ display: "none" }}
-                        />
-                        Selecionar imagem
-                    </label>
-                </div>
-
-                {/* Form */}
-                <label className="legado-form-label">Nome:</label>
-                <input className="legado-input" value={nome} onChange={e => setNome(e.target.value)} />
-
-                <label className="legado-form-label">Telefone:</label>
-                <InputMask
-                    mask="(99) 99999-9999"
-                    value={telefone}
-                    onChange={e => setTelefone(e.target.value)}
-                >
-                    {(inputProps: any) => <input {...inputProps} className="legado-input" />}
-                </InputMask>
-
-                <label className="legado-form-label">CPF:</label>
-                <InputMask
-                    mask="999.999.999-99"
-                    value={cpf}
-                    onChange={e => setCpf(e.target.value)}
-                >
-                    {(inputProps: any) => <input {...inputProps} className="legado-input" />}
-                </InputMask>
-
-                <label className="legado-form-label">Data de Nascimento:</label>
-                <InputMask
-                    mask="99/99/9999"
-                    value={dataNascimento}
-                    onChange={e => setDataNascimento(e.target.value)}
-                    placeholder="DD/MM/AAAA"
-                >
-                    {(inputProps: any) => <input {...inputProps} className="legado-input" />}
-                </InputMask>
-
-                {/* Checkbox Usuário Mestre */}
-                {/* <div className="legado-checkbox" style={{ margin: "14px 0 8px 0" }}>
-                    <input
-                        type="checkbox"
-                        checked={isMaster}
-                        id="isMaster"
-                        onChange={() => setIsMaster(!isMaster)}
-                    />
-                    <label htmlFor="isMaster" style={{ fontWeight: 600, color: "#5ba58c", cursor: "pointer" }}>
-                        Transformar em usuário mestre
-                    </label>
-                </div>
-
-                {isMaster && (
-                    <>
-                        <label className="legado-form-label">E-mail:</label>
-                        <input
-                            className="legado-input"
-                            type="email"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                        />
-
-                        <label className="legado-form-label">Senha:</label>
-                        <input
-                            className="legado-input"
-                            type="password"
-                            value={senha}
-                            onChange={e => setSenha(e.target.value)}
-                        />
-                    </>
-                )} */}
-
-                <button
-                    className="legado-button w-full"
-                    type="submit"
-                    style={{ marginTop: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
-                    disabled={loading}
-                >
-                    {loading
-                        ? <span className="loader" style={{ width: 18, height: 18 }} />
-                        : (<>
-                            <CheckCircle size={18} className="mr-2" />
-                            Salvar Alterações
-                        </>)
-                    }
-                </button>
-
-                {/* ALERTA */}
-                {showAlert && (
-                    <div
-                        className="legado-alert"
-                        style={{
-                            marginTop: 14,
-                            backgroundColor: alerta.includes("sucesso") ? "#d1f2eb" : "#f8d7da",
-                            color: alerta.includes("sucesso") ? "#256e5c" : "#842029",
-                            border: `1px solid ${alerta.includes("sucesso") ? "#b8ebe0" : "#f5c2c7"}`
-                        }}
-                    >
-                        {alerta}
+                    <div className="opacity-20">
+                        <CheckCircle size={20} className="text-[#255f4f]" />
                     </div>
-                )}
-            </form>
+                </div>
+                
+                {/* Título */}
+                <div className="text-center space-y-1 animate-in fade-in duration-700">
+                    <h2 className="text-2xl font-bold tracking-tight text-[#255f4f]">Editar Dependente</h2>
+                    <p className="text-base text-[#4f665a] opacity-80">Atualize as informações da pessoa</p>
+                </div>
+
+                {/* Form Card */}
+                <form
+                    className="bg-white rounded-2xl p-6 shadow-lg border border-[#def0e8] animate-in zoom-in-95 duration-300 space-y-5"
+                    onSubmit={handleSalvar}
+                    autoComplete="off"
+                >
+                    {/* Imagem de perfil */}
+                    <div className="flex flex-col items-center pb-4 border-b border-[#def0e8]">
+                        <div className="relative group mb-4">
+                            <label htmlFor="fileInput" className="cursor-pointer">
+                                {imagemPreview ? (
+                                    <img
+                                        src={imagemPreview}
+                                        alt="Preview"
+                                        className="rounded-full w-28 h-28 object-cover border-4 border-[#5BA58C] shadow-lg group-hover:opacity-90 transition-all"
+                                    />
+                                ) : imagemAtual ? (
+                                    <img
+                                        src={imagemAtual}
+                                        alt="Dependente"
+                                        className="rounded-full w-28 h-28 object-cover border-4 border-[#5BA58C] shadow-lg group-hover:opacity-90 transition-all"
+                                    />
+                                ) : (
+                                    <div className="bg-gradient-to-br from-[#f5fbf9] to-[#e0f0ec] rounded-full w-28 h-28 flex items-center justify-center border-4 border-[#5BA58C] shadow-lg group-hover:scale-105 transition-all">
+                                        <Camera size={40} className="text-[#5BA58C]" />
+                                    </div>
+                                )}
+                                <input
+                                    id="fileInput"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleImageChange}
+                                />
+                            </label>
+                            {/* Badge de edição */}
+                            <div className="absolute bottom-1 right-1 bg-[#5BA58C] p-2 rounded-full border-3 border-white shadow-md group-hover:scale-110 transition-transform">
+                                <Camera size={16} className="text-white" />
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 px-5 py-2 rounded-xl text-[#007080] bg-[#d1f2eb] font-bold text-sm hover:bg-[#b8ebe0] transition-all active:scale-95 shadow-sm"
+                            onClick={() => document.getElementById("fileInput")?.click()}
+                        >
+                            <ImageIcon size={18} />
+                            Alterar foto
+                        </button>
+                    </div>
+
+                    {/* Campos */}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="legado-form-label text-base">Nome completo *</label>
+                            <input
+                                className="legado-input text-base"
+                                value={nome}
+                                onChange={(e) => setNome(e.target.value)}
+                                placeholder="Digite o nome"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="legado-form-label text-base">Telefone *</label>
+                            <InputMask
+                                className="legado-input text-base"
+                                value={telefone}
+                                onChange={(e) => setTelefone(e.target.value)}
+                                mask="(99) 99999-9999"
+                                placeholder="(99) 99999-9999"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="legado-form-label text-base">CPF (opcional)</label>
+                            <InputMask
+                                className="legado-input text-base"
+                                value={cpf}
+                                onChange={(e) => setCpf(e.target.value)}
+                                mask="999.999.999-99"
+                                placeholder="999.999.999-99"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="legado-form-label text-base">Data de nascimento *</label>
+                            <InputMask
+                                className="legado-input text-base"
+                                value={dataNascimento}
+                                onChange={(e) => setDataNascimento(e.target.value)}
+                                mask="99/99/9999"
+                                placeholder="DD/MM/AAAA"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Botão de submit */}
+                    <button
+                        type="submit"
+                        className="legado-button w-full flex items-center justify-center gap-2 mt-6 text-base py-3.5 shadow-lg hover:shadow-xl transition-all"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                                Salvando...
+                            </>
+                        ) : (
+                            <>
+                                <CheckCircle size={20} /> Salvar Alterações
+                            </>
+                        )}
+                    </button>
+
+                    {/* Alerta */}
+                    {alerta && (
+                        <div
+                            className={`p-4 rounded-xl font-semibold text-sm text-center animate-in slide-in-from-top duration-300 ${
+                                alerta.toLowerCase().includes("sucesso") || alerta.toLowerCase().includes("salvos")
+                                    ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-200"
+                                    : "bg-red-50 text-red-700 border-2 border-red-200"
+                            }`}
+                        >
+                            {alerta}
+                        </div>
+                    )}
+                </form>
+            </div>
         </div>
     );
 }

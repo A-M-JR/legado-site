@@ -12,7 +12,11 @@ interface UserProfile {
 
 let isLoggingIn = false;
 
-export default function PrivateRoute() {
+interface PrivateRouteProps {
+    allowedRoles?: string[];
+}
+
+export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
     const [loading, setLoading] = useState(true);
     const [isAuth, setIsAuth] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -33,7 +37,7 @@ export default function PrivateRoute() {
 
                 setIsAuth(true);
 
-                // 🔧 BUSCAR PERFIL DO USUÁRIO
+                // buscar perfil do usuário
                 const { data: profile, error } = await supabase
                     .from("usuarios_app")
                     .select("role, parceiro_id, titular_id, status")
@@ -49,7 +53,13 @@ export default function PrivateRoute() {
 
                 setUserProfile(profile);
 
-                // 🔧 BUSCAR CONFIGURAÇÃO DO SISTEMA (MANUTENÇÃO)
+                // Se allowedRoles foi passado, checar permissão imediatamente
+                if (allowedRoles && Array.isArray(allowedRoles) && !allowedRoles.includes(profile.role)) {
+                    setLoading(false);
+                    return navigate("/bloqueado", { replace: true, state: { status: "bloqueado" } });
+                }
+
+                // buscar configuração do sistema (manutenção)
                 const { data: configData } = await supabase
                     .from("config_sistema")
                     .select("manutencao_ativa")
@@ -60,7 +70,7 @@ export default function PrivateRoute() {
                     setSystemInMaintenance(true);
                 }
 
-                // 🔥 LOG DE ACESSO
+                // log de acesso (uma vez por sessão)
                 const logKey = `log_${user.id}`;
                 const logRegistrado = sessionStorage.getItem(logKey);
 
@@ -76,7 +86,7 @@ export default function PrivateRoute() {
                     isLoggingIn = false;
                 }
 
-                // 🔒 VERIFICAR STATUS DA CONTA
+                // verificar status da conta
                 if (profile.status !== "ativo" && profile.status !== "vitalicio") {
                     setLoading(false);
                     return;
@@ -84,21 +94,32 @@ export default function PrivateRoute() {
 
                 const path = location.pathname;
 
+                // DEBUG (remove se quiser)
+                // console.log("allowedRoles:", allowedRoles);
+                // console.log("profile.role:", profile.role);
+                // console.log("path:", path);
+
                 // -------------------------------------
-                // 🔐 BLOQUEIOS DE SEGURANÇA
+                // 🔐 BLOQUEIOS DE SEGURANÇA (corrigidos)
+                // - primeiro tratamos o caso do painel do parceiro (/admin-parceiro ou /parceiro)
+                // - NÃO deixar a checagem genérica de "/admin" bloquear o "/admin-parceiro"
                 // -------------------------------------
 
-                if (path.startsWith("/admin") && profile.role !== "admin_master") {
+                // Se o caminho for de painel parceiro, só parceiro_admin pode acessar
+                if ((path.startsWith("/parceiro") || path.startsWith("/admin-parceiro")) && profile.role !== "parceiro_admin") {
                     return navigate("/bloqueado", { replace: true, state: { status: "bloqueado" } });
                 }
 
-                if (path.startsWith("/parceiro") && profile.role !== "parceiro_admin") {
+                // Se o caminho for admin "master" (rota /admin ou /admin/...), apenas admin_master
+                // IMPORTANTE: impedir que /admin-parceiro entre aqui, por isso checamos NOT startsWith /admin-parceiro
+                if (path.startsWith("/admin") && !path.startsWith("/admin-parceiro") && profile.role !== "admin_master") {
                     return navigate("/bloqueado", { replace: true, state: { status: "bloqueado" } });
                 }
 
+                // Titular/familiar não podem acessar rotas administrativas
                 if (
                     (profile.role === "titular" || profile.role === "familiar") &&
-                    (path.startsWith("/admin") || path.startsWith("/parceiro"))
+                    (path.startsWith("/admin") || path.startsWith("/parceiro") || path.startsWith("/admin-parceiro"))
                 ) {
                     return navigate("/bloqueado", { replace: true, state: { status: "bloqueado" } });
                 }
@@ -107,15 +128,17 @@ export default function PrivateRoute() {
                 // 🎯 REDIRECIONAMENTO INTELIGENTE
                 // -------------------------------------
 
+                // admin master -> /admin
                 if (profile.role === "admin_master" && !path.startsWith("/admin")) {
                     return navigate("/admin", { replace: true });
                 }
 
-                if (profile.role === "parceiro_admin" && !path.startsWith("/parceiro")) {
-                    return navigate("/parceiro", { replace: true });
+                // parceiro -> /admin-parceiro (padronizado)
+                if (profile.role === "parceiro_admin" && !path.startsWith("/admin-parceiro") && !path.startsWith("/parceiro")) {
+                    return navigate("/admin-parceiro", { replace: true });
                 }
 
-                // 🔥 TITULAR/FAMILIAR: Redireciona apenas no primeiro acesso
+                // titular/familiar -> lógica de seleção de módulos
                 if (
                     (profile.role === "titular" || profile.role === "familiar") &&
                     (path === "/" || path === "/legado-app")
@@ -164,9 +187,9 @@ export default function PrivateRoute() {
         return () => {
             authListener?.subscription.unsubscribe();
         };
-    }, [navigate, location.pathname]);
+    }, [navigate, location.pathname, allowedRoles]);
 
-    // 🎨 LOADING
+    // loading UI
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-legado-primary/5 via-white to-legado-primary/10">
@@ -178,17 +201,17 @@ export default function PrivateRoute() {
         );
     }
 
-    // 🔒 NÃO AUTENTICADO
+    // não autenticado
     if (!isAuth) {
         return <Navigate to="/legado-app/login" replace />;
     }
 
-    // 🔒 BLOQUEIO POR MANUTENÇÃO (exceto admin_master)
+    // manutenção
     if (systemInMaintenance && userProfile?.role !== "admin_master") {
         return <Navigate to="/bloqueado" replace state={{ status: "manutencao" }} />;
     }
 
-    // 🔒 BLOQUEIO POR STATUS DA CONTA
+    // status da conta
     if (userProfile && userProfile.status !== "ativo" && userProfile.status !== "vitalicio") {
         return <Navigate to="/bloqueado" replace state={{ status: userProfile.status }} />;
     }

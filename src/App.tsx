@@ -31,13 +31,21 @@ import { Toaster } from "@/components/ui/toaster";
 // NOVAS PÁGINAS
 import SelecaoModulosPage from './pages/legado-app/selecao-modulos/page'
 import AdminLayout from './admin/AdminLayout'
-import ParceiroDashboard from './admin/parceiro/dashboard'
 import PrivateRoute from './components/PrivateRoute'
 import ParceirosPage from './admin/parceiro/ParceirosPage'
 import TitularesPage from './admin/titulares/TitularesPage'
 import BloqueadoPage from './BloqueadoPage'
 import AdminDashboard from './admin/AdminDashboard'
 import ConfiguracoesPage from './admin/configuracoes/page'
+import AdminParceiroDashboard from './admin-parceiro/dashboard'
+import ParceiroLayout from './admin-parceiro/ParceiroLayout'
+import MelhorIdadeLayout from './admin/melhor-idade/MelhorIdadeLayout'
+import DashboardMelhorIdade from './admin/melhor-idade/pages/DashboardMelhorIdade'
+import SaudePage from './admin/melhor-idade/pages/SaudePage'
+import AgendaPage from './admin/melhor-idade/pages/AgendaPage'
+import DiarioPage from './admin/melhor-idade/pages/DiarioPage'
+import EquipePage from './admin/melhor-idade/pages/EquipePage'
+import ReceitasPage from './admin/melhor-idade/pages/ReceitasPage'
 
 export default function App() {
   return (
@@ -76,8 +84,11 @@ export default function App() {
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
           </Route>
 
-          {/* Painel do Parceiro */}
-          <Route path="/parceiro" element={<ParceiroDashboard />} />
+          {/* Painel Parceiro Admin */}
+          <Route path="/admin-parceiro" element={<ParceiroLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminParceiroDashboard />} />
+          </Route>
 
           {/* Rotas do Legado */}
           <Route path="/legado-app/menu" element={<MenuPage />} />
@@ -93,6 +104,16 @@ export default function App() {
           <Route path="/legado-app/exercicios/:id" element={<ExercicioDetailPage />} />
           <Route path="/legado-app/exercicios" element={<ExerciciosListPage />} />
           <Route path="/legado-app/exercicios/historico" element={<ExerciciosHistoricoPage />} />
+
+          {/* Rotas do Melhor Idade */}
+          <Route path="/melhor-idade" element={<MelhorIdadeLayout />}>
+            <Route index element={<DashboardMelhorIdade />} />
+            <Route path="saude" element={<SaudePage />} />
+            <Route path="agenda" element={<AgendaPage />} />
+            <Route path="diario" element={<DiarioPage />} />
+            <Route path="equipe" element={<EquipePage />} />
+            <Route path="receitas" element={<ReceitasPage />} />
+          </Route>
         </Route>
       </Routes>
 
