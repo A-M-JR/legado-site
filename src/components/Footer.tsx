@@ -1,88 +1,113 @@
-import React from 'react'
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from 'react-icons/fa'
-import logo from '../assets/Legado - Branco.png'
+import React from 'react';
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
+import { LogIn, ShieldCheck, FileText, HelpCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import logo from '../assets/Legado - Branco.png';
 
 export default function Footer() {
+  const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="bg-[#242321] text-white">
-      <div className="container mx-auto px-6 lg:px-14 py-14 grid grid-cols-1 md:grid-cols-4 gap-10 items-start">
-        {/* Logo e frase */}
-        <div className="flex flex-col gap-5">
-          <img src={logo} alt="Legado Logo" />
-          <p className="text-sm text-white/80 leading-relaxed">
-            Transformamos memórias em legados digitais que conectam gerações e amenizam a dor da perda.
-          </p>
-          <div className="flex space-x-3 mt-2">
-            {[FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="p-2 bg-white/10 rounded-full hover:bg-[#5ba58c] transition-colors"
-                aria-label="Rede social"
+    <footer className="bg-[#1a1a1a] text-white">
+      <div className="container mx-auto px-6 lg:px-14 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 items-start">
+
+          {/* Coluna 1: Branding e Social */}
+          <div className="flex flex-col gap-6">
+            <img src={logo} alt="Legado Logo" className="h-12 w-auto object-contain self-start" />
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Transformamos memórias em <strong>legados digitais</strong> que conectam gerações e oferecem acolhimento nos momentos de saudade.
+            </p>
+            <div className="flex space-x-4">
+              {[
+                { Icon: FaFacebookF, href: "#", label: "Facebook" },
+                { Icon: FaInstagram, href: "#", label: "Instagram" },
+                { Icon: FaTwitter, href: "#", label: "Twitter" },
+                { Icon: FaLinkedinIn, href: "#", label: "LinkedIn" }
+              ].map(({ Icon, href, label }, i) => (
+                <a
+                  key={i}
+                  href={href}
+                  className="p-2.5 bg-white/5 rounded-xl hover:bg-[#5ba58c] hover:text-white transition-all duration-300"
+                  aria-label={label}
+                >
+                  <Icon className="h-5 w-5" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Coluna 2: Navegação Rápida */}
+          <div>
+            <h4 className="text-white font-bold text-lg mb-6">Navegação</h4>
+            <ul className="space-y-3 text-sm">
+              {[
+                { label: 'Início', href: '#inicio' },
+                { label: 'Sobre Nós', href: '#sobre' },
+                { label: 'Jornadas', href: '#recursos' },
+                { label: 'Histórias', href: '#depoimentos' },
+                { label: 'Contato', href: '#contato' }
+              ].map((link, idx) => (
+                <li key={idx}>
+                  <a href={link.href} className="text-gray-400 hover:text-[#5ba58c] transition-colors flex items-center gap-2">
+                    <span className="h-1 w-1 bg-[#5ba58c] rounded-full opacity-0 group-hover:opacity-100" />
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Coluna 3: Suporte e Legal (Essencial para Ads) */}
+          <div>
+            <h4 className="text-white font-bold text-lg mb-6">Suporte e Legal</h4>
+            <ul className="space-y-3 text-sm">
+              {[
+                { label: 'Perguntas Frequentes', icon: HelpCircle },
+                { label: 'Política de Privacidade', icon: ShieldCheck },
+                { label: 'Termos de Uso', icon: FileText },
+                { label: 'Central de Ajuda', icon: HelpCircle }
+              ].map((item, idx) => (
+                <li key={idx}>
+                  <a href="#" className="text-gray-400 hover:text-[#5ba58c] transition-colors flex items-center gap-2">
+                    <item.icon size={14} />
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Coluna 4: Acesso ao App */}
+          <div className="flex flex-col gap-6">
+            <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
+              <h4 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+                <LogIn size={16} className="text-[#5ba58c]" />
+                Área do Cliente
+              </h4>
+              <p className="text-xs text-gray-400 mb-4">
+                Acesse sua jornada, gerencie memórias e visualize seus conteúdos.
+              </p>
+              <button
+                onClick={() => navigate('/legado-app/login')}
+                className="w-full bg-[#5ba58c] hover:bg-[#4a8a75] text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2"
               >
-                <Icon className="h-5 w-5" />
-              </a>
-            ))}
+                Entrar no App
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Navegação */}
-        <div>
-          <h4 className="font-serif font-semibold text-white text-base mb-3">Navegação</h4>
-          <ul className="space-y-1 text-sm">
-            {['Início', 'Sobre', 'Recursos', 'Depoimentos', 'Parceiros', 'Contato'].map((label, idx) => (
-              <li key={idx}>
-                <a href={`#${label.toLowerCase()}`} className="text-white/70 hover:text-[#5ba58c] transition-colors">
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ul>
+        {/* Rodapé Inferior */}
+        <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+          <p>© {currentYear} Legado & Conforto. Todos os direitos reservados.</p>
+          <div className="flex gap-6">
+            <p>CNPJ: 00.000.000/0000-00</p>
+            <p>Feito com carinho para você.</p>
+          </div>
         </div>
-
-        {/* Recursos */}
-        <div>
-          <h4 className="font-serif font-semibold text-white text-base mb-3">Recursos</h4>
-          <ul className="space-y-1 text-sm">
-            {['FAQ', 'Suporte', 'Política de Privacidade', 'Termos de Uso', 'Blog'].map((item, idx) => (
-              <li key={idx}>
-                <a href="#" className="text-white/70 hover:text-[#5ba58c] transition-colors">
-                  {item}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Botão de acesso ao Legado App */}
-        <div className="flex flex-col md:items-end items-center justify-between h-full w-full">
-          <span className="mb-2 text-white/50 text-xs md:text-sm md:text-right md:mb-3">Acesso restrito</span>
-          <a
-            href="/legado-app/login"
-            className="
-              inline-flex items-center justify-center
-              px-5 py-2 rounded-full
-              bg-[#365f52] hover:bg-[#5ba58c]
-              text-white font-semibold text-sm
-              shadow
-              transition-all duration-150
-              gap-2
-              md:ml-auto
-              "
-            style={{
-              minWidth: 170,
-              boxShadow: '0 2px 12px rgba(90, 165, 140, 0.09)',
-              letterSpacing: 0.2
-            }}
-          >
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M15 12H3m0 0l4-4m-4 4l4 4m5 6h7a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            Acessar Legado App
-          </a>
-        </div>
-      </div>
-      <div className="border-t border-white/15 py-5 text-center text-xs text-white/60">
-        © {new Date().getFullYear()} Legado. Todos os direitos reservados.
       </div>
     </footer>
-  )
+  );
 }

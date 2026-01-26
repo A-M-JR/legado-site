@@ -5,18 +5,26 @@ const testimonials = [
   {
     id: 1,
     content:
-      'O Legado trouxe conforto durante um momento muito difícil. Poder ver e compartilhar memórias do meu pai com toda a família nos ajudou a transformar a dor em celebração da vida dele.',
-    name: 'Mariana Silva',
-    role: 'Usuária do Aplicativo',
+      'Preservar as memórias da minha família trouxe paz e união. O Legado é um espaço onde o amor e as histórias continuam vivos, mesmo quando a saudade aperta.',
+    name: 'Ana Paula',
+    role: 'Usuária Acolhida',
     image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
   },
   {
     id: 2,
     content:
-      'A plataforma é intuitiva e respeitosa. Consigo manter vivas as histórias da minha avó de uma forma que nunca imaginei ser possível. É um verdadeiro tesouro digital.',
-    name: 'Roberto Almeida',
-    role: 'Usuário do Aplicativo',
+      'Encontrar um lugar seguro para guardar as lembranças do meu avô foi fundamental para minha família. Aqui, celebramos a vida e mantemos viva a sua presença.',
+    name: 'Carlos Eduardo',
+    role: 'Membro da Família',
     image: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg',
+  },
+  {
+    id: 3,
+    content:
+      'O aplicativo me ajudou a transformar a dor da perda em gratidão, criando um memorial digital que conecta gerações e fortalece os laços familiares.',
+    name: 'Mariana Souza',
+    role: 'Usuária Emocionada',
+    image: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg',
   },
 ];
 
@@ -36,10 +44,10 @@ export default function Testimonials() {
     <section id="depoimentos" className="py-24 bg-legado-mid bg-opacity-10">
       <div className="container mx-auto px-6 lg:px-8 text-center">
         <h2 className="text-4xl font-serif font-bold text-legado-dark mb-6">
-          O que dizem sobre <span className="text-legado-gold">Legado</span>
+          Vozes que <span className="text-legado-gold">celebram a vida</span>
         </h2>
         <p className="text-base text-legado-dark/70 mb-16 max-w-2xl mx-auto">
-          Histórias reais de pessoas que encontraram conforto e valor com o APP Legado.
+          Depoimentos reais de pessoas que encontraram conforto, conexão e significado ao preservar suas memórias.
         </p>
 
         <div className="relative max-w-2xl mx-auto bg-white rounded-3xl shadow-lg p-6 md:p-12 transition-all duration-500">
@@ -47,7 +55,7 @@ export default function Testimonials() {
           <div className="flex items-center justify-center space-x-4">
             <img
               src={image}
-              alt={name}
+              alt={`Foto de ${name}`}
               loading="lazy"
               className="h-20 w-20 rounded-full object-cover border-4 border-legado-gold"
             />
@@ -72,7 +80,9 @@ export default function Testimonials() {
                 <button
                   key={idx}
                   onClick={() => setIndex(idx)}
-                  className={`h-3 w-3 rounded-full transition-all duration-300 ${idx === index ? 'bg-legado-gold scale-125' : 'bg-legado-gold/40'}`}
+                  className={`h-3 w-3 rounded-full transition-all duration-300 ${idx === index ? 'bg-legado-gold scale-125' : 'bg-legado-gold/40'
+                    }`}
+                  aria-label={`Ir para depoimento ${idx + 1}`}
                 />
               ))}
             </div>
