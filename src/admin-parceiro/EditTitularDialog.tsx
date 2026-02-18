@@ -1,6 +1,7 @@
 // src/admin/parceiro/EditTitularDialog.tsx
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { maskCPF, maskTelefone } from "@/lib/masks";
 import {
     Dialog,
     DialogContent,
@@ -61,8 +62,8 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
             if (error) throw error;
 
             setNome(tData.nome || "");
-            setCpf(tData.cpf || "");
-            setTelefone(tData.telefone || "");
+            setCpf(maskCPF(tData.cpf || ""));
+            setTelefone(maskTelefone(tData.telefone || ""));
             setDataNascimento(tData.data_nascimento || "");
             setEmail(tData.email || "");
             setExistingImagemUrl(tData.imagem_url || null);
@@ -132,7 +133,7 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
                 .update({
                     nome,
                     cpf: cpf.replace(/\D/g, ""),
-                    telefone,
+                    telefone: telefone.replace(/\D/g, ""),
                     data_nascimento: dataNascimento,
                     email,
                     imagem_url: imagemUrl,
@@ -206,14 +207,14 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
                             </div>
                             <div>
                                 <Label>CPF</Label>
-                                <Input value={cpf} onChange={(e) => setCpf(e.target.value)} />
+                                <Input value={cpf} onChange={(e) => setCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" maxLength={14} />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label>Telefone</Label>
-                                <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+                                <Input value={telefone} onChange={(e) => setTelefone(maskTelefone(e.target.value))} placeholder="(00) 00000-0000" maxLength={15} />
                             </div>
                             <div>
                                 <Label>Data de Nascimento</Label>

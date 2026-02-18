@@ -1,36 +1,64 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Heart, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function CTA() {
+  const navigate = useNavigate();
+
   return (
-    <section className="py-24 bg-legado-mid bg-opacity-10 from-legado-mid/20 via-legado-mid/10 to-transparent">
+    <section className="py-24 bg-gradient-to-b from-transparent via-[#f4fbf8] to-[#eaf7f1]">
       <div className="container mx-auto px-6 lg:px-8">
         <motion.div
-          className="max-w-4xl mx-auto bg-legado-white rounded-3xl shadow-lg p-10 md:p-16 text-center"
-          initial={{ opacity: 0, scale: 0.95, y: 30 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="max-w-5xl mx-auto bg-white rounded-[3rem] shadow-2xl shadow-emerald-100/50 p-10 md:p-20 text-center border border-[#f0f7f4] relative overflow-hidden"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-legado-dark/90 mb-8 leading-tight">
-            APP Legado: <span className="text-legado-gold">Porque toda vida merece ser lembrada com carinho.</span>
+          {/* Elemento decorativo sutil */}
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#5ba58c] via-[#255f4f] to-[#5ba58c]" />
+
+          <Heart className="mx-auto text-[#5ba58c] mb-8 h-12 w-12 fill-[#5ba58c]/10" />
+
+          <h2 className="text-3xl md:text-5xl font-bold text-[#255f4f] mb-8 leading-tight">
+            O amor não termina, <br />
+            <span className="text-[#5ba58c]">ele se transforma em Legado.</span>
           </h2>
 
-          <p className="text-base md:text-lg text-legado-dark/80 mb-12 leading-relaxed max-w-3xl mx-auto text-justify">
-            O legado é o que permanece depois que a presença física se vai. É aquilo que não se pode tocar, mas se sente todos os dias: um valor ensinado sem palavras, um gesto de amor que ecoa nas gerações, um conselho simples que virou guia de vida. Na maioria das vezes, quem partiu deixou mais do que lembranças. Deixou exemplos de coragem, de afeto, de fé na vida. Deixou marcas invisíveis no coração de quem amou.
-            <br /><br />
-            E, através dessas marcas, continua vivendo. Cada história contada, cada valor repetido, cada gesto inspirado por sua memória, é o legado que transforma a ausência em presença eterna.
-            <br /><br />
-            Com o APP Legado, você eterniza memórias com amor. Deixe homenagens e mantenha viva a presença de quem será eterno em sua história! Seja bem-vindo(a) ao nosso Legado!
-          </p>
+          <div className="text-base md:text-lg text-[#6b8c7d] mb-12 leading-relaxed max-w-3xl mx-auto space-y-6">
+            <p>
+              O legado é o que permanece quando a presença física se vai. É o valor ensinado sem palavras, o gesto de amor que ecoa nas gerações e o conselho que vira guia de vida.
+            </p>
+            <p className="font-medium text-[#255f4f]">
+              Com o <strong>APP Legado</strong>, você transforma a saudade em uma celebração eterna.
+              Mantenha viva a história de quem sempre será importante para você.
+            </p>
+          </div>
 
-          <a
-            href="#contato"
-            className="inline-flex items-center justify-center bg-legado-gold text-legado-black px-10 py-5 rounded-full shadow-xl hover:bg-legado-darkGold hover:text-legado-white transition-transform duration-300 ease-out hover:scale-105 font-semibold text-lg"
-          >
-            Fale Conosco <ArrowRight size={24} className="ml-3" />
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* Botão Principal - Conversão de Novos */}
+            <a
+              href="#contato"
+              className="w-full sm:w-auto inline-flex items-center justify-center bg-[#5ba58c] text-white px-10 py-5 rounded-2xl shadow-lg shadow-emerald-200 hover:bg-[#4a8a75] transition-all duration-300 hover:-translate-y-1 font-bold text-lg group"
+            >
+              Quero conhecer o Legado
+              <ArrowRight size={22} className="ml-3 group-hover:translate-x-1 transition-transform" />
+            </a>
+
+            {/* Botão Secundário - Retenção de Atuais */}
+            <button
+              onClick={() => navigate('/legado-app/login')}
+              className="w-full sm:w-auto inline-flex items-center justify-center bg-white text-[#255f4f] border-2 border-[#d1e5dc] px-10 py-5 rounded-2xl hover:bg-[#f4fbf8] transition-all duration-300 font-bold text-lg"
+            >
+              <LogIn size={20} className="mr-3" />
+              Acessar minha conta
+            </button>
+          </div>
+
+          <p className="mt-8 text-sm text-[#9db4aa] font-medium">
+            Disponível Web.
+          </p>
         </motion.div>
       </div>
     </section>

@@ -29,7 +29,7 @@ import logoPadrao from "@/assets/legado/logo_degrade.png";
 
 const menuItems = [
     { title: "Meus Clientes", icon: Users, path: "/admin-parceiro/dashboard" },
-    { title: "Configurações", icon: Settings, path: "/admin-parceiro/configuracoes" },
+    // { title: "Configurações", icon: Settings, path: "/admin-parceiro/configuracoes" },
 ];
 
 interface ParceiroProfile {

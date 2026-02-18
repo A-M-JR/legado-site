@@ -135,10 +135,10 @@ export default function NovoDependentePage() {
     return (
         <div className="legado-app-wrapper min-h-screen flex items-center justify-center px-4 py-8">
             <div className="w-full max-w-md space-y-6">
-                
+
                 {/* Top Bar - Botão Voltar */}
                 <div className="flex items-center justify-between animate-in fade-in slide-in-from-top duration-500">
-                    <button 
+                    <button
                         onClick={() => navigate(-1)}
                         className="flex items-center gap-1.5 text-[#255f4f] font-bold text-sm bg-white/50 backdrop-blur-sm px-3 py-2 rounded-xl hover:bg-white transition-all active:scale-95 shadow-sm"
                     >
@@ -149,7 +149,7 @@ export default function NovoDependentePage() {
                         <Plus size={20} className="text-[#255f4f]" />
                     </div>
                 </div>
-                
+
                 {/* Título */}
                 <div className="text-center space-y-1 animate-in fade-in duration-700">
                     <h2 className="text-2xl font-bold tracking-tight text-[#255f4f]">Novo Dependente</h2>
@@ -267,11 +267,10 @@ export default function NovoDependentePage() {
                     {/* Alerta */}
                     {alerta && (
                         <div
-                            className={`p-4 rounded-xl font-semibold text-sm text-center animate-in slide-in-from-top duration-300 ${
-                                alerta.toLowerCase().includes("sucesso") || alerta.toLowerCase().includes("cadastrado")
+                            className={`p-4 rounded-xl font-semibold text-sm text-center animate-in slide-in-from-top duration-300 ${alerta.toLowerCase().includes("sucesso") || alerta.toLowerCase().includes("cadastrado")
                                     ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-200"
                                     : "bg-red-50 text-red-700 border-2 border-red-200"
-                            }`}
+                                }`}
                         >
                             {alerta}
                         </div>

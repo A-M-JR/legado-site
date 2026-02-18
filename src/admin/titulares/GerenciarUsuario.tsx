@@ -1,6 +1,7 @@
 // src/.../GerenciarUsuario.tsx
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { maskCPF, maskTelefone } from "@/lib/masks";
 import {
     Dialog,
     DialogContent,
@@ -99,8 +100,8 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
 
         if (titular) {
             setNome(titular.nome || "");
-            setCpf(titular.cpf || "");
-            setTelefone(titular.telefone || "");
+            setCpf(maskCPF(titular.cpf || ""));
+            setTelefone(maskTelefone(titular.telefone || ""));
             setDataNascimento(titular.data_nascimento || "");
             setEmail(titular.email || "");
             setFotoAtual(titular.imagem_url || null);
@@ -185,7 +186,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                 const { error: tErr } = await supabase.from("titulares").update({
                     nome,
                     cpf: cpf.replace(/\D/g, ""),
-                    telefone,
+                    telefone: telefone.replace(/\D/g, ""),
                     data_nascimento: dataNascimento,
                     email,
                     imagem_url: fotoUrl,
@@ -289,7 +290,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                                         </div>
                                         <div className="space-y-2">
                                             <Label>CPF</Label>
-                                            <Input value={cpf} onChange={e => setCpf(e.target.value)} />
+                                            <Input value={cpf} onChange={e => setCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" maxLength={14} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>E-mail</Label>
@@ -297,7 +298,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Telefone</Label>
-                                            <Input value={telefone} onChange={e => setTelefone(e.target.value)} />
+                                            <Input value={telefone} onChange={e => setTelefone(maskTelefone(e.target.value))} placeholder="(00) 00000-0000" maxLength={15} />
                                         </div>
                                     </div>
                                 </div>

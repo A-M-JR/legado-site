@@ -6,16 +6,21 @@ import {
     TrendingUp,
     ArrowUpRight,
     ArrowDownRight,
-    Clock
+    Clock,
+    XCircle,
+    CheckCircle2,
 } from "lucide-react";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-    CardDescription
+    CardDescription,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "../lib/supabaseClient";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 // Helper simples caso você não esteja usando o cn do shadcn
 function cn(...classes: any[]) {
@@ -32,10 +37,20 @@ interface StatsState {
     moduloPaliativo: number;
 }
 
+interface LoginLog {
+    id: number;
+    login_at: string;
+    sucesso: boolean;
+    ip: string | null;
+    parceiro_id: string | null;
+    parceiros?: { nome?: string } | null;
+}
+
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<StatsState | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [recentLogins, setRecentLogins] = useState<LoginLog[]>([]);
 
     useEffect(() => {
         async function fetchStats() {
@@ -44,7 +59,10 @@ export default function AdminDashboard() {
                 setError(null);
 
                 // 1) Total de usuários ativos no sistema (usuarios_app)
-                const { count: totalUsuariosAtivos, error: usuariosError } = await supabase
+                const {
+                    count: totalUsuariosAtivos,
+                    error: usuariosError,
+                } = await supabase
                     .from("usuarios_app")
                     .select("*", { count: "exact", head: true })
                     .in("status", ["ativo", "vitalicio"]);
@@ -52,15 +70,21 @@ export default function AdminDashboard() {
                 if (usuariosError) throw usuariosError;
 
                 // 2) Total de parceiros ativos
-                const { count: totalParceirosAtivos, error: parceirosError } = await supabase
+                const {
+                    count: totalParceirosAtivos,
+                    error: parceirosError,
+                } = await supabase
                     .from("parceiros")
                     .select("*", { count: "exact", head: true })
-                    .eq("ativo", true); // ajuste se o campo for diferente
+                    .eq("ativo", true);
 
                 if (parceirosError) throw parceirosError;
 
                 // 3) Total de módulos ativos
-                const { count: totalModulosAtivos, error: modulosError } = await supabase
+                const {
+                    count: totalModulosAtivos,
+                    error: modulosError,
+                } = await supabase
                     .from("modulos")
                     .select("*", { count: "exact", head: true })
                     .eq("ativo", true);
@@ -68,22 +92,20 @@ export default function AdminDashboard() {
                 if (modulosError) throw modulosError;
 
                 // 4) Distribuição por módulo em titular_modulos
-                // Vamos contar quantos TITULARES têm cada módulo ativo.
-                // Assumindo:
-                // - tabela: titular_modulos
-                // - campos: titular_id, modulo_id, ativo (boolean)
-                // - tabela modulos: id, nome (legado, idoso, paliativo)
-
-                // Buscar IDs dos módulos pelo nome
                 const { data: modulosData, error: modFetchError } = await supabase
                     .from("modulos")
                     .select("id, nome")
                     .in("nome", ["Legado", "Cuidado ao Idoso", "Cuidados Paliativos"]);
 
                 if (modFetchError) throw modFetchError;
-                const moduloLegado = modulosData?.find(m => m.nome === "Legado");
-                const moduloIdoso = modulosData?.find(m => m.nome === "Cuidado ao Idoso");
-                const moduloPaliativo = modulosData?.find(m => m.nome === "Cuidados Paliativos");
+
+                const moduloLegado = modulosData?.find((m) => m.nome === "Legado");
+                const moduloIdoso = modulosData?.find(
+                    (m) => m.nome === "Cuidado ao Idoso"
+                );
+                const moduloPaliativo = modulosData?.find(
+                    (m) => m.nome === "Cuidados Paliativos"
+                );
 
                 let qtdLegado = 0;
                 let qtdIdoso = 0;
@@ -127,6 +149,30 @@ export default function AdminDashboard() {
                     moduloIdoso: qtdIdoso,
                     moduloPaliativo: qtdPaliativo,
                 });
+
+                // 5) Buscar Logins Recentes (últimos 6)
+                // Se você tem relacionamento entre login_logs.parceiro_id -> parceiros.id,
+                // o select com "parceiros ( nome )" trará o nome do parceiro.
+                const { data: logsData, error: logsError } = await supabase
+                    .from("login_logs")
+                    .select(
+                        `
+              id,
+              login_at,
+              sucesso,
+              ip,
+              parceiro_id
+
+            `
+                    )
+                    .order("login_at", { ascending: false })
+                    .limit(6);
+
+                if (logsError) {
+                    console.error("Erro ao buscar logs de login:", logsError);
+                } else {
+                    setRecentLogins((logsData as LoginLog[]) || []);
+                }
             } catch (err: any) {
                 console.error("Erro ao carregar estatísticas:", err);
                 setError("Não foi possível carregar as estatísticas agora.");
@@ -139,7 +185,10 @@ export default function AdminDashboard() {
     }, []);
 
     // Derivar percentuais por módulo
-    const totalModulosUsuarios = (stats?.moduloLegado || 0) + (stats?.moduloIdoso || 0) + (stats?.moduloPaliativo || 0);
+    const totalModulosUsuarios =
+        (stats?.moduloLegado || 0) +
+        (stats?.moduloIdoso || 0) +
+        (stats?.moduloPaliativo || 0);
     const perc = (qtd: number) => {
         if (!totalModulosUsuarios) return 0;
         return Math.round((qtd / totalModulosUsuarios) * 100);
@@ -150,8 +199,8 @@ export default function AdminDashboard() {
             title: "Usuários Ativos",
             value: stats?.totalUsuariosAtivos?.toLocaleString("pt-BR") ?? "—",
             icon: Users,
-            description: "Usuarios com status ativo ou vitalício",
-            trend: "+0%",         // placeholder por enquanto
+            description: "Usuários com status ativo ou vitalício",
+            trend: "+0%", // placeholder
             trendUp: true,
         },
         {
@@ -194,7 +243,9 @@ export default function AdminDashboard() {
     if (error) {
         return (
             <div className="space-y-4">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">Painel Administrativo</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+                    Painel Administrativo
+                </h2>
                 <p className="text-red-500 text-sm">{error}</p>
             </div>
         );
@@ -215,7 +266,10 @@ export default function AdminDashboard() {
             {/* Grid de Estatísticas */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {cards.map((stat, index) => (
-                    <Card key={index} className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
+                    <Card
+                        key={index}
+                        className="border-none shadow-sm bg-white hover:shadow-md transition-shadow"
+                    >
                         <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                             <CardTitle className="text-sm font-medium text-slate-600">
                                 {stat.title}
@@ -251,14 +305,53 @@ export default function AdminDashboard() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 <Card className="col-span-4 border-none shadow-sm bg-white">
                     <CardHeader>
-                        <CardTitle className="text-lg font-bold text-slate-800">Atividade Recente</CardTitle>
-                        <CardDescription>Você pode ligar isso depois aos seus logs reais</CardDescription>
+                        <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <Clock className="h-5 w-5 text-indigo-600" />
+                            Logins Recentes
+                        </CardTitle>
+                        <CardDescription>Últimos acessos realizados na plataforma</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-slate-500">
-                            Em breve podemos conectar esta seção à tabela de <code className="text-xs bg-slate-100 px-1 rounded">login_logs</code>
-                            {" "}e a outros eventos (criação de titular, ativação de módulo, etc.).
-                        </p>
+                        <div className="space-y-4">
+                            {recentLogins.length > 0 ? (
+                                recentLogins.map((log) => (
+                                    <div
+                                        key={log.id}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            {log.sucesso ? (
+                                                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                            ) : (
+                                                <XCircle className="h-5 w-5 text-red-500" />
+                                            )}
+                                            <div>
+                                                <p className="text-sm font-medium text-slate-900">
+                                                    {log.parceiros?.nome || "Acesso Direto / Titular"}
+                                                </p>
+                                                <p className="text-xs text-slate-500">
+                                                    IP: {log.ip ?? "—"} •{" "}
+                                                    {format(new Date(log.login_at), "HH:mm 'de' dd/MM", {
+                                                        locale: ptBR,
+                                                    })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Badge
+                                            className={
+                                                log.sucesso ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                                            }
+                                        >
+                                            {log.sucesso ? "Sucesso" : "Falha"}
+                                        </Badge>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-slate-500 py-4 text-center">
+                                    Nenhum log de acesso encontrado.
+                                </p>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -272,9 +365,7 @@ export default function AdminDashboard() {
                             <div>
                                 <div className="flex justify-between text-sm mb-1">
                                     <span className="font-medium text-slate-600">Legado</span>
-                                    <span className="font-bold text-slate-900">
-                                        {perc(stats?.moduloLegado || 0)}%
-                                    </span>
+                                    <span className="font-bold text-slate-900">{perc(stats?.moduloLegado || 0)}%</span>
                                 </div>
                                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                                     <div
@@ -287,9 +378,7 @@ export default function AdminDashboard() {
                             <div>
                                 <div className="flex justify-between text-sm mb-1">
                                     <span className="font-medium text-slate-600">Cuidados ao Idoso</span>
-                                    <span className="font-bold text-slate-900">
-                                        {perc(stats?.moduloIdoso || 0)}%
-                                    </span>
+                                    <span className="font-bold text-slate-900">{perc(stats?.moduloIdoso || 0)}%</span>
                                 </div>
                                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                                     <div
@@ -302,9 +391,7 @@ export default function AdminDashboard() {
                             <div>
                                 <div className="flex justify-between text-sm mb-1">
                                     <span className="font-medium text-slate-600">Cuidados Paliativos</span>
-                                    <span className="font-bold text-slate-900">
-                                        {perc(stats?.moduloPaliativo || 0)}%
-                                    </span>
+                                    <span className="font-bold text-slate-900">{perc(stats?.moduloPaliativo || 0)}%</span>
                                 </div>
                                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                                     <div
@@ -314,6 +401,7 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         </div>
+
                         {totalModulosUsuarios === 0 && (
                             <p className="mt-4 text-xs text-slate-400">
                                 Ainda não há titulares vinculados a módulos. Assim que começar a ativar,

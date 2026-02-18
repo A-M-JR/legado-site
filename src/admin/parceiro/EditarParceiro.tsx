@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { maskCNPJ } from "@/lib/masks";
 
 import {
     Dialog,
@@ -58,7 +59,7 @@ export default function EditarParceiro({
         if (parceiro) {
             setNome(parceiro.nome || "");
             setTipo(parceiro.tipo || "clinica");
-            setCnpj(parceiro.cnpj || "");
+            setCnpj(maskCNPJ(parceiro.cnpj || ""));
             setStatus(parceiro.status || "ativo");
             setObservacoes(parceiro.observacoes || "");
             setLogoAtual(parceiro.logo_url || null);
@@ -129,17 +130,34 @@ export default function EditarParceiro({
             if (contratoFile) {
                 const ext = contratoFile.name.split(".").pop();
                 const fileName = `contrato-${parceiro.id}-${Date.now()}.${ext}`;
+
+                // 1. Faz o upload
                 const { error: uploadError } = await supabase.storage
                     .from("parceiros-contratos")
-                    .upload(fileName, contratoFile);
+                    .upload(fileName, contratoFile, {
+                        contentType: 'application/pdf', // Garante que o navegador entenda que é PDF
+                        upsert: true
+                    });
 
-                if (!uploadError) {
-                    const { data } = supabase.storage
-                        .from("parceiros-contratos")
-                        .getPublicUrl(fileName);
-                    contratoUrl = data.publicUrl;
-                    dataContrato = new Date().toISOString();
+                if (uploadError) {
+                    console.error("Erro detalhado do Storage:", uploadError);
+                    throw new Error(`Falha no upload: ${uploadError.message}`);
                 }
+
+                // 2. Pega a URL pública IMEDIATAMENTE após o upload
+                const { data: urlData } = supabase.storage
+                    .from("parceiros-contratos")
+                    .getPublicUrl(fileName);
+
+                if (!urlData?.publicUrl) {
+                    throw new Error("Não foi possível gerar a URL pública do contrato.");
+                }
+
+                // 3. Atribui à variável que vai para o banco
+                contratoUrl = urlData.publicUrl;
+                dataContrato = new Date().toISOString();
+
+                console.log("URL gerada com sucesso:", contratoUrl);
             }
 
             const { error } = await supabase
@@ -147,7 +165,7 @@ export default function EditarParceiro({
                 .update({
                     nome,
                     tipo,
-                    cnpj: cnpj.trim() || null,
+                    cnpj: cnpj.replace(/\D/g, "") || null,
                     status,
                     observacoes: observacoes.trim() || null,
                     logo_url: logoUrl,
@@ -218,7 +236,7 @@ export default function EditarParceiro({
                         <Label>CNPJ</Label>
                         <Input
                             value={cnpj}
-                            onChange={(e) => setCnpj(e.target.value)}
+                            onChange={(e) => setCnpj(maskCNPJ(e.target.value))}
                             placeholder="00.000.000/0000-00"
                             maxLength={18}
                         />
@@ -301,13 +319,13 @@ export default function EditarParceiro({
                         {contratoAtual && !contratoFile ? (
                             <div className="space-y-2">
                                 <a
-                                    href={contratoAtual}
+                                    href={`${contratoAtual}?t=${Date.now()}`} // Adiciona um timestamp para evitar cache do navegador
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium"
                                 >
                                     <FileText className="h-4 w-4" />
-                                    Ver contrato atual
+                                    Ver contrato atual (Abrir em nova aba)
                                 </a>
                                 <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed p-3 hover:border-gray-400">
                                     <Upload className="h-4 w-4 text-gray-400" />

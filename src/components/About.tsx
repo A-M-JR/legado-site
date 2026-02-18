@@ -1,91 +1,115 @@
 import React from 'react';
-import { Heart, Clock, Shield, Users } from 'lucide-react';
+import { Heart, ShieldCheck, Users, Sparkles, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import imagem from '../assets/fotoantiga.png';
 
 const About = () => {
+  const navigate = useNavigate();
+
   return (
-    <section id="sobre" className="py-24 bg-legado-mid bg-opacity-10">
+    <section id="sobre" className="py-20 bg-[#f8fcfb]">
       <div className="container mx-auto px-6 lg:px-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-legado-dark mb-2">
-            <span className="text-legado-gold">Quem somos</span>
+        
+        {/* Título Otimizado para SEO/Ads */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold text-[#255f4f] mb-6">
+            Eternize Histórias com o <span className="text-[#5ba58c]">Memorial Digital</span> mais seguro do Brasil
           </h2>
-          <p className="text-lg text-legado-dark/70 max-w-2xl mx-auto">
-            A nossa missão é eternizar memórias com amor e cuidado.
+          <p className="text-lg text-[#6b8c7d] max-w-3xl mx-auto leading-relaxed">
+            O <strong>APP Legado</strong> é a solução definitiva para a <strong>preservação de memórias familiares</strong>. 
+            Transformamos a saudade em um tributo eterno, seguro e acessível.
           </p>
         </div>
 
-        <div className="grid grid-cols-12 mb-16">
-          <div className="col-span-12 bg-legado-white rounded-3xl shadow-xl p-8 md:p-12 border-l-4 border-legado-gold transform hover:scale-105 transition-transform duration-300">
-            <p className="text-legado-dark text-base leading-relaxed text-justify mb-4">
-              Somos a Empresa Legado&Conforto e aqui lhe apresentamos carinhosamente um dos nossos produtos: APP Legado. Mais do que um aplicativo, somos uma plataforma que conecta memórias, emoções e pessoas. Sabemos que a perda de alguém especial é um dos momentos mais difíceis da vida. As lembranças que temos dessas pessoas são preciosas, e muitas vezes queremos uma maneira de guardá-las para sempre, tendo a certeza de que estarão ao nosso alcance.
-            </p>
-            <p className="text-legado-dark text-base leading-relaxed text-justify">
-              Foi pensando nisso que criamos o APP LEGADO; uma plataforma para preservar e compartilhar memórias de quem partiu, de forma íntima, significativa e segura. Com o tempo, memórias podem se perder, histórias podem sim ser esquecidas, e as vozes das pessoas que amamos e que se foram tendem a parecer mais distantes. Por mais dor que isso possa trazer, é a realidade. O APP LEGADO permite que famílias e amigos registrem fotos e mensagens de momentos especiais, criando um memorial digital que mantém viva a presença de quem foi importante para você.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col-reverse md:flex-row items-center gap-8 mb-16">
-          <div className="md:w-1/2 bg-legado-white rounded-3xl shadow-xl p-8 md:p-12 border-l-4 border-legado-gold transform hover:scale-105 transition-transform duration-300">
-            <p className="text-legado-dark text-base leading-relaxed mb-4">
-              O APP Legado nasceu da compreensão de que a dor da perda pode ser amenizada quando transformamos o luto em celebração e gratidão por ter vivido um precioso tempo com aquela pessoa que sempre será importante para você.
-            </p>
-            <p className="text-legado-dark text-base leading-relaxed mb-4">
-              O que oferecemos é um espaço digital para guardar lembranças, compartilhar histórias e manter viva a memória de quem se foi.
-            </p>
-            <p className="text-legado-dark text-base leading-relaxed">
-              "Nosso propósito é preservar o que é mais precioso: as memórias, o amor e a história de quem jamais será esquecido."</p>
-          </div>
-          <div className="md:w-1/2 flex justify-center">
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
+          {/* Lado da Imagem com Badge de Confiança */}
+          <div className="relative">
             <img
               src={imagem}
-              alt="Foto antiga"
-              width="600"
-              height="400"
-              loading="lazy"
-              className="rounded-3xl shadow-lg w-full max-w-md object-cover"
+              alt="Preservação de memórias familiares e histórias de vida"
+              className="rounded-[2rem] shadow-2xl w-full object-cover aspect-[4/3]"
             />
+            <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl shadow-xl border border-[#f0f7f4] hidden md:block">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#e3f1eb] p-2 rounded-lg">
+                  <ShieldCheck className="text-[#5ba58c] h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#6b8c7d] uppercase tracking-wider">Privacidade</p>
+                  <p className="text-[#255f4f] font-bold">100% Seguro</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Lado do Texto - Foco em Benefícios (Escaneável) */}
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-2xl font-bold text-[#255f4f] mb-4">Por que escolher o Memorial Digital Legado?</h3>
+              <p className="text-[#6b8c7d] leading-relaxed">
+                Sabemos que memórias físicas podem se perder com o tempo. Nossa plataforma foi desenhada para ser um 
+                <strong> porto seguro para o seu legado familiar</strong>, garantindo que as futuras gerações conheçam suas raízes.
+              </p>
+            </div>
+
+            <ul className="space-y-4">
+              {[
+                { title: "Memorial Privado", desc: "Você decide quem pode visualizar e interagir." },
+                { title: "Histórias Eternizadas", desc: "Fotos, vídeos e áudios guardados para sempre." },
+                { title: "Conexão entre Gerações", desc: "Um espaço para a família celebrar a vida unida." }
+              ].map((item, i) => (
+                <li key={i} className="flex gap-4">
+                  <div className="mt-1 bg-[#5ba58c] rounded-full p-1 h-5 w-5 flex items-center justify-center shrink-0">
+                    <Sparkles className="text-white h-3 w-3" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#255f4f] text-sm uppercase tracking-wide">{item.title}</h4>
+                    <p className="text-[#6b8c7d] text-sm">{item.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="pt-4">
+              <button 
+                onClick={() => navigate('/legado-app/login')}
+                className="group flex items-center gap-3 bg-[#255f4f] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#5ba58c] transition-all shadow-lg shadow-emerald-100"
+              >
+                Começar meu Legado agora
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Grid de Diferenciais - Cards menores e mais limpos */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              icon: <Heart className="h-10 w-10 text-legado-gold" />,
-              title: 'Cuidado Emocional',
-              text: 'Transformamos a dor da perda em conforto, celebrando memórias com gratidão.'
+              icon: <Heart className="h-6 w-6" />,
+              title: 'Apoio no Luto',
+              text: 'Transformamos a dor em celebração através da gratidão.'
             },
             {
-              icon: <Clock className="h-10 w-10 text-legado-gold" />,
-              title: 'Acesso Permanente',
-              text: 'Suas memórias disponíveis sempre, conforme seu termo de adesão.'
+              icon: <Users className="h-6 w-6" />,
+              title: 'Rede Familiar',
+              text: 'Espaço colaborativo para amigos e parentes compartilharem histórias.'
             },
             {
-              icon: <Shield className="h-10 w-10 text-legado-gold" />,
-              title: 'Privacidade Segura',
-              text: 'Controle total: regiões privadas ou públicas, acesso só para quem você escolher.'
-            },
-            {
-              icon: <Users className="h-10 w-10 text-legado-gold" />,
-              title: 'Conexão Familiar',
-              text: 'União entre gerações, mantendo o legado vivo através de memórias compartilhadas.'
+              icon: <ShieldCheck className="h-6 w-6" />,
+              title: 'Segurança de Dados',
+              text: 'Tecnologia de ponta para proteger a história da sua família.'
             }
           ].map((item, idx) => (
             <div
               key={idx}
-              className="bg-legado-white rounded-2xl p-6 flex flex-col items-center text-center shadow-md hover:shadow-2xl transition-shadow duration-300"
+              className="bg-white border border-[#f0f7f4] rounded-2xl p-8 hover:border-[#5ba58c] transition-colors group"
             >
-              <div className="bg-legado-gold/30 p-4 rounded-full mb-4">
+              <div className="bg-[#f4fbf8] text-[#5ba58c] w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#5ba58c] group-hover:text-white transition-colors">
                 {item.icon}
               </div>
-              <h3 className="text-xl font-serif font-semibold text-legado-dark mb-2">
-                {item.title}
-              </h3>
-              <p className="text-legado-dark/80 text-sm leading-relaxed">
-                {item.text}
-              </p>
+              <h3 className="text-lg font-bold text-[#255f4f] mb-3">{item.title}</h3>
+              <p className="text-[#6b8c7d] text-sm leading-relaxed">{item.text}</p>
             </div>
           ))}
         </div>

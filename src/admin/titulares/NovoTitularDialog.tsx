@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { maskCPF, maskTelefone } from "@/lib/masks";
 import {
     Dialog,
     DialogContent,
@@ -181,7 +182,7 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
                     auth_id: authId,
                     nome,
                     cpf: cpf.replace(/\D/g, ""),
-                    telefone,
+                    telefone: telefone.replace(/\D/g, ""),
                     data_nascimento: dataNascimento,
                     email,
                     imagem_url: fotoUrl,
@@ -324,7 +325,7 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
                         <Label>CPF *</Label>
                         <Input
                             value={cpf}
-                            onChange={(e) => setCpf(e.target.value)}
+                            onChange={(e) => setCpf(maskCPF(e.target.value))}
                             placeholder="000.000.000-00"
                             maxLength={14}
                         />
@@ -335,8 +336,9 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
                         <Label>Telefone *</Label>
                         <Input
                             value={telefone}
-                            onChange={(e) => setTelefone(e.target.value)}
+                            onChange={(e) => setTelefone(maskTelefone(e.target.value))}
                             placeholder="(00) 00000-0000"
+                            maxLength={15}
                         />
                     </div>
 

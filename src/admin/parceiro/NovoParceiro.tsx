@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { maskCNPJ } from "@/lib/masks";
 
 import {
     Dialog,
@@ -127,7 +128,7 @@ export default function NovoParceiro({
             const { error } = await supabase.from("parceiros").insert({
                 nome,
                 tipo,
-                cnpj: cnpj.trim() || null,
+                cnpj: cnpj.replace(/\D/g, "") || null,
                 status,
                 observacoes: observacoes.trim() || null,
                 logo_url: logoUrl,
@@ -206,7 +207,7 @@ export default function NovoParceiro({
                         <Label>CNPJ</Label>
                         <Input
                             value={cnpj}
-                            onChange={(e) => setCnpj(e.target.value)}
+                            onChange={(e) => setCnpj(maskCNPJ(e.target.value))}
                             placeholder="00.000.000/0000-00"
                             maxLength={18}
                         />
