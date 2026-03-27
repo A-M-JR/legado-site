@@ -10,7 +10,7 @@ export default function Hero() {
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-legado-mid/10 rounded-full blur-3xl" />
 
       <div className="container mx-auto px-6 lg:px-16 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+        <div className="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-20">
           {/* Conteúdo de Texto */}
           <div className="lg:w-3/5 text-center lg:text-left">
             <motion.div

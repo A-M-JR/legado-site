@@ -1,0 +1,21 @@
+{
+  "name": "ILC — Instituto Legado e Conforto",
+  "short_name": "Instituto Legado",
+  "description": "Plataforma que transforma memórias em jornadas eternas, preservando histórias com amor e respeito.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a3d34",
+  "icons": [
+    {
+      "src": "/logo-ilc.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-ilc.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
