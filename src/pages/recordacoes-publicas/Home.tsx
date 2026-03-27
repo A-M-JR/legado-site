@@ -12,6 +12,7 @@ import Contact from '../../components/Contact';
 import CTA from '../../components/CTA';
 import Footer from '../../components/Footer';
 import WhatsAppButton from '../../components/WhatsAppButton';
+import Viva60 from '../../components/Viva60';
 
 
 export default function Home() {
@@ -28,7 +29,7 @@ export default function Home() {
 
       if (metaDescription) {
         metaDescription.content =
-          'Legado: Aplicativo para empresas de planos funerários, oferecendo gerenciamento de recordações dos entes queridos que já se foram.';
+          'Legado: Plataforma para empresas de planos funerários, oferecendo gerenciamento de recordações dos entes queridos que já se foram.';
       }
     };
 
@@ -40,6 +41,7 @@ export default function Home() {
       <Navbar />
       <Hero />
       <About />
+      <Viva60 />
       <Features />
       <Testimonials />
       <FAQ />

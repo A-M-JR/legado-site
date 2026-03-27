@@ -9,22 +9,22 @@ const PrivacyPolicy = () => {
                 </h1>
 
                 <p className="text-legado-dark text-base leading-relaxed mb-6 text-justify">
-                    No APP Legado, sua privacidade é nossa prioridade. Esta política explica como coletamos, usamos e protegemos suas informações pessoais para garantir uma experiência segura e respeitosa.
+                    No Instituto Legado, sua privacidade é nossa prioridade. Esta política explica como coletamos, usamos e protegemos suas informações pessoais para garantir uma experiência segura e respeitosa.
                 </p>
 
                 <h2 className="text-2xl font-semibold text-legado-dark mb-4">1. Dados que coletamos</h2>
                 <p className="text-legado-dark text-base leading-relaxed mb-6 text-justify">
-                    Coletamos apenas os dados essenciais para o funcionamento do app e para que você possa preservar as memórias dos seus entes queridos, como:
+                    Coletamos apenas os dados essenciais para o funcionamento da plataforma e para que você possa preservar as memórias dos seus entes queridos, como:
                 </p>
                 <ul className="list-disc list-inside text-legado-dark mb-6">
                     <li>Informações de cadastro: nome, e-mail, telefone;</li>
                     <li>Dados das memórias compartilhadas: fotos, vídeos, textos;</li>
-                    <li>Dados técnicos de uso para garantir segurança e desempenho do app.</li>
+                    <li>Dados técnicos de uso para garantir segurança e desempenho da plataforma.</li>
                 </ul>
 
                 <h2 className="text-2xl font-semibold text-legado-dark mb-4">2. Como usamos seus dados</h2>
                 <p className="text-legado-dark text-base leading-relaxed mb-6 text-justify">
-                    Os dados são utilizados exclusivamente para oferecer os serviços do APP Legado, incluindo:
+                    Os dados são utilizados exclusivamente para oferecer os serviços do Instituto Legado, incluindo:
                 </p>
                 <ul className="list-disc list-inside text-legado-dark mb-6">
                     <li>Permitir o acesso e controle das memórias digitais;</li>
@@ -45,12 +45,12 @@ const PrivacyPolicy = () => {
 
                 <h2 className="text-2xl font-semibold text-legado-dark mb-4">5. Seus direitos</h2>
                 <p className="text-legado-dark text-base leading-relaxed mb-6 text-justify">
-                    Você pode acessar, corrigir ou solicitar a exclusão dos seus dados a qualquer momento pelo próprio aplicativo ou entrando em contato conosco. Valorizamos sua privacidade e respeitamos suas escolhas.
+                    Você pode acessar, corrigir ou solicitar a exclusão dos seus dados a qualquer momento pela própria plataforma ou entrando em contato conosco. Valorizamos sua privacidade e respeitamos suas escolhas.
                 </p>
 
                 <h2 className="text-2xl font-semibold text-legado-dark mb-4">6. Exclusão de Conta e Dados</h2>
                 <p className="text-legado-dark text-base leading-relaxed mb-6 text-justify">
-                    Você tem o direito de solicitar a exclusão completa da sua conta e de todos os seus dados pessoais armazenados em nosso sistema. Para isso, acesse as configurações do aplicativo ou entre em contato com nosso suporte pelo e-mail <a href="mailto:contato@legadoeconforto.com.br" className="text-legado-gold underline">contato@legadoeconforto.com.br</a>. Após a solicitação, seus dados serão removidos de forma segura em até 30 dias, conforme previsto na legislação vigente.
+                    Você tem o direito de solicitar a exclusão completa da sua conta e de todos os seus dados pessoais armazenados em nosso sistema. Para isso, acesse as configurações da plataforma ou entre em contato com nosso suporte pelo e-mail <a href="mailto:contato@legadoeconforto.com.br" className="text-legado-gold underline">contato@legadoeconforto.com.br</a>. Após a solicitação, seus dados serão removidos de forma segura em até 30 dias, conforme previsto na legislação vigente.
                 </p>
 
                 <h2 className="text-2xl font-semibold text-legado-dark mb-4">7. Contato</h2>

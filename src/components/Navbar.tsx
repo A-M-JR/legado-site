@@ -27,7 +27,7 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled
-          ? 'bg-white/90 backdrop-blur-lg shadow-sm py-3'
+          ? 'bg-legado-white/95 backdrop-blur-lg shadow-sm py-3'
           : 'bg-transparent py-6'
         }`}
     >
@@ -49,29 +49,29 @@ export default function Navbar() {
                 <a
                   key={href}
                   href={href}
-                  className="text-[#255f4f] hover:text-[#5ba58c] transition-colors font-semibold text-sm tracking-wide"
+                  className="text-legado-dark hover:text-legado-gold transition-all duration-300 font-bold text-sm tracking-wide uppercase"
                 >
                   {label}
                 </a>
               ))}
             </div>
 
-            <div className="flex items-center gap-3 border-l border-[#d1e5dc] pl-6">
-              {/* Botão Acessar App - Foco em quem já é cliente */}
+            <div className="flex items-center gap-3 border-l border-legado-gold/20 pl-6">
+              {/* Botão Acessar App */}
               <button
                 onClick={() => navigate('/legado-app/login')}
-                className="flex items-center gap-2 text-[#5ba58c] hover:text-[#255f4f] font-bold text-sm transition-all px-4 py-2 rounded-xl hover:bg-[#f4fbf8]"
+                className="flex items-center gap-2 text-legado-dark hover:text-legado-gold font-bold text-sm transition-all px-4 py-2 rounded-xl hover:bg-legado-gold/10"
               >
                 <LogIn size={18} />
-                Acessar App
+                Plataforma
               </button>
 
-              {/* Botão Contato - Foco em novos parceiros/clientes */}
+              {/* Botão Contato */}
               <a
                 href="#contato"
-                className="bg-[#5ba58c] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-emerald-100 hover:bg-[#4a8a75] transition-all transform hover:-translate-y-0.5 active:scale-95 flex items-center gap-2"
+                className="bg-legado-gold text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-xl shadow-legado-gold/20 hover:bg-legado-dark hover:text-white transition-all transform hover:-translate-y-0.5 active:scale-95 flex items-center gap-2"
               >
-                <Heart size={16} className="fill-white" />
+                <Heart size={16} className="fill-current" />
                 Falar Conosco
               </a>
             </div>
@@ -93,7 +93,7 @@ export default function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden overflow-hidden bg-white rounded-2xl mt-4 shadow-xl border border-[#f0f7f4]"
+              className="md:hidden overflow-hidden bg-legado-white rounded-2xl mt-4 shadow-2xl border border-legado-gold/10"
             >
               <div className="flex flex-col p-6 space-y-4">
                 {navLinks.map(({ href, label }) => (
@@ -101,7 +101,7 @@ export default function Navbar() {
                     key={href}
                     href={href}
                     onClick={() => setIsOpen(false)}
-                    className="text-[#255f4f] text-lg font-semibold hover:text-[#5ba58c] py-2 border-b border-[#f8fcfb]"
+                    className="text-legado-dark text-lg font-bold hover:text-legado-gold py-2 border-b border-legado-gold/5"
                   >
                     {label}
                   </a>
@@ -113,18 +113,18 @@ export default function Navbar() {
                       setIsOpen(false);
                       navigate('/legado-app/login');
                     }}
-                    className="flex items-center justify-center gap-2 w-full font-bold text-[#5ba58c] bg-[#f4fbf8] py-4 rounded-xl"
+                    className="flex items-center justify-center gap-2 w-full font-bold text-legado-dark bg-legado-gold/10 py-4 rounded-xl"
                   >
                     <LogIn size={20} />
-                    Acessar Minha Conta
+                    Acessar Plataforma
                   </button>
 
                   <a
                     href="#contato"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full font-bold bg-[#5ba58c] text-white py-4 rounded-xl shadow-lg shadow-emerald-50"
+                    className="flex items-center justify-center gap-2 w-full font-bold bg-legado-gold text-white py-4 rounded-xl shadow-xl shadow-legado-gold/20"
                   >
-                    <Heart size={18} />
+                    <Heart size={18} className="fill-current" />
                     Quero Conhecer
                   </a>
                 </div>

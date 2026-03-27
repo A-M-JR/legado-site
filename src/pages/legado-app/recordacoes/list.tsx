@@ -1,5 +1,4 @@
-// src/pages/legado-app/recordacoes/list.tsx
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import {
@@ -14,9 +13,16 @@ import {
     Heart,
     NotebookPen,
     Sparkles,
+    Share2,
+    Download,
+    X,
 } from "lucide-react";
 import QRCode from "react-qr-code";
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 import "@/styles/legado-app.css";
+import logoVerde from "@/assets/Legado - Verde.png";
+import { formatBR } from "../../../utils/formatDateToBR";
 
 type Recordacao = {
     id: string;
@@ -26,18 +32,29 @@ type Recordacao = {
     created_at: string;
 };
 
+type PersonData = {
+    id: string;
+    nome: string;
+    data_nascimento: string;
+    data_falecimento?: string;
+    falecido: boolean;
+    imagem_url?: string;
+};
+
 export default function RecordacoesListPage() {
     const { id } = useParams();
     const navigate = useNavigate();
 
     const [dependenteId, setDependenteId] = useState<string | null>(null);
-    const [dependenteNome, setDependenteNome] = useState<string | null>(null);
+    const [person, setPerson] = useState<PersonData | null>(null);
     const [recordacoes, setRecordacoes] = useState<Recordacao[]>([]);
     const [filtro, setFiltro] = useState<"todos" | "7dias" | "30dias">("todos");
     const [imagemExpandida, setImagemExpandida] = useState<string | null>(null);
     const [qrVisible, setQrVisible] = useState(false);
     const [alerta, setAlerta] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [generatingPDF, setGeneratingPDF] = useState(false);
+    const pdfRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         (async () => {
@@ -47,14 +64,14 @@ export default function RecordacoesListPage() {
 
             let { data, error } = await supabase
                 .from("dependentes")
-                .select("id, nome")
+                .select("id, nome, data_nascimento, data_falecimento, falecido, imagem_url")
                 .eq(column, id)
                 .maybeSingle();
 
             if (!data || error) {
                 const resultTitulares = await supabase
                     .from("titulares")
-                    .select("id, nome")
+                    .select("id, nome, data_nascimento, data_falecimento, falecido, imagem_url")
                     .eq(column, id)
                     .maybeSingle();
                 data = resultTitulares.data;
@@ -66,7 +83,7 @@ export default function RecordacoesListPage() {
                 return;
             }
             setDependenteId(data.id);
-            setDependenteNome(data.nome);
+            setPerson(data as PersonData);
         })();
     }, [id]);
 
@@ -106,7 +123,9 @@ export default function RecordacoesListPage() {
         setRecordacoes((prev) => prev.filter((r) => r.id !== recordacaoId));
     }
 
-    function formatarData(data: string) {
+
+    function formatarDataHora(data: string) {
+        if (!data) return "";
         return new Date(data).toLocaleString("pt-BR", {
             dateStyle: "short",
             timeStyle: "short",
@@ -117,6 +136,40 @@ export default function RecordacoesListPage() {
         () => (dependenteId ? `https://legadoeconforto.com.br/recordacoes-publicas/${dependenteId}` : ""),
         [dependenteId]
     );
+
+    function shareWhatsApp() {
+        if (!qrLink || !person) return;
+        const text = `💙 Olá! Gostaria de convidar você para deixar uma recordação especial para ${person.nome} no Instituto Legado.\n\nAcesse pelo link: ${qrLink}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    async function downloadPDF() {
+        if (!pdfRef.current || generatingPDF) return;
+        setGeneratingPDF(true);
+        try {
+            // Pequeno delay para garantir renderização do QR
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            const dataUrl = await toPng(pdfRef.current, { 
+                quality: 1,
+                pixelRatio: 2, // Aumenta qualidade
+                cacheBust: true,
+                backgroundColor: '#ffffff'
+            });
+            
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+            pdf.save(`memorial-${person?.nome || 'legado'}.pdf`);
+        } catch (error) {
+            console.error('Erro ao gerar PDF', error);
+            setAlerta("Erro ao gerar o PDF. Tente novamente.");
+        } finally {
+            setGeneratingPDF(false);
+        }
+    }
 
     function filtroLabel() {
         return filtro === "todos" ? "Exibindo: Todos" : filtro === "7dias" ? "Últimos 7 dias" : "Últimos 30 dias";
@@ -146,7 +199,7 @@ export default function RecordacoesListPage() {
                 <div className="text-center space-y-1 animate-in fade-in duration-700">
                     <div className="flex items-center justify-center gap-2 text-[#255f4f]">
                         <Heart size={22} fill="#255f4f" className="opacity-20" />
-                        <h2 className="text-2xl font-bold tracking-tight">Recordações de {dependenteNome ?? ""}</h2>
+                        <h2 className="text-2xl font-bold tracking-tight">Recordações de {person?.nome ?? ""}</h2>
                     </div>
                     <p className="text-base text-[#4f665a] opacity-80">Um espaço para celebrar memórias, mensagens e imagens que aquecem o coração.</p>
                 </div>
@@ -227,7 +280,7 @@ export default function RecordacoesListPage() {
                                         </div>
                                     )}
 
-                                    <div className="text-sm text-[#4f665a] text-right italic select-none mt-3">Enviado em: {formatarData(item.created_at)}</div>
+                                    <div className="text-sm text-[#4f665a] text-right italic select-none mt-3">Enviado em: {formatarDataHora(item.created_at)}</div>
                                 </div>
                             );
                         })
@@ -286,39 +339,142 @@ export default function RecordacoesListPage() {
                 {/* Modal QR Code */}
                 {qrVisible && (
                     <div
-                        className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+                        className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[60] p-4"
                         onClick={() => setQrVisible(false)}
                         role="dialog"
                         aria-modal="true"
                         aria-label="QR Code para compartilhamento"
                     >
                         <div
-                            className="bg-white rounded-xl p-6 flex flex-col items-center relative shadow-lg max-w-xs w-full animate-in zoom-in-95 duration-200"
+                            className="bg-white rounded-[2.5rem] p-8 flex flex-col items-center relative shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200 border-4 border-white"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <h3 className="text-lg font-bold text-[#007080] mb-3 text-center">Compartilhe uma recordação 💙</h3>
-                            {qrLink && <QRCode value={qrLink} style={{ width: 160, height: 160 }} />}
-                            {qrLink && (
-                                <a
-                                    href={qrLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block text-[#007080] underline mt-3 break-words text-center text-sm"
-                                >
-                                    {qrLink}
-                                </a>
-                            )}
                             <button
-                                className="absolute top-2 right-2 text-lg text-[#007080]"
-                                style={{ background: "none", border: "none", cursor: "pointer" }}
+                                className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
                                 onClick={() => setQrVisible(false)}
-                                aria-label="Fechar modal QR Code"
                             >
-                                ×
+                                <X size={20} />
                             </button>
+
+                            <h3 className="text-xl font-bold text-[#255f4f] mb-6 text-center pr-8 leading-tight">Compartilhe uma recordação 💙</h3>
+                            
+                            <div className="bg-[#f0f9f6] p-6 rounded-3xl mb-6 shadow-inner border border-emerald-100">
+                                {qrLink && <QRCode value={qrLink} size={180} level="H" />}
+                            </div>
+
+                            <div className="flex flex-col gap-3 w-full">
+                                <button
+                                    onClick={shareWhatsApp}
+                                    className="flex items-center justify-center gap-3 bg-[#25D366] text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95"
+                                >
+                                    <Share2 size={20} />
+                                    WhatsApp
+                                </button>
+
+                                <button
+                                    onClick={downloadPDF}
+                                    disabled={generatingPDF}
+                                    className="flex items-center justify-center gap-3 bg-[#5BA58C] text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    {generatingPDF ? (
+                                        <Sparkles className="animate-spin" size={20} />
+                                    ) : (
+                                        <Download size={20} />
+                                    )}
+                                    {generatingPDF ? "Gerando PDF..." : "Gerar PDF para Impressão"}
+                                </button>
+                            </div>
+
+                            <p className="mt-6 text-[11px] text-gray-400 text-center leading-relaxed font-medium uppercase tracking-wider">
+                                Escolha uma das opções para convidar familiares e amigos.
+                            </p>
                         </div>
                     </div>
                 )}
+
+                {/* Template Oculto para o PDF (Cópia da imagem enviada) */}
+                <div style={{ position: 'fixed', left: '-2000px', top: '0', opacity: 0, pointerEvents: 'none' }}>
+                    <div 
+                        ref={pdfRef}
+                        className="bg-white"
+                        style={{ 
+                            width: '794px', 
+                            height: '1123px', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            fontFamily: "serif", 
+                            padding: '40px',
+                            boxSizing: 'border-box'
+                        }}
+                    >
+                        {/* Header Logos */}
+                        <div className="w-full flex justify-between items-start mb-8">
+                            <img src={logoVerde} alt="Logo" style={{ height: '55px' }} />
+                            <div className="text-right italic text-gray-400 text-base max-w-[250px] leading-snug">
+                                Porque toda vida merece ser lembrada com carinho!
+                            </div>
+                        </div>
+
+                        {/* Foto de Perfil */}
+                        <div className="mb-6">
+                            <div className="w-44 h-44 rounded-full overflow-hidden border-8 border-[#f0f9f6] shadow-xl">
+                                {person?.imagem_url ? (
+                                    <img src={person.imagem_url} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-200">
+                                        <User size={60} />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Nome e Datas */}
+                        <div className="text-center mb-8">
+                            <h1 className="text-4xl font-bold text-[#007080] mb-2">{person?.nome}</h1>
+                            <div className="text-lg text-gray-500 font-medium">
+                                <p>Nascimento: {formatBR(person?.data_nascimento)}</p>
+                                {person?.falecido && person?.data_falecimento && (
+                                    <p>Falecimento: {formatBR(person.data_falecimento)}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Convite */}
+                        <div className="text-center mb-6 max-w-2xl">
+                            <h2 className="text-2xl font-bold text-[#007080] mb-4 flex items-center justify-center gap-4">
+                                Deixe sua recordação <span className="text-blue-500">💙</span>
+                            </h2>
+                            <p className="text-xl font-bold text-gray-800 leading-snug mb-6">
+                                Caso queira deixar uma mensagem de carinho e conforto para a família, certamente levará alegria aos corações entristecidos.
+                            </p>
+                            <p className="text-base text-gray-600 font-medium mb-4">
+                                Deixe mensagem escrita e fotos. ✍️📸🤳
+                            </p>
+                            <p className="text-lg font-bold text-gray-900 border-b-2 border-red-100 inline-block pb-1">
+                                Acesse o <span className="text-red-600 underline">QRCode</span> e deixe quantas mensagens desejar.
+                            </p>
+                        </div>
+
+                        {/* QR Code central */}
+                        <div className="p-6 bg-white border-2 border-gray-100 rounded-[2rem] shadow-sm mb-6 flex flex-col items-center">
+                            <p className="text-[#007080] font-bold text-lg mb-4 text-center">
+                                Compartilhe uma recordação <span className="text-blue-500">💙</span>
+                            </p>
+                            <div className="bg-white p-3">
+                                {qrLink && <QRCode value={qrLink} size={220} level="H" />}
+                            </div>
+                        </div>
+
+                        {/* Footer Logo */}
+                        <div className="mt-auto w-full flex flex-col items-start pt-6 border-t border-gray-50 opacity-50">
+                            <img src={logoVerde} alt="Logo Footer" style={{ height: '45px', marginBottom: '6px' }} />
+                            <p className="italic text-gray-400 text-sm">
+                                Porque toda vida merece ser lembrada com carinho!
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Alerta */}
                 {alerta && (

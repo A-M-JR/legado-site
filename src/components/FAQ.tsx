@@ -9,9 +9,9 @@ type FAQItem = {
 
 const FAQS: FAQItem[] = [
   {
-    question: 'O que é o aplicativo Legado?',
+    question: 'O que é o Instituto Legado?',
     answer:
-      'O Legado é uma plataforma e aplicativo para preservação de memórias e gestão de memoriais digitais. Permite criar álbuns, registrar histórias de vida, compartilhar recordações com familiares e acessar suporte emocional especializado.',
+      'O Legado é uma plataforma e instituto para preservação de memórias e gestão de memoriais digitais. Permite criar álbuns, registrar histórias de vida, compartilhar recordações com familiares e acessar suporte emocional especializado.',
   },
   {
     question: 'As memórias compartilhadas são privadas e seguras?',
@@ -21,12 +21,12 @@ const FAQS: FAQItem[] = [
   {
     question: 'Como funciona o suporte psicológico oferecido?',
     answer:
-      'Oferecemos conteúdos educativos e acesso a profissionais especializados em luto por meio do aplicativo. Em parceria com especialistas, disponibilizamos materiais, grupos e atendimentos que auxiliam no processo de acolhimento.',
+      'Oferecemos conteúdos educativos e acesso a profissionais especializados em luto por meio da nossa plataforma. Em parceria com especialistas, disponibilizamos materiais, grupos e atendimentos que auxiliam no processo de acolhimento.',
   },
   {
     question: 'Posso acessar o Legado em diferentes dispositivos?',
     answer:
-      'Sim. O APP Legado está disponível para iOS, Android e também possui versão web. Seus álbuns e conteúdos são sincronizados entre dispositivos para acesso onde você estiver.',
+      'Sim. O Legado é uma plataforma web moderna e responsiva, acessível de qualquer dispositivo (celular, tablet ou computador) com internet. Suas memórias e conteúdos são sincronizados automaticamente.',
   },
 ];
 
@@ -73,41 +73,41 @@ export default function FAQ(): JSX.Element {
   };
 
   return (
-    <section id="faq" className="py-24 bg-legado-mid bg-opacity-10">
+    <section id="faq" className="py-24 bg-legado-white border-t border-legado-gold/10">
       <div className="container mx-auto px-6 lg:px-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-serif font-bold text-legado-dark">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-legado-dark">
             Perguntas <span className="text-legado-gold">Frequentes</span>
           </h2>
-          <p className="mt-4 text-legado-dark/70 max-w-3xl mx-auto">
-            Encontre respostas rápidas e claras sobre o APP Legado, privacidade, suporte e acessos.
+          <p className="mt-4 text-lg text-legado-dark font-bold max-w-3xl mx-auto italic">
+            "Tire suas dúvidas sobre o Instituto Legado, privacidade, suporte e acessos."
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-4" role="list">
+        <div className="max-w-4xl mx-auto space-y-6" role="list">
           {FAQS.map((faq, i) => {
             const isOpen = openIndex === i;
             const contentId = `faq-content-${i}`;
             const buttonId = `faq-btn-${i}`;
             return (
-              <div key={i} className="border border-legado-gold/40 rounded-xl overflow-hidden" role="listitem">
+              <div 
+                key={i} 
+                className={`bg-legado-white rounded-3xl shadow-xl border-l-[6px] transition-all duration-300 ${isOpen ? 'border-legado-gold shadow-2xl scale-[1.02]' : 'border-legado-gold/30 shadow-md'}`} 
+                role="listitem"
+              >
                 <button
                   id={buttonId}
                   aria-controls={contentId}
                   aria-expanded={isOpen}
                   onClick={() => toggle(i)}
-                  className="w-full flex justify-between items-center p-6 bg-legado-lightCream hover:bg-legado-light transition-colors focus:outline-none focus:ring-4 focus:ring-legado-gold/20"
+                  className="w-full flex justify-between items-center p-8 focus:outline-none group"
                 >
-                  <span className="text-legado-dark font-medium text-lg text-left">
+                  <span className={`text-lg md:text-xl font-bold text-left transition-colors duration-300 ${isOpen ? 'text-legado-gold' : 'text-legado-dark group-hover:text-legado-gold'}`}>
                     {faq.question}
                   </span>
-                  <span className="ml-4 inline-flex items-center">
-                    {isOpen ? (
-                      <ChevronUp className="text-legado-gold h-6 w-6" aria-hidden />
-                    ) : (
-                      <ChevronDown className="text-legado-gold h-6 w-6" aria-hidden />
-                    )}
-                  </span>
+                  <div className={`ml-4 p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-legado-gold text-legado-dark rotate-180' : 'bg-legado-gold/10 text-legado-gold'}`}>
+                    <ChevronDown size={24} />
+                  </div>
                 </button>
 
                 <div
@@ -115,14 +115,15 @@ export default function FAQ(): JSX.Element {
                   role="region"
                   aria-labelledby={buttonId}
                   ref={(el) => (contentRefs.current[i] = el)}
-                  className="transition-[max-height,padding] duration-500 ease-in-out overflow-hidden bg-legado-white text-legado-dark px-6"
+                  className="transition-all duration-500 ease-in-out overflow-hidden px-8"
                   style={{
                     maxHeight: isOpen ? undefined : '0px',
-                    paddingTop: isOpen ? undefined : '0px',
-                    paddingBottom: isOpen ? undefined : '0px',
+                    opacity: isOpen ? 1 : 0,
                   }}
                 >
-                  <p className="leading-relaxed text-justify py-4">{faq.answer}</p>
+                  <p className="leading-relaxed text-legado-dark font-medium text-lg py-6 border-t border-legado-gold/10">
+                    {faq.answer}
+                  </p>
                 </div>
               </div>
             );

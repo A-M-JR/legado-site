@@ -1,117 +1,95 @@
 import React from 'react';
-import { Heart, ShieldCheck, Users, Sparkles, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Heart, Clock, Shield, Users } from 'lucide-react';
 import imagem from '../assets/fotoantiga.png';
 
 const About = () => {
-  const navigate = useNavigate();
-
   return (
-    <section id="sobre" className="py-20 bg-[#f8fcfb]">
+    <section id="sobre" className="py-24 bg-legado-mid bg-opacity-10">
       <div className="container mx-auto px-6 lg:px-16">
-        
-        {/* Título Otimizado para SEO/Ads */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold text-[#255f4f] mb-6">
-            Eternize Histórias com o <span className="text-[#5ba58c]">Memorial Digital</span> mais seguro do Brasil
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-legado-dark mb-2">
+            <span className="text-legado-gold">Quem somos</span>
           </h2>
-          <p className="text-lg text-[#6b8c7d] max-w-3xl mx-auto leading-relaxed">
-            O <strong>APP Legado</strong> é a solução definitiva para a <strong>preservação de memórias familiares</strong>. 
-            Transformamos a saudade em um tributo eterno, seguro e acessível.
+          <p className="text-xl text-legado-dark font-medium max-w-2xl mx-auto italic">
+            "Nossa Missão é entregar conforto, cuidado e preservar o legado de amor das pessoas"
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-          {/* Lado da Imagem com Badge de Confiança */}
-          <div className="relative">
-            <img
-              src={imagem}
-              alt="Preservação de memórias familiares e histórias de vida"
-              className="rounded-[2rem] shadow-2xl w-full object-cover aspect-[4/3]"
-            />
-            <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl shadow-xl border border-[#f0f7f4] hidden md:block">
-              <div className="flex items-center gap-3">
-                <div className="bg-[#e3f1eb] p-2 rounded-lg">
-                  <ShieldCheck className="text-[#5ba58c] h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-[#6b8c7d] uppercase tracking-wider">Privacidade</p>
-                  <p className="text-[#255f4f] font-bold">100% Seguro</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Lado do Texto - Foco em Benefícios (Escaneável) */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-2xl font-bold text-[#255f4f] mb-4">Por que escolher o Memorial Digital Legado?</h3>
-              <p className="text-[#6b8c7d] leading-relaxed">
-                Sabemos que memórias físicas podem se perder com o tempo. Nossa plataforma foi desenhada para ser um 
-                <strong> porto seguro para o seu legado familiar</strong>, garantindo que as futuras gerações conheçam suas raízes.
+        <div className="grid grid-cols-12 mb-16">
+          <div className="col-span-12 bg-legado-white rounded-3xl shadow-xl p-8 md:p-12 border-l-4 border-legado-gold transform hover:scale-105 transition-transform duration-300">
+            <div className="space-y-6 text-legado-dark text-lg leading-relaxed text-justify">
+              <p>
+                O <strong>ILC – Instituto Legado e Conforto</strong> nasceu do compromisso com o cuidado humano em todas as fases da vida. 
+                Acreditamos que viver é mais do que existir — é ser visto, lembrado, acompanhado e respeitado em cada etapa do tempo.
               </p>
-            </div>
-
-            <ul className="space-y-4">
-              {[
-                { title: "Memorial Privado", desc: "Você decide quem pode visualizar e interagir." },
-                { title: "Histórias Eternizadas", desc: "Fotos, vídeos e áudios guardados para sempre." },
-                { title: "Conexão entre Gerações", desc: "Um espaço para a família celebrar a vida unida." }
-              ].map((item, i) => (
-                <li key={i} className="flex gap-4">
-                  <div className="mt-1 bg-[#5ba58c] rounded-full p-1 h-5 w-5 flex items-center justify-center shrink-0">
-                    <Sparkles className="text-white h-3 w-3" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-[#255f4f] text-sm uppercase tracking-wide">{item.title}</h4>
-                    <p className="text-[#6b8c7d] text-sm">{item.desc}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="pt-4">
-              <button 
-                onClick={() => navigate('/legado-app/login')}
-                className="group flex items-center gap-3 bg-[#255f4f] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#5ba58c] transition-all shadow-lg shadow-emerald-100"
-              >
-                Começar meu Legado agora
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              <p>
+                Atuamos na construção de soluções que unem acolhimento, memória, organização do cuidado e presença, 
+                oferecendo apoio tanto para quem vive o luto quanto para quem está envelhecendo e deseja seguir vivendo com dignidade, autonomia e significado.
+              </p>
+              <p>
+                Por meio de iniciativas como o <strong>Legado</strong>, voltado à preservação de memórias e ao acolhimento no luto, 
+                e o <strong>Viva 60+</strong>, dedicado ao cuidado cotidiano da pessoa idosa, o Instituto cria um ecossistema que 
+                acompanha o ser humano antes, durante e depois das grandes transições da vida.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Grid de Diferenciais - Cards menores e mais limpos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              icon: <Heart className="h-6 w-6" />,
-              title: 'Apoio no Luto',
-              text: 'Transformamos a dor em celebração através da gratidão.'
-            },
-            {
-              icon: <Users className="h-6 w-6" />,
-              title: 'Rede Familiar',
-              text: 'Espaço colaborativo para amigos e parentes compartilharem histórias.'
-            },
-            {
-              icon: <ShieldCheck className="h-6 w-6" />,
-              title: 'Segurança de Dados',
-              text: 'Tecnologia de ponta para proteger a história da sua família.'
-            }
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className="bg-white border border-[#f0f7f4] rounded-2xl p-8 hover:border-[#5ba58c] transition-colors group"
-            >
-              <div className="bg-[#f4fbf8] text-[#5ba58c] w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#5ba58c] group-hover:text-white transition-colors">
-                {item.icon}
-              </div>
-              <h3 className="text-lg font-bold text-[#255f4f] mb-3">{item.title}</h3>
-              <p className="text-[#6b8c7d] text-sm leading-relaxed">{item.text}</p>
+        <div className="flex flex-col-reverse md:flex-row items-center gap-8 mb-16">
+          <div className="md:w-1/2 bg-legado-white rounded-3xl shadow-xl p-8 md:p-12 border-l-4 border-legado-gold transform hover:scale-105 transition-transform duration-300">
+            <h4 className="font-serif font-bold text-legado-dark text-xl mb-6 uppercase tracking-wider">Nosso trabalho integra:</h4>
+            <div className="space-y-4">
+              {[
+                "Cuidado emocional",
+                "Registros de memória e história de vida",
+                "Organização da saúde e da rotina",
+                "Fortalecimento de vínculos familiares e sociais"
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="bg-legado-gold rounded-full p-1 shrink-0 shadow-sm">
+                    <Heart className="text-white h-3 w-3" />
+                  </div>
+                  <span className="text-legado-dark font-semibold">{item}</span>
+                </div>
+              ))}
             </div>
-          ))}
+            <p className="mt-8 text-legado-dark/70 italic text-sm border-t border-legado-gold/20 pt-4">
+              Tudo isso com uma linguagem simples, acessível e profundamente respeitosa.
+            </p>
+          </div>
+          <div className="md:w-1/2 flex justify-center">
+            <img
+              src={imagem}
+              alt="Preservando a vida e as memórias com carinho"
+              width="600"
+              height="400"
+              loading="lazy"
+              className="rounded-3xl shadow-lg w-full max-w-md object-cover aspect-[4/3]"
+            />
+          </div>
+        </div>
+
+        {/* Parcerias e Finalização - Novo Estilo com Alto Contraste */}
+        <div className="bg-legado-white rounded-3xl p-10 md:p-16 text-center mb-16 shadow-2xl border-l-[6px] border-legado-gold relative overflow-hidden">
+          <div className="relative z-10 max-w-4xl mx-auto">
+            <p className="text-legado-gold font-bold uppercase tracking-widest mb-6">Presença Contínua</p>
+            <p className="text-legado-dark text-lg md:text-xl leading-relaxed mb-10 font-medium">
+              O ILC atua em parceria com funerárias, prefeituras, planos assistenciais e instituições, levando soluções humanas, 
+              digitais e sociais que ampliam o olhar sobre o cuidado — não apenas como assistência, mas como presença contínua.
+            </p>
+            <h3 className="text-2xl md:text-4xl font-serif font-bold text-legado-dark mb-6">
+              Cuidar, para nós, é caminhar junto.
+            </h3>
+            <p className="text-legado-gold text-2xl font-serif italic mb-10">
+              "É acolher o passado, cuidar do presente e honrar a vida em toda a sua trajetória."
+            </p>
+            <div className="mt-8 text-xl border-t border-legado-gold/20 pt-8 text-legado-dark font-bold">
+              Porque toda vida merece ser lembrada com carinho.
+            </div>
+          </div>
+          {/* Decoração suave para preencher o contexto */}
+          <Heart className="absolute -bottom-10 -right-10 w-64 h-64 text-legado-gold/5 -rotate-12" />
+          <Users className="absolute -top-10 -left-10 w-64 h-64 text-legado-dark/5 rotate-12" />
         </div>
       </div>
     </section>

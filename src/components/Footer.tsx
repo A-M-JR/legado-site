@@ -9,15 +9,15 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#1a1a1a] text-white">
-      <div className="container mx-auto px-6 lg:px-14 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 items-start">
+    <footer className="bg-[#1a3d34] text-white border-t border-legado-gold/20">
+      <div className="container mx-auto px-6 lg:px-14 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 items-start">
 
           {/* Coluna 1: Branding e Social */}
-          <div className="flex flex-col gap-6">
-            <img src={logo} alt="Legado Logo" className="h-12 w-auto object-contain self-start" />
-            <p className="text-sm text-gray-400 leading-relaxed">
-              Transformamos memórias em <strong>legados digitais</strong> que conectam gerações e oferecem acolhimento nos momentos de saudade.
+          <div className="flex flex-col gap-8">
+            <img src={logo} alt="Legado Logo" className="h-14 w-auto object-contain self-start" />
+            <p className="text-sm text-white leading-relaxed font-medium">
+              O <strong>Instituto Legado e Conforto</strong> transforma memórias em jornadas eternas que conectam gerações e oferecem acolhimento em todas as fases da vida.
             </p>
             <div className="flex space-x-4">
               {[
@@ -29,7 +29,7 @@ export default function Footer() {
                 <a
                   key={i}
                   href={href}
-                  className="p-2.5 bg-white/5 rounded-xl hover:bg-[#5ba58c] hover:text-white transition-all duration-300"
+                  className="p-3 bg-white/10 rounded-xl hover:bg-legado-gold hover:text-white transition-all duration-300 transform hover:-translate-y-1"
                   aria-label={label}
                 >
                   <Icon className="h-5 w-5" />
@@ -40,18 +40,18 @@ export default function Footer() {
 
           {/* Coluna 2: Navegação Rápida */}
           <div>
-            <h4 className="text-white font-bold text-lg mb-6">Navegação</h4>
-            <ul className="space-y-3 text-sm">
+            <h4 className="text-legado-gold font-serif font-bold text-xl mb-8 uppercase tracking-widest">Navegação</h4>
+            <ul className="space-y-4 text-sm font-bold">
               {[
                 { label: 'Início', href: '#inicio' },
-                { label: 'Sobre Nós', href: '#sobre' },
-                { label: 'Jornadas', href: '#recursos' },
-                { label: 'Histórias', href: '#depoimentos' },
-                { label: 'Contato', href: '#contato' }
+                { label: 'Quem Somos', href: '#sobre' },
+                { label: 'Viva 60+', href: '#viva60' },
+                { label: 'Recursos', href: '#recursos' },
+                { label: 'Contatos', href: '#contato' }
               ].map((link, idx) => (
                 <li key={idx}>
-                  <a href={link.href} className="text-gray-400 hover:text-[#5ba58c] transition-colors flex items-center gap-2">
-                    <span className="h-1 w-1 bg-[#5ba58c] rounded-full opacity-0 group-hover:opacity-100" />
+                  <a href={link.href} className="text-white hover:text-legado-gold transition-colors flex items-center gap-2 group underline-offset-4 hover:underline">
+                    <span className="h-1.5 w-1.5 bg-legado-gold rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                     {link.label}
                   </a>
                 </li>
@@ -59,10 +59,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Coluna 3: Suporte e Legal (Essencial para Ads) */}
+          {/* Coluna 3: Suporte e Legal */}
           <div>
-            <h4 className="text-white font-bold text-lg mb-6">Suporte e Legal</h4>
-            <ul className="space-y-3 text-sm">
+            <h4 className="text-legado-gold font-serif font-bold text-xl mb-8 uppercase tracking-widest">Apoio</h4>
+            <ul className="space-y-4 text-sm font-bold">
               {[
                 { label: 'Perguntas Frequentes', icon: HelpCircle },
                 { label: 'Política de Privacidade', icon: ShieldCheck },
@@ -70,8 +70,8 @@ export default function Footer() {
                 { label: 'Central de Ajuda', icon: HelpCircle }
               ].map((item, idx) => (
                 <li key={idx}>
-                  <a href="#" className="text-gray-400 hover:text-[#5ba58c] transition-colors flex items-center gap-2">
-                    <item.icon size={14} />
+                  <a href="#" className="text-white hover:text-legado-gold transition-colors flex items-center gap-3 group">
+                    <item.icon size={16} className="text-legado-gold group-hover:text-white" />
                     {item.label}
                   </a>
                 </li>
@@ -80,31 +80,34 @@ export default function Footer() {
           </div>
 
           {/* Coluna 4: Acesso ao App */}
-          <div className="flex flex-col gap-6">
-            <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
-              <h4 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
-                <LogIn size={16} className="text-[#5ba58c]" />
-                Área do Cliente
+          <div className="flex flex-col gap-8">
+            <div className="bg-white/10 p-8 rounded-[2rem] border border-white/20 shadow-2xl relative overflow-hidden group">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-legado-gold/10 rounded-full blur-2xl group-hover:bg-legado-gold/20 transition-all" />
+              
+              <h4 className="text-white font-serif font-bold text-lg mb-4 flex items-center gap-3">
+                <LogIn size={20} className="text-legado-gold" />
+                Plataforma
               </h4>
-              <p className="text-xs text-gray-400 mb-4">
-                Acesse sua jornada, gerencie memórias e visualize seus conteúdos.
+              <p className="text-xs text-white mb-6 leading-relaxed font-bold">
+                Acesse sua jornada personalizada, gerencie memórias e conecte-se com sua história.
               </p>
               <button
                 onClick={() => navigate('/legado-app/login')}
-                className="w-full bg-[#5ba58c] hover:bg-[#4a8a75] text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2"
+                className="w-full bg-legado-gold hover:bg-white text-white hover:text-legado-dark font-bold py-4 rounded-2xl transition-all shadow-xl shadow-legado-gold/10 flex items-center justify-center gap-2 transform active:scale-95"
               >
-                Entrar no App
+                Entrar agora
               </button>
             </div>
           </div>
         </div>
 
         {/* Rodapé Inferior */}
-        <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-          <p>© {currentYear} Legado & Conforto. Todos os direitos reservados.</p>
-          <div className="flex gap-6">
-            <p>CNPJ: 00.000.000/0000-00</p>
-            <p>Feito com carinho para você.</p>
+        <div className="mt-20 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-white tracking-wider font-bold">
+          <p>© {currentYear} <strong>ILC — Instituto Legado e Conforto</strong>. Todos os direitos reservados.</p>
+          <div className="flex gap-8 font-bold">
+             <p className="hover:text-legado-gold transition-colors cursor-help">Privacidade</p>
+             <p className="hover:text-legado-gold transition-colors cursor-help">Segurança</p>
+             <p className="italic text-legado-gold font-serif">"Transformando memórias em presenças eternas."</p>
           </div>
         </div>
       </div>

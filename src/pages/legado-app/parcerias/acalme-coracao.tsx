@@ -78,7 +78,7 @@ export default function AcolhimentoPage() {
 
     function waLink(wa: string) {
         const texto =
-            "Olá, vim pelo aplicativo do Legado e Conforto e gostaria de saber mais sobre seu trabalho.";
+            "Olá, vim pelo Instituto Legado e gostaria de saber mais sobre seu trabalho.";
         return `https://wa.me/${wa}?text=${encodeURIComponent(texto)}`;
     }
 
