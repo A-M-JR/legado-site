@@ -2,7 +2,7 @@ import React from 'react';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
 import { LogIn, ShieldCheck, FileText, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/Legado - Branco.png';
+import logo from '../assets/logo-ilc.png';
 
 export default function Footer() {
   const navigate = useNavigate();
@@ -14,10 +14,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 items-start">
 
           {/* Coluna 1: Branding e Social */}
-          <div className="flex flex-col gap-8">
-            <img src={logo} alt="Legado Logo" className="h-14 w-auto object-contain self-start" />
-            <p className="text-sm text-white leading-relaxed font-medium">
-              O <strong>Instituto Legado e Conforto</strong> transforma memórias em jornadas eternas que conectam gerações e oferecem acolhimento em todas as fases da vida.
+          <div className="flex flex-col gap-10">
+            <img src={logo} alt="ILC Logo" className="h-10 md:h-14 object-contain self-start" />
+            <p className="text-lg text-white/90 leading-relaxed font-bold italic">
+              "Cuidando da memória, da vida e da dignidade em todos os ciclos."
             </p>
             <div className="flex space-x-4">
               {[
@@ -107,7 +107,7 @@ export default function Footer() {
           <div className="flex gap-8 font-bold">
              <p className="hover:text-legado-gold transition-colors cursor-help">Privacidade</p>
              <p className="hover:text-legado-gold transition-colors cursor-help">Segurança</p>
-             <p className="italic text-legado-gold font-serif">"Transformando memórias em presenças eternas."</p>
+             <p className="italic text-legado-gold font-serif">"Cuidando da memória, da vida e da dignidade em todos os ciclos."</p>
           </div>
         </div>
       </div>

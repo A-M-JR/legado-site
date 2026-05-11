@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, LogIn, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/Legado - Verde.png';
+import logo from '../assets/logo-ilc.png';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,9 +11,9 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '#inicio', label: 'Início' },
-    { href: '#sobre', label: 'Sobre Nós' },
-    { href: '#recursos', label: 'Jornadas' },
-    { href: '#depoimentos', label: 'Histórias' },
+    { href: '#sobre', label: 'Sobre' },
+    { href: '#caminhos', label: 'Soluções' },
+    { href: '#parceiros', label: 'Parceiros' },
   ];
 
   useEffect(() => {
@@ -27,8 +27,8 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled
-          ? 'bg-legado-white/95 backdrop-blur-lg shadow-sm py-3'
-          : 'bg-transparent py-6'
+          ? 'bg-white/95 backdrop-blur-lg shadow-sm py-2'
+          : 'bg-transparent py-4'
         }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -36,10 +36,10 @@ export default function Navbar() {
           {/* Logo com transição de escala */}
           <motion.a
             href="#inicio"
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.05 }}
             className="flex items-center gap-2"
           >
-            <img src={logo} alt="Legado" className="h-10 md:h-12 object-contain" />
+            <img src={logo} alt="ILC" className="h-10 md:h-14 object-contain" />
           </motion.a>
 
           {/* Desktop Menu */}
@@ -49,18 +49,18 @@ export default function Navbar() {
                 <a
                   key={href}
                   href={href}
-                  className="text-legado-dark hover:text-legado-gold transition-all duration-300 font-bold text-sm tracking-wide uppercase"
+                  className="text-[#70A97F] hover:text-[#2D5A4E] transition-all duration-300 font-bold text-sm tracking-widest uppercase"
                 >
                   {label}
                 </a>
               ))}
             </div>
 
-            <div className="flex items-center gap-3 border-l border-legado-gold/20 pl-6">
+            <div className="flex items-center gap-3 border-l border-[#70A97F]/20 pl-6">
               {/* Botão Acessar App */}
               <button
                 onClick={() => navigate('/legado-app/login')}
-                className="flex items-center gap-2 text-legado-dark hover:text-legado-gold font-bold text-sm transition-all px-4 py-2 rounded-xl hover:bg-legado-gold/10"
+                className="flex items-center gap-2 text-[#70A97F] hover:text-[#2D5A4E] font-bold text-sm transition-all px-4 py-2 rounded-xl"
               >
                 <LogIn size={18} />
                 Plataforma
@@ -68,8 +68,8 @@ export default function Navbar() {
 
               {/* Botão Contato */}
               <a
-                href="#contato"
-                className="bg-legado-gold text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-xl shadow-legado-gold/20 hover:bg-legado-dark hover:text-white transition-all transform hover:-translate-y-0.5 active:scale-95 flex items-center gap-2"
+                href="#parceiros"
+                className="bg-[#70A97F] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-[#70A97F]/20 hover:bg-[#2D5A4E] transition-all flex items-center gap-2"
               >
                 <Heart size={16} className="fill-current" />
                 Falar Conosco
@@ -93,7 +93,7 @@ export default function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden overflow-hidden bg-legado-white rounded-2xl mt-4 shadow-2xl border border-legado-gold/10"
+              className="md:hidden overflow-hidden bg-white rounded-2xl mt-4 shadow-2xl border border-[#70A97F]/10"
             >
               <div className="flex flex-col p-6 space-y-4">
                 {navLinks.map(({ href, label }) => (
@@ -101,7 +101,7 @@ export default function Navbar() {
                     key={href}
                     href={href}
                     onClick={() => setIsOpen(false)}
-                    className="text-legado-dark text-lg font-bold hover:text-legado-gold py-2 border-b border-legado-gold/5"
+                    className="text-[#2D5A4E] text-lg font-bold hover:text-[#70A97F] py-2 border-b border-[#70A97F]/5"
                   >
                     {label}
                   </a>
@@ -113,16 +113,16 @@ export default function Navbar() {
                       setIsOpen(false);
                       navigate('/legado-app/login');
                     }}
-                    className="flex items-center justify-center gap-2 w-full font-bold text-legado-dark bg-legado-gold/10 py-4 rounded-xl"
+                    className="flex items-center justify-center gap-2 w-full font-bold text-[#2D5A4E] bg-[#70A97F]/10 py-4 rounded-xl"
                   >
                     <LogIn size={20} />
                     Acessar Plataforma
                   </button>
 
                   <a
-                    href="#contato"
+                    href="#parceiros"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full font-bold bg-legado-gold text-white py-4 rounded-xl shadow-xl shadow-legado-gold/20"
+                    className="flex items-center justify-center gap-2 w-full font-bold bg-[#70A97F] text-white py-4 rounded-xl shadow-xl shadow-[#70A97F]/20"
                   >
                     <Heart size={18} className="fill-current" />
                     Quero Conhecer
