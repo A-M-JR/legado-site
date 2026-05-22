@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, Send, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { maskCPF, maskCNPJ, maskTelefone } from '../lib/masks';
 
 const PartnerSection = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +14,14 @@ const PartnerSection = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Dados enviados com sucesso! Nossa equipe comercial entrará em contato em breve.');
+    const text = `Olá, gostaria de ser parceiro do ILC! Seguem meus dados:
+Empresa: ${formData.razaoSocial}
+CPF/CNPJ: ${formData.cnpj}
+Telefone: ${formData.telefone}
+E-mail: ${formData.email}
+Responsável: ${formData.responsavel}`;
+
+    window.open(`https://wa.me/5545999292369?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (
@@ -142,6 +150,8 @@ const PartnerSection = () => {
                   <input 
                     type="text" 
                     required
+                    value={formData.razaoSocial}
+                    onChange={(e) => setFormData({ ...formData, razaoSocial: e.target.value })}
                     className="w-full px-6 py-4 bg-gray-50 border border-gray-200 focus:border-[#70A97F] focus:bg-white rounded-xl outline-none transition-all font-medium"
                     placeholder="Nome da empresa"
                   />
@@ -149,12 +159,18 @@ const PartnerSection = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-[#4A4A4A] mb-2 uppercase tracking-widest">CNPJ</label>
+                    <label className="block text-xs font-bold text-[#4A4A4A] mb-2 uppercase tracking-widest">CPF / CNPJ</label>
                     <input 
                       type="text" 
                       required
+                      value={formData.cnpj}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setFormData({ ...formData, cnpj: val.length <= 11 ? maskCPF(e.target.value) : maskCNPJ(e.target.value) });
+                      }}
                       className="w-full px-6 py-4 bg-gray-50 border border-gray-200 focus:border-[#70A97F] focus:bg-white rounded-xl outline-none transition-all font-medium"
-                      placeholder="00.000.000/0000-00"
+                      placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                      maxLength={18}
                     />
                   </div>
                   <div>
@@ -162,8 +178,11 @@ const PartnerSection = () => {
                     <input 
                       type="tel" 
                       required
+                      value={formData.telefone}
+                      onChange={(e) => setFormData({ ...formData, telefone: maskTelefone(e.target.value) })}
                       className="w-full px-6 py-4 bg-gray-50 border border-gray-200 focus:border-[#70A97F] focus:bg-white rounded-xl outline-none transition-all font-medium"
                       placeholder="(XX) XXXXX-XXXX"
+                      maxLength={15}
                     />
                   </div>
                 </div>
@@ -173,6 +192,8 @@ const PartnerSection = () => {
                   <input 
                     type="email" 
                     required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-6 py-4 bg-gray-50 border border-gray-200 focus:border-[#70A97F] focus:bg-white rounded-xl outline-none transition-all font-medium"
                     placeholder="seu@contato.com"
                   />
@@ -183,6 +204,8 @@ const PartnerSection = () => {
                   <input 
                     type="text" 
                     required
+                    value={formData.responsavel}
+                    onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
                     className="w-full px-6 py-4 bg-gray-50 border border-gray-200 focus:border-[#70A97F] focus:bg-white rounded-xl outline-none transition-all font-medium"
                     placeholder="Nome completo"
                   />
