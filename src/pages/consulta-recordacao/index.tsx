@@ -1,11 +1,7 @@
 import { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabaseClient';
 import { QRCodeCanvas } from 'qrcode.react';
-
-const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL!,
-    import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
+import { validarCPF } from '@/utils/validarCPF';
 
 export default function ConsultaRecordacao() {
     const [cpf, setCpf] = useState('');
@@ -17,12 +13,19 @@ export default function ConsultaRecordacao() {
     const buscarPorCpf = async () => {
         setErro('');
         setData(null);
+
+        const cpfLimpo = cpf.replace(/\D/g, '');
+        if (!validarCPF(cpfLimpo)) {
+            setErro('CPF inválido. Verifique e tente novamente.');
+            return;
+        }
+
         setLoading(true);
 
         const { data, error } = await supabase
             .from('dependentes')
-            .select('*')
-            .eq('cpf', cpf)
+            .select('id, nome, imagem_url, data_nascimento, data_falecimento')
+            .eq('cpf', cpfLimpo)
             .maybeSingle();
 
         setLoading(false);

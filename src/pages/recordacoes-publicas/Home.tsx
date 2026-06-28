@@ -66,22 +66,21 @@ const PILLAR_DATA = {
   idoso: {
     id: 'idoso',
     pillarTitle: 'IDOSO – VIVA 60+',
-    headline: 'Cuidar da autonomia do idoso é cuidar da dignidade.',
-    subheadline: 'O ILC ajuda você e sua família a manter organização, segurança e qualidade de vida na melhor fase da experiência.',
-    problemTitle: 'Desafios que você pode estar enfrentando',
+    headline: 'Envelhecer com autonomia também é continuar sendo cuidado com presença.',
+    subheadline: 'O ILC ajuda idosos e famílias a manterem organização, vínculo e segurança emocional através de uma experiência humanizada de cuidado contínuo.',
+    problemTitle: 'Desafios reais',
     problems: [
-      'Preocupação com segurança digital e medo',
-      'Falta de organização de informações sobre sua vida médica',
-      'Medo de imprevistos',
-      'Sobrecarga familiar – ter que pedir ajuda para tudo'
+      'Solidão',
+      'Desorganização',
+      'Distância familiar',
+      'Dependência emocional'
     ],
     solutionTitle: 'O que o ILC te entrega',
     solutions: [
-      'Minha agenda: Organização de informações importantes',
-      'Vídeos de cuidados com o idoso / auto ajuda',
-      'Meus Registros de consultas – tenha todas as informações das suas consultas e retornos',
-      'Meus registros de receitas – veja o registro das receitas e medicamentos que você utiliza',
-      'Diversão: Espaço para guardar fotos e vídeos sem ocupar espaço no seu celular'
+      'Organização da rotina de cuidado',
+      'Conteúdos de apoio e orientação',
+      'Mais segurança e organização da rotina de cuidado – tenha todas as informações das suas consultas e retornos',
+      'Histórias e momentos compartilhados: Espaço para guardar fotos e vídeos sem ocupar espaço no seu celular'
     ],
     changesTitle: 'Como o ILC ajuda',
     changes: [

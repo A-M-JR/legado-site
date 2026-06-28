@@ -52,6 +52,12 @@ const menuItems = [
         icon: Settings,
         path: "/admin/configuracoes",
     },
+    {
+        title: "Visualizar Módulos",
+        icon: Puzzle,
+        path: "/legado-app/selecao-modulos",
+        external: true,
+    },
 ];
 
 interface ConfigSistema {
@@ -152,7 +158,7 @@ export default function AdminLayout() {
                             <SidebarGroupContent className="px-3 pb-4">
                                 <SidebarMenu>
                                     {menuItems.map((item) => {
-                                        const isActive = location.pathname === item.path;
+                                        const isActive = !item.external && location.pathname === item.path;
                                         return (
                                             <SidebarMenuItem key={item.path} className="mb-1">
                                                 <SidebarMenuButton
@@ -207,15 +213,14 @@ export default function AdminLayout() {
                             </div>
                         </div>
 
-                        {/* NOVO: Botão para ir à Seleção de Módulos
                         <button
                             onClick={() => navigate("/legado-app/selecao-modulos")}
-                            aria-label="Ir para seleção de jornadas"
+                            aria-label="Visualizar módulos do app"
                             className="flex items-center gap-2 px-3 py-2 mb-3 text-sm font-semibold text-white bg-[#5ba58c] hover:bg-[#4a8a75] rounded-md transition-all w-full justify-center shadow-md"
                         >
                             <Puzzle className="h-4 w-4" />
-                            Selecionar Jornada
-                        </button> */}
+                            Visualizar Módulos
+                        </button>
 
                         <button
                             onClick={handleLogout}

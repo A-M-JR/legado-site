@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import { Plus, NotebookPen, Edit, Trash2, Lock, Heart } from "lucide-react";
 import LegadoLayout from "@/components/legado/LegadoLayout";
+import { toast } from "@/hooks/use-toast";
 import "@/styles/legado-app.css";
 
 type Diario = {
@@ -42,7 +43,11 @@ export default function DiarioListPage() {
   async function remover(id: string) {
     if (!confirm("Deseja excluir esta entrada do diário?")) return;
     const { error } = await supabase.from("diarios_luto").delete().eq("id", id);
-    if (!error) setItems((prev) => prev.filter((i) => i.id !== id));
+    if (error) {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível excluir a entrada." });
+    } else {
+      setItems((prev) => prev.filter((i) => i.id !== id));
+    }
   }
 
   function formatDateHuman(dt: string) {

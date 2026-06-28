@@ -441,6 +441,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                             <Input type="password" value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)} />
                         </div>
                         <Button className="w-full" onClick={async () => {
+                            if (novaSenha.length < 8) return toast({ title: "Erro", description: "Senha deve ter no mínimo 8 caracteres", variant: "destructive" });
                             if (novaSenha !== confirmarSenha) return toast({ title: "Erro", description: "Senhas não conferem", variant: "destructive" });
                             setLoading(true);
                             const { error } = await supabase.rpc('alterar_senha_usuario', { user_id: user.auth_id, nova_senha: novaSenha });

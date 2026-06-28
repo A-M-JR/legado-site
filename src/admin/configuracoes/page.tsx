@@ -25,7 +25,8 @@ export default function ConfiguracoesPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [config, setConfig] = useState<ConfigSistema | null>(null);
-    const { toast } = useToast(); // ⬅️ ADICIONE ESTA LINHA
+    const [loadError, setLoadError] = useState(false);
+    const { toast } = useToast();
 
     useEffect(() => {
         async function loadConfig() {
@@ -35,7 +36,9 @@ export default function ConfiguracoesPage() {
                 .limit(1)
                 .maybeSingle();
 
-            if (!error && data) {
+            if (error || !data) {
+                setLoadError(true);
+            } else {
                 setConfig(data as ConfigSistema);
             }
             setLoading(false);
@@ -73,10 +76,25 @@ export default function ConfiguracoesPage() {
         setSaving(false);
     };
 
-    if (loading || !config) {
+    if (loading) {
         return (
             <div className="p-8 text-center text-legado-primary animate-pulse">
                 Carregando configurações...
+            </div>
+        );
+    }
+
+    if (loadError || !config) {
+        return (
+            <div className="p-8 text-center space-y-4">
+                <p className="text-red-600 font-medium">Não foi possível carregar as configurações.</p>
+                <button
+                    type="button"
+                    className="text-legado-primary font-bold underline"
+                    onClick={() => window.location.reload()}
+                >
+                    Tentar novamente
+                </button>
             </div>
         );
     }

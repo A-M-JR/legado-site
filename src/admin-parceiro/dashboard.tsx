@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { sanitizePostgrestSearch } from "@/lib/validation";
 import { supabase } from "@/lib/supabaseClient";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,18 +63,19 @@ export default function AdminParceiroDashboard() {
             // 1) Se houver termo de busca, buscar titulares que batem no nome/email
             let titularFilterIds: string[] = [];
             if (searchTerm && searchTerm.trim()) {
-                const q = `%${searchTerm.trim()}%`;
-                const { data: foundTitulares, error: tErr } = await supabase
-                    .from("titulares")
-                    .select("id")
-                    .or(`nome.ilike.${q},email.ilike.${q}`);
+                const sanitized = sanitizePostgrestSearch(searchTerm);
+                if (sanitized) {
+                    const q = `%${sanitized}%`;
+                    const { data: foundTitulares, error: tErr } = await supabase
+                        .from("titulares")
+                        .select("id")
+                        .or(`nome.ilike."${q}",email.ilike."${q}"`);
 
-                if (tErr) {
-                    console.warn("Busca titulares (filtro) retornou erro:", tErr);
-                    // continuar sem filtro (vai devolver tudo do parceiro)
-                } else {
-                    titularFilterIds = (foundTitulares || []).map((t: any) => t.id);
-                    console.log("titularFilterIds:", titularFilterIds);
+                    if (tErr) {
+                        console.warn("Busca titulares (filtro) retornou erro:", tErr);
+                    } else {
+                        titularFilterIds = (foundTitulares || []).map((t: any) => t.id);
+                    }
                 }
             }
 
@@ -260,6 +262,7 @@ export default function AdminParceiroDashboard() {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-8 w-8 text-[#5ba58c] hover:bg-[#e3f1eb] rounded-lg"
+                                                                aria-label="Gerenciar módulos"
                                                                 onClick={() => {
                                                                     setSelectedUsuario({ id: usuario.id, nome: usuario.nome });
                                                                     setShowModulos(true);
@@ -271,6 +274,7 @@ export default function AdminParceiroDashboard() {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-8 w-8 text-[#5ba58c] hover:bg-[#e3f1eb] rounded-lg"
+                                                                aria-label="Editar titular"
                                                                 onClick={() => abrirEdicao(usuario.id)}
                                                             >
                                                                 <Edit2 className="h-4 w-4" />
@@ -281,6 +285,8 @@ export default function AdminParceiroDashboard() {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-8 w-8 text-[#9db4aa] hover:bg-[#f4fbf8] rounded-lg"
+                                                        aria-label="Visualizar titular"
+                                                        onClick={() => abrirEdicao(usuario.id)}
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </Button>

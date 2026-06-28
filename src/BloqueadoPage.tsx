@@ -58,6 +58,18 @@ export default function BloqueadoPage() {
                     iconeCor: "text-slate-600",
                     bgIcone: "bg-slate-100",
                 };
+            case "em_breve":
+                return {
+                    titulo: "Módulo em Breve",
+                    descricao: "Este módulo ainda está em desenvolvimento.",
+                    instrucao:
+                        "Volte ao menu principal para escolher outro módulo disponível.",
+                    cor: "from-violet-50 to-purple-50",
+                    borda: "border-violet-200",
+                    icone: ShieldAlert,
+                    iconeCor: "text-violet-600",
+                    bgIcone: "bg-violet-100",
+                };
             case "manutencao":
                 return {
                     titulo: "Sistema em Manutenção",
@@ -124,7 +136,16 @@ export default function BloqueadoPage() {
 
                     {/* Botões de Ação */}
                     <div className="space-y-3 mt-8">
-                        {status !== "manutencao" && (
+                        {status === "em_breve" && (
+                            <Button
+                                className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-6 rounded-xl shadow-lg"
+                                onClick={() => navigate("/legado-app/selecao-modulos")}
+                            >
+                                Voltar ao Menu Principal
+                            </Button>
+                        )}
+
+                        {status !== "manutencao" && status !== "em_breve" && (
                             <Button
                                 className="w-full bg-legado-primary hover:bg-legado-primary-dark text-white font-semibold py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
                                 onClick={() =>

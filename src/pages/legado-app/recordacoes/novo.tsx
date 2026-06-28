@@ -26,8 +26,12 @@ export default function NovaRecordacaoPage() {
   useEffect(() => {
     (async () => {
       if (!id) return;
-      const { data, error } = await supabase.from("dependentes").select("*").eq("id", id).maybeSingle();
-      if (error || !data) {
+      let { data, error } = await supabase.from("dependentes").select("*").eq("id", id).maybeSingle();
+      if (!data || error) {
+        const result = await supabase.from("titulares").select("*").eq("id", id).maybeSingle();
+        data = result.data;
+      }
+      if (!data) {
         showAlert("Não foi possível carregar o homenageado.");
         return;
       }

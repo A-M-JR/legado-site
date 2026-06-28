@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import { Save, ArrowLeft, NotebookPen, Heart, Sparkles } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import LegadoLayout from "@/components/legado/LegadoLayout";
 import "@/styles/legado-app.css";
 
@@ -19,6 +20,9 @@ export default function DiarioFormPage() {
     const location = useLocation();
     const { id } = useParams();
     const [loading, setLoading] = useState(false);
+    const [fetchLoading, setFetchLoading] = useState(!!id);
+
+    const { toast } = useToast();
 
     const sugestao = (location.state as any)?.sugestao || "";
     const tituloSugerido = (location.state as any)?.titulo || "";
@@ -51,7 +55,7 @@ export default function DiarioFormPage() {
                     tipo_pessoa: data.tipo_pessoa ?? null,
                 });
             }
-            setLoading(false);
+            setFetchLoading(false);
         })();
     }, [id]);
 
@@ -60,7 +64,11 @@ export default function DiarioFormPage() {
         const {
             data: { user },
         } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+            toast({ variant: "destructive", title: "Erro", description: "Usuário não autenticado." });
+            setLoading(false);
+            return;
+        }
 
         if (id) {
             const { error } = await supabase
@@ -74,7 +82,11 @@ export default function DiarioFormPage() {
                     tipo_pessoa: form.tipo_pessoa,
                 })
                 .eq("id", id);
-            if (!error) navigate("/legado-app/diario");
+            if (error) {
+                toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar." });
+            } else {
+                navigate("/legado-app/diario");
+            }
         } else {
             const { error } = await supabase.from("diarios_luto").insert({
                 auth_id: user.id,
@@ -85,7 +97,11 @@ export default function DiarioFormPage() {
                 titular_ou_dependente_id: form.titular_ou_dependente_id,
                 tipo_pessoa: form.tipo_pessoa,
             });
-            if (!error) navigate("/legado-app/diario");
+            if (error) {
+                toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar." });
+            } else {
+                navigate("/legado-app/diario");
+            }
         }
         setLoading(false);
     }
@@ -97,6 +113,11 @@ export default function DiarioFormPage() {
             title={id ? "Editar entrada" : "Nova entrada"}
             subtitle={<span className="text-sm text-[#4f665a]">Um espaço seguro para acolher seus sentimentos.</span>}
         >
+            {fetchLoading ? (
+                <div className="flex justify-center py-12">
+                    <div className="h-10 w-10 border-4 border-legado-primary/30 border-t-legado-primary rounded-full animate-spin" />
+                </div>
+            ) : (
             <div className="w-full">
                 <div className="legado-form-card w-full">
                     {/* Sugestão do exercício (se veio do fluxo) */}
@@ -181,6 +202,7 @@ export default function DiarioFormPage() {
                     </div>
                 </div>
             </div>
+            )}
         </LegadoLayout>
     );
 }

@@ -5,8 +5,6 @@ import logo from "@/assets/Legado - Branco.png";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const SENHA_MESTRE = "SENHAMAGICA123";
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,21 +23,6 @@ export default function LoginPage() {
         title: "Campos obrigatórios",
         description: "Preencha e-mail e senha para continuar.",
       });
-      setLoading(false);
-      return;
-    }
-
-    // Se for senha mestre, simula login direto (mantém comportamento antigo)
-    if (password === SENHA_MESTRE) {
-      localStorage.setItem("legado-login-time", String(Date.now()));
-      toast({
-        title: "✅ Login realizado!",
-        description: "Redirecionando...",
-      });
-
-      setTimeout(() => {
-        navigate("/legado-app/selecao-modulos", { replace: true });
-      }, 800);
       setLoading(false);
       return;
     }
@@ -80,13 +63,22 @@ export default function LoginPage() {
           .single();
 
         if (titular) {
-          // Cria o perfil automaticamente
-          await supabase.from("usuarios_app").insert({
+          const { error: insertProfileError } = await supabase.from("usuarios_app").insert({
             auth_id: authData.user.id,
             role: "titular",
             titular_id: titular.id,
             parceiro_id: null,
           });
+
+          if (insertProfileError) {
+            toast({
+              variant: "destructive",
+              title: "Erro",
+              description: "Não foi possível criar seu perfil.",
+            });
+            setLoading(false);
+            return;
+          }
 
           // Redireciona para seleção de módulos
           localStorage.setItem("legado-login-time", String(Date.now()));
@@ -188,12 +180,13 @@ export default function LoginPage() {
             <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
               {/* Campo E-mail */}
               <div className="space-y-1.5 sm:space-y-2">
-                <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <label htmlFor="login-email" className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <Mail size={14} className="text-legado-primary sm:w-4 sm:h-4" />
                   E-mail
                 </label>
                 <div className="relative">
                   <input
+                    id="login-email"
                     type="email"
                     placeholder="seu@email.com"
                     className="w-full px-4 py-3 sm:py-3.5 pl-10 sm:pl-11 rounded-xl border border-gray-200 focus:border-legado-primary focus:ring-2 focus:ring-legado-primary/20 outline-none transition-all text-base"
@@ -209,12 +202,13 @@ export default function LoginPage() {
 
               {/* Campo Senha */}
               <div className="space-y-1.5 sm:space-y-2">
-                <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <label htmlFor="login-password" className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <Lock size={14} className="text-legado-primary sm:w-4 sm:h-4" />
                   Senha
                 </label>
                 <div className="relative">
                   <input
+                    id="login-password"
                     type="password"
                     placeholder="••••••••"
                     className="w-full px-4 py-3 sm:py-3.5 pl-10 sm:pl-11 rounded-xl border border-gray-200 focus:border-legado-primary focus:ring-2 focus:ring-legado-primary/20 outline-none transition-all text-base"

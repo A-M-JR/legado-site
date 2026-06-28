@@ -1,6 +1,7 @@
-import { supabase } from './supabase'
+import { supabase } from './supabaseClient'
 import { v4 as uuidv4 } from 'uuid'
 import imageCompression from 'browser-image-compression'
+import { validateImageFile } from './validation'
 
 type UploadImagemParams = {
     file: File
@@ -17,6 +18,12 @@ export async function uploadImagem({
     metadata = {},
     bucket = 'imagens',
 }: UploadImagemParams): Promise<string | null> {
+    const validationError = validateImageFile(file);
+    if (validationError) {
+        console.error('Validação de imagem:', validationError);
+        return null;
+    }
+
     try {
         // Comprime e redimensiona a imagem (512px máx e 0.7 de qualidade)
         const compressedFile = await imageCompression(file, {

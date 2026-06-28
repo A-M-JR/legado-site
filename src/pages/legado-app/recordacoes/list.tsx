@@ -17,9 +17,7 @@ import {
     Download,
     X,
 } from "lucide-react";
-import QRCode from "react-qr-code";
-import { toPng } from 'html-to-image';
-import { jsPDF } from 'jspdf';
+import { QRCodeCanvas } from "qrcode.react";
 import "@/styles/legado-app.css";
 import logoVerde from "@/assets/Legado - Verde.png";
 import { formatBR } from "../../../utils/formatDateToBR";
@@ -52,7 +50,7 @@ export default function RecordacoesListPage() {
     const [imagemExpandida, setImagemExpandida] = useState<string | null>(null);
     const [qrVisible, setQrVisible] = useState(false);
     const [alerta, setAlerta] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [generatingPDF, setGeneratingPDF] = useState(false);
     const pdfRef = useRef<HTMLDivElement>(null);
 
@@ -150,6 +148,11 @@ export default function RecordacoesListPage() {
             // Pequeno delay para garantir renderização do QR
             await new Promise(resolve => setTimeout(resolve, 800));
             
+            const [{ toPng }, { jsPDF }] = await Promise.all([
+                import('html-to-image'),
+                import('jspdf'),
+            ]);
+
             const dataUrl = await toPng(pdfRef.current, { 
                 quality: 1,
                 pixelRatio: 2, // Aumenta qualidade
@@ -359,7 +362,7 @@ export default function RecordacoesListPage() {
                             <h3 className="text-xl font-bold text-[#255f4f] mb-6 text-center pr-8 leading-tight">Compartilhe uma recordação 💙</h3>
                             
                             <div className="bg-[#f0f9f6] p-6 rounded-3xl mb-6 shadow-inner border border-emerald-100">
-                                {qrLink && <QRCode value={qrLink} size={180} level="H" />}
+                                {qrLink && <QRCodeCanvas value={qrLink} size={180} level="H" />}
                             </div>
 
                             <div className="flex flex-col gap-3 w-full">
@@ -462,7 +465,7 @@ export default function RecordacoesListPage() {
                                 Compartilhe uma recordação <span className="text-blue-500">💙</span>
                             </p>
                             <div className="bg-white p-3">
-                                {qrLink && <QRCode value={qrLink} size={220} level="H" />}
+                                {qrLink && <QRCodeCanvas value={qrLink} size={220} level="H" />}
                             </div>
                         </div>
 

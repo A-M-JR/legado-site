@@ -128,8 +128,14 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
                 // 🎯 REDIRECIONAMENTO INTELIGENTE
                 // -------------------------------------
 
-                // admin master -> /admin
-                if (profile.role === "admin_master" && !path.startsWith("/admin")) {
+                // admin master -> /admin (exceto preview de módulos)
+                const isAdminModuloPreview =
+                    path.startsWith("/legado-app") || path.startsWith("/melhor-idade");
+                if (
+                    profile.role === "admin_master" &&
+                    !path.startsWith("/admin") &&
+                    !isAdminModuloPreview
+                ) {
                     return navigate("/admin", { replace: true });
                 }
 
@@ -157,8 +163,8 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
                     } else if (qtdModulos === 1) {
                         const nomeModulo = modulos[0];
                         if (nomeModulo === "Legado") return navigate("/legado-app/menu", { replace: true });
-                        if (nomeModulo === "Cuidado ao Idoso") return navigate("/idoso-app/menu", { replace: true });
-                        if (nomeModulo === "Cuidados Paliativos") return navigate("/paliativo-app/menu", { replace: true });
+                        if (nomeModulo === "Cuidado ao Idoso") return navigate("/melhor-idade", { replace: true });
+                        if (nomeModulo === "Cuidados Paliativos") return navigate("/bloqueado", { replace: true, state: { status: "em_breve" } });
                     } else {
                         return navigate("/legado-app/selecao-modulos", { replace: true });
                     }

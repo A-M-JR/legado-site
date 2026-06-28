@@ -15,34 +15,47 @@ export default function SelecaoModulosPage() {
     const [loading, setLoading] = useState(true);
     const [loggingOut, setLoggingOut] = useState(false);
 
+    const isAdminPreview = userProfile?.role === "admin_master";
+
     useEffect(() => {
         async function loadInitialData() {
-            if (!userProfile?.titular_id) {
+            if (!userProfile?.titular_id && !isAdminPreview) {
                 setLoading(false);
                 return;
             }
 
             try {
-                const { data: habilitados, error: modError } = await supabase
-                    .from("titular_modulos")
-                    .select("modulo_id")
-                    .eq("titular_id", userProfile.titular_id)
-                    .eq("habilitado", true);
-
-                if (modError) throw modError;
-
-                if (habilitados && habilitados.length > 0) {
-                    const ids = habilitados.map(h => h.modulo_id);
+                if (isAdminPreview) {
                     const { data: detalhes, error: detError } = await supabase
                         .from("modulos")
                         .select("id, nome, ativo")
-                        .in("id", ids)
-                        .eq("ativo", true);
+                        .eq("ativo", true)
+                        .order("nome");
 
                     if (detError) throw detError;
                     setModulos(detalhes || []);
                 } else {
-                    setModulos([]);
+                    const { data: habilitados, error: modError } = await supabase
+                        .from("titular_modulos")
+                        .select("modulo_id")
+                        .eq("titular_id", userProfile.titular_id)
+                        .eq("habilitado", true);
+
+                    if (modError) throw modError;
+
+                    if (habilitados && habilitados.length > 0) {
+                        const ids = habilitados.map(h => h.modulo_id);
+                        const { data: detalhes, error: detError } = await supabase
+                            .from("modulos")
+                            .select("id, nome, ativo")
+                            .in("id", ids)
+                            .eq("ativo", true);
+
+                        if (detError) throw detError;
+                        setModulos(detalhes || []);
+                    } else {
+                        setModulos([]);
+                    }
                 }
 
                 if (userProfile.parceiro_id) {
@@ -65,13 +78,13 @@ export default function SelecaoModulosPage() {
             }
         }
         loadInitialData();
-    }, [userProfile]);
+    }, [userProfile, isAdminPreview]);
 
     const direcionarParaModulo = (nome: string) => {
         const n = nome.toLowerCase();
         if (n.includes("legado")) navigate("/legado-app/menu");
         else if (n.includes("idoso")) navigate("/melhor-idade");
-        else if (n.includes("paliativo")) navigate("/paliativo-app/menu");
+        else if (n.includes("paliativo")) navigate("/bloqueado", { state: { status: "em_breve" } });
     };
 
     const handleLogout = async () => {
@@ -80,7 +93,7 @@ export default function SelecaoModulosPage() {
             const { error } = await supabase.auth.signOut();
             if (error) throw error;
             toast({ title: "✅ Até logo!", description: "Você saiu do sistema com sucesso." });
-            navigate("/login");
+            navigate("/legado-app/login");
         } catch (error: any) {
             toast({ title: "Erro ao sair", description: error.message || "Tente novamente.", variant: "destructive" });
         } finally {
@@ -124,7 +137,7 @@ export default function SelecaoModulosPage() {
                         Olá, <span className="font-semibold text-legado-primary">Bem-vindo</span>
                     </h2>
                     <p className="text-slate-500 mt-2 text-sm font-medium">
-                        Qual jornada deseja seguir hoje?
+                        {isAdminPreview ? "Modo preview — todos os módulos ativos" : "Qual jornada deseja seguir hoje?"}
                     </p>
                 </div>
 
@@ -167,8 +180,18 @@ export default function SelecaoModulosPage() {
                         ))
                     )}
 
-                    {/* Botão de Sair Integrado na Lista */}
-                    <div className="pt-4">
+                    <div className="pt-4 space-y-3">
+                        {isAdminPreview && (
+                            <button
+                                onClick={() => navigate("/admin/dashboard")}
+                                className="group w-full bg-[#e3f1eb] hover:bg-[#d1e5dc] p-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 border border-[#c2e1d4] active:scale-[0.98]"
+                            >
+                                <ShieldCheck className="h-5 w-5 text-[#5ba58c]" />
+                                <span className="text-sm font-bold text-[#255f4f]">
+                                    Voltar ao Painel Admin
+                                </span>
+                            </button>
+                        )}
                         <button
                             onClick={handleLogout}
                             disabled={loggingOut}

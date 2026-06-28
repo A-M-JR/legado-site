@@ -18,7 +18,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import LegadoLayout from "@/components/legado/LegadoLayout";
 import "@/styles/legado-app.css";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 type Exercicio = {
     id: string;
@@ -66,8 +66,9 @@ export default function ExercicioDetailPage() {
     const [humor, setHumor] = useState(3);
     const [observacao, setObservacao] = useState("");
     const [concluido, setConcluido] = useState(false);
+    const [pageLoading, setPageLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [vezesRealizado, setVezesRealizado] = useState(0);
 
     useEffect(() => {
         (async () => {
@@ -78,7 +79,11 @@ export default function ExercicioDetailPage() {
                 .eq("id", id)
                 .maybeSingle();
 
-            if (data) setExercicio(data as Exercicio);
+            if (data) {
+                setExercicio(data as Exercicio);
+            } else {
+                setNotFound(true);
+            }
 
             const {
                 data: { user },
@@ -100,10 +105,7 @@ export default function ExercicioDetailPage() {
 
                 if (realData) {
                     setConcluido(true);
-                    toast.success("Exercício concluído com sucesso!", {
-                        description: "Seu progresso foi salvo.",
-                        duration: 3000,
-                    });
+                    toast({ title: "Exercício concluído", description: "Seu progresso foi salvo." });
                 }
 
                 const { count, error } = await supabase
@@ -114,6 +116,7 @@ export default function ExercicioDetailPage() {
 
                 if (!error) setVezesRealizado(count ?? 0);
             }
+            setPageLoading(false);
         })();
     }, [id]);
 
@@ -127,7 +130,7 @@ export default function ExercicioDetailPage() {
         } = await supabase.auth.getUser();
         if (userErr) console.error("auth.getUser error:", userErr);
         if (!user) {
-            alert("Usuário não autenticado.");
+            toast({ variant: "destructive", title: "Erro", description: "Usuário não autenticado." });
             setLoading(false);
             return;
         }
@@ -142,17 +145,13 @@ export default function ExercicioDetailPage() {
         const { error: insertErr } = await supabase.from("exercicios_realizados").insert(payload);
 
         if (insertErr) {
-            console.error("Insert exercicios_realizados error:", insertErr, payload);
-            alert("Não foi possível salvar o exercício. Verifique as permissões/RLS e chaves.");
+            toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar o exercício." });
             setLoading(false);
             return;
         }
 
         setConcluido(true);
-        toast.success("Exercício concluído com sucesso!", {
-            description: "Seu progresso foi salvo.",
-            duration: 3000,
-        });
+        toast({ title: "Exercício concluído!", description: "Seu progresso foi salvo." });
 
         if (exercicio.redireciona_diario) {
             setTimeout(() => {
@@ -170,7 +169,26 @@ export default function ExercicioDetailPage() {
         setLoading(false);
     }
 
-    if (!exercicio) return <p>Carregando...</p>;
+    if (pageLoading) {
+        return (
+            <LegadoLayout title="Exercício" subtitle="Carregando...">
+                <div className="flex justify-center py-12">
+                    <div className="h-10 w-10 border-4 border-legado-primary/30 border-t-legado-primary rounded-full animate-spin" />
+                </div>
+            </LegadoLayout>
+        );
+    }
+
+    if (notFound || !exercicio) {
+        return (
+            <LegadoLayout title="Exercício não encontrado" subtitle="">
+                <div className="text-center py-8">
+                    <p className="text-gray-600 mb-4">Este exercício não existe ou foi removido.</p>
+                    <button className="legado-button" onClick={() => navigate("/legado-app/exercicios")}>Voltar</button>
+                </div>
+            </LegadoLayout>
+        );
+    }
 
     const Icon = iconMap[exercicio.icone] || Sparkles;
     const cor = categoriaColors[exercicio.categoria] || "#6c63ff";

@@ -1,5 +1,5 @@
 // src/pages/legado-app/titulares/CadastroTitular.tsx
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import InputMask from "react-input-mask";
 import { supabase } from "../../../lib/supabaseClient";
@@ -34,8 +34,20 @@ export default function CadastroTitular() {
     const [imagem, setImagem] = useState<File | null>(null);
     const [imagemPreview, setImagemPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [cadastroPermitido, setCadastroPermitido] = useState<boolean | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+        (async () => {
+            const { data } = await supabase
+                .from("config_sistema")
+                .select("permite_novos_cadastros")
+                .limit(1)
+                .maybeSingle();
+            setCadastroPermitido(data?.permite_novos_cadastros !== false);
+        })();
+    }, []);
 
     function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
@@ -165,6 +177,32 @@ export default function CadastroTitular() {
             const sugest = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
             if (sugest) setNome(sugest);
         }
+    }
+
+    if (cadastroPermitido === null) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <Loader2 className="w-10 h-10 text-legado-primary animate-spin" />
+            </div>
+        );
+    }
+
+    if (!cadastroPermitido) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+                <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center space-y-4">
+                    <h1 className="text-xl font-bold text-gray-800">Cadastros temporariamente indisponíveis</h1>
+                    <p className="text-gray-600 text-sm">Novos cadastros estão desabilitados no momento. Entre em contato com o suporte.</p>
+                    <button
+                        type="button"
+                        onClick={() => navigate("/legado-app/login")}
+                        className="w-full bg-legado-primary text-white py-3 rounded-xl font-bold"
+                    >
+                        Voltar ao login
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (

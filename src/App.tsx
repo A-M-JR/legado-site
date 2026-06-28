@@ -1,122 +1,116 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-
-// PROVIDER DO TEMA (cores dinâmicas)
 import { ThemeProvider } from "./components/ThemeProvider"
-
-// PÁGINAS PÚBLICAS
-import RecordacaoPublica from './pages/recordacoes-publicas/[id]'
-import Sucesso from './pages/recordacoes-publicas/sucesso'
-import Home from './pages/recordacoes-publicas/Home'
-import ConsultaRecordacao from './pages/consulta-recordacao'
-import Privacidade from './pages/privacidade'
-
-// LEGADO APP
-import Login from './pages/legado-app/login'
-import MenuPage from './pages/legado-app/menu/page'
-import CadastroTitular from './pages/legado-app/titulares/novo'
-import EditarTitularPage from "./pages/legado-app/titulares/editar"
-import EditarDependentePage from './pages/legado-app/dependentes/editar'
-import NovaRecordacaoPage from './pages/legado-app/recordacoes/novo'
-import RecordacoesListPage from './pages/legado-app/recordacoes/list'
-import NovoDependentePage from './pages/legado-app/dependentes/novo'
-import AcolhimentoPage from './pages/legado-app/parcerias/acalme-coracao'
-import DiarioListPage from './pages/legado-app/diario/DiarioListPage'
-import DiarioFormPage from './pages/legado-app/diario/DiarioFormPage'
-import ExercicioDetailPage from './pages/legado-app/exercicios/ExercicioDetailPage'
-import ExerciciosListPage from './pages/legado-app/exercicios/ExerciciosListPage'
-import ExerciciosHistoricoPage from './pages/legado-app/exercicios/ExerciciosHistoricoPage'
+import PrivateRoute from './components/PrivateRoute'
 import { Toaster } from "@/components/ui/toaster";
 
-// NOVAS PÁGINAS
-import SelecaoModulosPage from './pages/legado-app/selecao-modulos/page'
-import AdminLayout from './admin/AdminLayout'
-import PrivateRoute from './components/PrivateRoute'
-import ParceirosPage from './admin/parceiro/ParceirosPage'
-import TitularesPage from './admin/titulares/TitularesPage'
-import BloqueadoPage from './BloqueadoPage'
-import AdminDashboard from './admin/AdminDashboard'
-import ConfiguracoesPage from './admin/configuracoes/page'
-import AdminParceiroDashboard from './admin-parceiro/dashboard'
-import ParceiroLayout from './admin-parceiro/ParceiroLayout'
-import MelhorIdadeLayout from './admin/melhor-idade/MelhorIdadeLayout'
-import DashboardMelhorIdade from './admin/melhor-idade/pages/DashboardMelhorIdade'
-import SaudePage from './admin/melhor-idade/pages/SaudePage'
-import AgendaPage from './admin/melhor-idade/pages/AgendaPage'
-import DiarioPage from './admin/melhor-idade/pages/DiarioPage'
-import EquipePage from './admin/melhor-idade/pages/EquipePage'
-import ReceitasPage from './admin/melhor-idade/pages/ReceitasPage'
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="h-10 w-10 border-4 border-legado-primary/30 border-t-legado-primary rounded-full animate-spin" />
+  </div>
+);
+
+const Home = lazy(() => import('./pages/recordacoes-publicas/Home'))
+const RecordacaoPublica = lazy(() => import('./pages/recordacoes-publicas/[id]'))
+const Sucesso = lazy(() => import('./pages/recordacoes-publicas/sucesso'))
+const ConsultaRecordacao = lazy(() => import('./pages/consulta-recordacao'))
+const Privacidade = lazy(() => import('./pages/privacidade'))
+const Login = lazy(() => import('./pages/legado-app/login'))
+const RedefinirSenha = lazy(() => import('./pages/legado-app/redefinir-senha'))
+const MenuPage = lazy(() => import('./pages/legado-app/menu/page'))
+const CadastroTitular = lazy(() => import('./pages/legado-app/titulares/novo'))
+const EditarTitularPage = lazy(() => import("./pages/legado-app/titulares/editar"))
+const EditarDependentePage = lazy(() => import('./pages/legado-app/dependentes/editar'))
+const NovaRecordacaoPage = lazy(() => import('./pages/legado-app/recordacoes/novo'))
+const RecordacoesListPage = lazy(() => import('./pages/legado-app/recordacoes/list'))
+const NovoDependentePage = lazy(() => import('./pages/legado-app/dependentes/novo'))
+const AcolhimentoPage = lazy(() => import('./pages/legado-app/parcerias/acalme-coracao'))
+const DiarioListPage = lazy(() => import('./pages/legado-app/diario/DiarioListPage'))
+const DiarioFormPage = lazy(() => import('./pages/legado-app/diario/DiarioFormPage'))
+const ExercicioDetailPage = lazy(() => import('./pages/legado-app/exercicios/ExercicioDetailPage'))
+const ExerciciosListPage = lazy(() => import('./pages/legado-app/exercicios/ExerciciosListPage'))
+const ExerciciosHistoricoPage = lazy(() => import('./pages/legado-app/exercicios/ExerciciosHistoricoPage'))
+const SelecaoModulosPage = lazy(() => import('./pages/legado-app/selecao-modulos/page'))
+const AdminLayout = lazy(() => import('./admin/AdminLayout'))
+const ParceirosPage = lazy(() => import('./admin/parceiro/ParceirosPage'))
+const TitularesPage = lazy(() => import('./admin/titulares/TitularesPage'))
+const BloqueadoPage = lazy(() => import('./BloqueadoPage'))
+const AdminDashboard = lazy(() => import('./admin/AdminDashboard'))
+const ConfiguracoesPage = lazy(() => import('./admin/configuracoes/page'))
+const AdminParceiroDashboard = lazy(() => import('./admin-parceiro/dashboard'))
+const ParceiroLayout = lazy(() => import('./admin-parceiro/ParceiroLayout'))
+const MelhorIdadeLayout = lazy(() => import('./modules/melhor-idade/components/MelhorIdadeLayout'))
+const MiHomePage = lazy(() => import('./modules/melhor-idade/pages/HomePage'))
+const MiMeuDiaPage = lazy(() => import('./modules/melhor-idade/pages/MeuDiaPage'))
+const MiMensagensPage = lazy(() => import('./modules/melhor-idade/pages/MensagensPage'))
+const MiMomentosPage = lazy(() => import('./modules/melhor-idade/pages/MomentosPage'))
+const MiApoioPage = lazy(() => import('./modules/melhor-idade/pages/ApoioPage'))
+const SaudePage = lazy(() => import('./modules/melhor-idade/pages/SaudePage'))
+const CuidadoPage = lazy(() => import('./modules/melhor-idade/pages/CuidadoPage'))
+const ReceitasPage = lazy(() => import('./modules/melhor-idade/pages/ReceitasPage'))
 
 export default function App() {
   return (
     <BrowserRouter>
-
-      {/* ====================================== */}
-      {/*      PROVIDER DO SISTEMA DE CORES      */}
-      {/* ====================================== */}
       <ThemeProvider />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/recordacoes-publicas/:id" element={<RecordacaoPublica />} />
+          <Route path="/recordacoes-publicas/sucesso/:id" element={<Sucesso />} />
+          <Route path="/consulta-recordacao" element={<ConsultaRecordacao />} />
+          <Route path="/privacidade" element={<Privacidade />} />
+          <Route path="/legado-app/login" element={<Login />} />
+          <Route path="/legado-app/redefinir-senha" element={<RedefinirSenha />} />
+          <Route path="/legado-app/titulares/novo" element={<CadastroTitular />} />
+          <Route path="/bloqueado" element={<BloqueadoPage />} />
 
-      <Routes>
-        {/* ========== PÁGINAS PÚBLICAS ========== */}
-        <Route path="/" element={<Home />} />
-        <Route path="/recordacoes-publicas/:id" element={<RecordacaoPublica />} />
-        <Route path="/recordacoes-publicas/sucesso/:id" element={<Sucesso />} />
-        <Route path="/consulta-recordacao" element={<ConsultaRecordacao />} />
-        <Route path="/privacidade" element={<Privacidade />} />
-        <Route path="/legado-app/login" element={<Login />} />
-        <Route path="/legado-app/titulares/novo" element={<CadastroTitular />} />
+          <Route element={<PrivateRoute />}>
+            <Route path="/legado-app/selecao-modulos" element={<SelecaoModulosPage />} />
 
-        {/* ========== PAGINA DE SISTEMA BLOQUEADO ========== */}
-        <Route path="/bloqueado" element={<BloqueadoPage />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="/admin/parceiros" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="parceiros" element={<ParceirosPage />} />
+              <Route path="titulares" element={<TitularesPage />} />
+              <Route path="configuracoes" element={<ConfiguracoesPage />} />
+            </Route>
 
-        {/* ========== ROTAS PROTEGIDAS ========== */}
-        <Route element={<PrivateRoute />}>
+            <Route path="/admin-parceiro" element={<ParceiroLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminParceiroDashboard />} />
+            </Route>
 
-          {/* Seleção de Módulos (Home do Cliente) */}
-          <Route path="/legado-app/selecao-modulos" element={<SelecaoModulosPage />} />
+            <Route path="/legado-app/menu" element={<MenuPage />} />
+            <Route path="/legado-app/titulares/editar/:id" element={<EditarTitularPage />} />
+            <Route path="/legado-app/dependentes/editar/:id" element={<EditarDependentePage />} />
+            <Route path="/legado-app/dependentes/novo" element={<NovoDependentePage />} />
+            <Route path="/legado-app/recordacoes/list/:id" element={<RecordacoesListPage />} />
+            <Route path="/legado-app/recordacoes/nova/:id" element={<NovaRecordacaoPage />} />
+            <Route path="/legado-app/parcerias/acalme-coracao" element={<AcolhimentoPage />} />
+            <Route path="/legado-app/diario" element={<DiarioListPage />} />
+            <Route path="/legado-app/diario/novo" element={<DiarioFormPage />} />
+            <Route path="/legado-app/diario/editar/:id" element={<DiarioFormPage />} />
+            <Route path="/legado-app/exercicios/:id" element={<ExercicioDetailPage />} />
+            <Route path="/legado-app/exercicios" element={<ExerciciosListPage />} />
+            <Route path="/legado-app/exercicios/historico" element={<ExerciciosHistoricoPage />} />
 
-          {/* PAINÉL ADMIN */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/parceiros" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="parceiros" element={<ParceirosPage />} />
-            <Route path="titulares" element={<TitularesPage />} />
-            <Route path="configuracoes" element={<ConfiguracoesPage />} />
+            <Route path="/melhor-idade" element={<MelhorIdadeLayout />}>
+              <Route index element={<MiHomePage />} />
+              <Route path="meu-dia" element={<MiMeuDiaPage />} />
+              <Route path="mensagens" element={<MiMensagensPage />} />
+              <Route path="momentos" element={<MiMomentosPage />} />
+              <Route path="apoio" element={<MiApoioPage />} />
+              <Route path="saude" element={<SaudePage />} />
+              <Route path="agenda" element={<CuidadoPage />} />
+              <Route path="receitas" element={<ReceitasPage />} />
+              <Route path="onboarding" element={<Navigate to="/melhor-idade" replace />} />
+              <Route path="diario" element={<Navigate to="/melhor-idade/momentos" replace />} />
+              <Route path="equipe" element={<Navigate to="/melhor-idade/apoio" replace />} />
+            </Route>
           </Route>
-
-          {/* Painel Parceiro Admin */}
-          <Route path="/admin-parceiro" element={<ParceiroLayout />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<AdminParceiroDashboard />} />
-          </Route>
-
-          {/* Rotas do Legado */}
-          <Route path="/legado-app/menu" element={<MenuPage />} />
-          <Route path="/legado-app/titulares/editar/:id" element={<EditarTitularPage />} />
-          <Route path="/legado-app/dependentes/editar/:id" element={<EditarDependentePage />} />
-          <Route path="/legado-app/dependentes/novo" element={<NovoDependentePage />} />
-          <Route path="/legado-app/recordacoes/list/:id" element={<RecordacoesListPage />} />
-          <Route path="/legado-app/recordacoes/nova/:id" element={<NovaRecordacaoPage />} />
-          <Route path="/legado-app/parcerias/acalme-coracao" element={<AcolhimentoPage />} />
-          <Route path="/legado-app/diario" element={<DiarioListPage />} />
-          <Route path="/legado-app/diario/novo" element={<DiarioFormPage />} />
-          <Route path="/legado-app/diario/editar/:id" element={<DiarioFormPage />} />
-          <Route path="/legado-app/exercicios/:id" element={<ExercicioDetailPage />} />
-          <Route path="/legado-app/exercicios" element={<ExerciciosListPage />} />
-          <Route path="/legado-app/exercicios/historico" element={<ExerciciosHistoricoPage />} />
-
-          {/* Rotas do Melhor Idade */}
-          <Route path="/melhor-idade" element={<MelhorIdadeLayout />}>
-            <Route index element={<DashboardMelhorIdade />} />
-            <Route path="saude" element={<SaudePage />} />
-            <Route path="agenda" element={<AgendaPage />} />
-            <Route path="diario" element={<DiarioPage />} />
-            <Route path="equipe" element={<EquipePage />} />
-            <Route path="receitas" element={<ReceitasPage />} />
-          </Route>
-        </Route>
-      </Routes>
-
+        </Routes>
+      </Suspense>
       <Toaster />
     </BrowserRouter>
   )

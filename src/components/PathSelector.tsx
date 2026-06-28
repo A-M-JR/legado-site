@@ -18,9 +18,9 @@ const PathSelector: React.FC<PathSelectorProps> = ({ onSelect, selectedPath }) =
     },
     {
       id: 'idoso' as const,
-      title: 'Autonomia do idoso',
-      description: 'Para quem deseja garantir mais segurança, organização e qualidade de vida para si ou para quem ama.',
-      cta: 'QUERO APOIO PARA IDOSOS',
+      title: 'Envelhecer com autonomia também é continuar sendo cuidado',
+      description: 'O ILC ajuda idosos e famílias a manterem vínculo, organização e cuidado contínuo com mais leveza, presença e segurança emocional.',
+      cta: 'CONHECER O CUIDADO CONTÍNUO',
       emoji: '👵'
     },
     {

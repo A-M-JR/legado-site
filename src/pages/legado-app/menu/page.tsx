@@ -1,6 +1,6 @@
 // src/pages/legado-app/MenuPage.tsx
 import { useRef, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import {
     Edit, Plus, UserPlus, UserCircle, Flower2, NotebookPen,
@@ -31,12 +31,14 @@ type Dependente = {
 
 export default function MenuPage() {
     const navigate = useNavigate();
+    const { userProfile } = useOutletContext<{ userProfile?: { role: string; titular_id: string | null } }>();
     const [titular, setTitular] = useState<Titular | null>(null);
     const [dependentes, setDependentes] = useState<Dependente[]>([]);
     const [filtro, setFiltro] = useState<"todos" | "vivos" | "falecidos">("todos");
     const [exercicioSugerido, setExercicioSugerido] = useState<any>(null);
     const [jaCuidouHoje, setJaCuidouHoje] = useState<boolean>(false);
     const [loggingOut, setLoggingOut] = useState(false);
+    const [pageLoading, setPageLoading] = useState(true);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [modalTarget, setModalTarget] = useState<null | "titular" | "dependente">(null);
@@ -56,41 +58,48 @@ export default function MenuPage() {
             const user = userRes?.user;
             if (!user) return;
 
-            const { data: titularData } = await supabase
-                .from("titulares")
-                .select("*")
-                .eq("auth_id", user.id)
-                .maybeSingle();
+            let titularData: Titular | null = null;
+
+            if (userProfile?.role === "familiar" && userProfile.titular_id) {
+                const { data } = await supabase
+                    .from("titulares")
+                    .select("*")
+                    .eq("id", userProfile.titular_id)
+                    .maybeSingle();
+                titularData = data as Titular | null;
+            } else {
+                const { data } = await supabase
+                    .from("titulares")
+                    .select("*")
+                    .eq("auth_id", user.id)
+                    .maybeSingle();
+                titularData = data as Titular | null;
+            }
 
             if (titularData) {
-                setTitular(titularData as Titular);
+                setTitular(titularData);
                 const { data: dependentesData } = await supabase
                     .from("dependentes")
                     .select("*")
-                    .eq("id_titular", (titularData as Titular).id);
+                    .eq("id_titular", titularData.id);
                 setDependentes((dependentesData as Dependente[]) || []);
             }
 
-            // Buscar exercício sugerido
-            const { data: listaEx } = await supabase
-                .from("exercicios_autocuidado")
-                .select("id, titulo")
-                .limit(1);
+            const [listaExResult, registroHojeResult] = await Promise.all([
+                supabase.from("exercicios_autocuidado").select("id, titulo").limit(1),
+                supabase
+                    .from("exercicios_realizados")
+                    .select("id")
+                    .eq("auth_id", user.id)
+                    .gte("realizado_em", new Date().toISOString().split("T")[0])
+                    .maybeSingle(),
+            ]);
 
-            if (listaEx && listaEx[0]) setExercicioSugerido(listaEx[0]);
-
-            // Verificar se já cuidou hoje
-            const hoje = new Date().toISOString().split("T")[0];
-            const { data: registroHoje } = await supabase
-                .from("exercicios_realizados")
-                .select("id")
-                .eq("auth_id", user.id)
-                .gte("realizado_em", hoje)
-                .maybeSingle();
-
-            setJaCuidouHoje(!!registroHoje);
+            if (listaExResult.data?.[0]) setExercicioSugerido(listaExResult.data[0]);
+            setJaCuidouHoje(!!registroHojeResult.data);
+            setPageLoading(false);
         })();
-    }, []);
+    }, [userProfile]);
 
     const dependentesFiltrados = useMemo(() => {
         if (filtro === "todos") return dependentes;
@@ -120,8 +129,9 @@ export default function MenuPage() {
     };
 
     const confirmarFalecimento = async () => {
-        if (!checkValidDateBR(modalData)) {
-            setDataErro("Data inválida. Use DD/MM/AAAA");
+        const result = checkValidDateBR(modalData);
+        if (!result.valid) {
+            setDataErro(result.error || "Data inválida. Use DD/MM/AAAA");
             return;
         }
 
@@ -137,6 +147,8 @@ export default function MenuPage() {
             if (!error) {
                 setTitular({ ...titular, falecido: true, data_falecimento: dataISO });
                 toast({ title: "Ciclo encerrado com respeito." });
+            } else {
+                toast({ variant: "destructive", title: "Erro", description: "Não foi possível registrar." });
             }
         } else if (modalTarget === "dependente" && modalDepId) {
             const { error } = await supabase
@@ -149,6 +161,8 @@ export default function MenuPage() {
                     prev.map(d => d.id === modalDepId ? { ...d, falecido: true, data_falecimento: dataISO } : d)
                 );
                 toast({ title: "Ciclo encerrado com respeito." });
+            } else {
+                toast({ variant: "destructive", title: "Erro", description: "Não foi possível registrar." });
             }
         }
 
@@ -171,17 +185,25 @@ export default function MenuPage() {
                 );
             }
             toast({ title: "Pessoa reativada com sucesso." });
+        } else {
+            toast({ variant: "destructive", title: "Erro", description: "Não foi possível reativar." });
         }
     };
 
     const handleLogout = async () => {
         setLoggingOut(true);
         await supabase.auth.signOut();
-        navigate("/login");
+        navigate("/legado-app/login");
     };
 
     return (
         <div className="legado-app-wrapper min-h-screen pb-32 pt-4 px-4 overflow-x-hidden">
+            {pageLoading ? (
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="w-10 h-10 text-[#255f4f] animate-spin" />
+                </div>
+            ) : (
+            <>
 
             {/* Top Bar - Botão Voltar ao Menu de Módulos */}
             <div className="w-full max-w-md mx-auto mb-6 flex items-center justify-between animate-in fade-in slide-in-from-top duration-500">
@@ -211,8 +233,11 @@ export default function MenuPage() {
                 {/* TITULAR - Card Premium Estilo Imagem */}
                 {titular && (
                     <div
-                        className="legado-titular-container group relative overflow-hidden border border-white/40 shadow-xl hover:shadow-2xl transition-all duration-500 animate-in zoom-in-95"
+                        role="button"
+                        tabIndex={0}
+                        className="legado-titular-container group relative overflow-hidden border border-white/40 shadow-xl hover:shadow-2xl transition-all duration-500 animate-in zoom-in-95 cursor-pointer"
                         onClick={() => navigate(`/legado-app/recordacoes/list/${titular.id}`)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") navigate(`/legado-app/recordacoes/list/${titular.id}`); }}
                     >
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
@@ -401,6 +426,8 @@ export default function MenuPage() {
                         </div>
                     </div>
                 </div>
+            )}
+            </>
             )}
         </div>
     );

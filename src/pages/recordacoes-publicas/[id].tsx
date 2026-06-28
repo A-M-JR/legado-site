@@ -1,27 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabaseClient';
+import { validateImageFile, MAX_RECORDACAO_MENSAGEM, MAX_RECORDACAO_NOME } from '@/lib/validation';
 import { FaUserCircle } from 'react-icons/fa';
-
-const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL!,
-    import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
-
-const supabaseAnon = createClient(
-    import.meta.env.VITE_SUPABASE_URL!,
-    import.meta.env.VITE_SUPABASE_ANON_KEY!,
-    {
-        global: {
-            fetch: window.fetch,
-        },
-        auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-            detectSessionInUrl: false,
-        },
-    }
-);
 
 export default function RecordacaoPublica() {
     const { id: dependenteId } = useParams();
@@ -32,15 +13,19 @@ export default function RecordacaoPublica() {
     const [imagemPreview, setImagemPreview] = useState<string | null>(null);
     const [enviando, setEnviando] = useState(false);
     const [sucesso, setSucesso] = useState(false);
-    const [dependente, setDependente] = useState<any>(null);
+    const [carregandoDependente, setCarregandoDependente] = useState(true);
+    const [dependenteNaoEncontrado, setDependenteNaoEncontrado] = useState(false);
+    const [dependente, setDependente] = useState<{ nome: string; data_nascimento?: string; data_falecimento?: string; imagem_url?: string } | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchDependente = async () => {
             if (!dependenteId) return;
+            setCarregandoDependente(true);
+            setDependenteNaoEncontrado(false);
             const cleanId = dependenteId.trim();
             // Tenta buscar como dependente
-            let { data, error } = await supabaseAnon
+            let { data, error } = await supabase
                 .from('dependentes')
                 .select('nome, data_nascimento, data_falecimento, imagem_url')
                 .eq('id', cleanId)
@@ -48,7 +33,7 @@ export default function RecordacaoPublica() {
 
             if (!data || error) {
                 // Se não achar, tenta como titular
-                const { data: titularData, error: titularError } = await supabaseAnon
+                const { data: titularData, error: titularError } = await supabase
                     .from('titulares')
                     .select('nome, data_nascimento, data_falecimento, imagem_url')
                     .eq('id', cleanId)
@@ -56,13 +41,17 @@ export default function RecordacaoPublica() {
 
                 if (titularData && !titularError) {
                     setDependente(titularData);
+                    setCarregandoDependente(false);
                     return;
                 } else {
                     setDependente(null);
+                    setDependenteNaoEncontrado(true);
+                    setCarregandoDependente(false);
                     return;
                 }
             }
             setDependente(data);
+            setCarregandoDependente(false);
         };
 
         fetchDependente();
@@ -83,7 +72,24 @@ export default function RecordacaoPublica() {
     }, [imagem]);
 
     const handleUpload = async () => {
-        if (!dependenteId || !mensagem) return;
+        if (!dependenteId || !mensagem.trim()) return;
+
+        if (mensagem.length > MAX_RECORDACAO_MENSAGEM) {
+            alert(`Mensagem muito longa. Máximo ${MAX_RECORDACAO_MENSAGEM} caracteres.`);
+            return;
+        }
+        if (nome.length > MAX_RECORDACAO_NOME) {
+            alert(`Nome muito longo. Máximo ${MAX_RECORDACAO_NOME} caracteres.`);
+            return;
+        }
+        if (imagem) {
+            const imgError = validateImageFile(imagem);
+            if (imgError) {
+                alert(imgError);
+                return;
+            }
+        }
+
         setEnviando(true);
 
         // 1. Tenta encontrar como dependente
@@ -169,6 +175,14 @@ export default function RecordacaoPublica() {
     return (
         <div className="min-h-screen bg-[#E3F1EB] flex items-center justify-center px-4 py-10">
             <div className="bg-white w-full max-w-xl p-6 rounded-2xl shadow-xl border border-[#D1F2EB] animate-fade-in">
+                {carregandoDependente ? (
+                    <div className="text-center py-12 text-[#007080]">Carregando...</div>
+                ) : dependenteNaoEncontrado ? (
+                    <div className="text-center py-12">
+                        <p className="text-red-600 font-medium">Homenageado não encontrado.</p>
+                    </div>
+                ) : (
+                <>
                 {dependente && (
                     <div className="flex flex-col items-center mb-8">
                         {dependente.imagem_url ? (
@@ -263,6 +277,8 @@ export default function RecordacaoPublica() {
                     <div className="mt-4 bg-green-100 text-green-700 text-center p-3 rounded-lg shadow-sm">
                         Recordação enviada com sucesso 💙
                     </div>
+                )}
+                </>
                 )}
             </div>
         </div>
