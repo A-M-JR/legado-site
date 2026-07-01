@@ -1,11 +1,10 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pill, Calendar, Sparkles, Mail, ChevronRight } from "lucide-react";
+import { Pill, Calendar, Sparkles, Users, ChevronRight } from "lucide-react";
 import { MoodSelector } from "../components/MoodSelector";
 import { MiCard, MiListItem } from "../components/MiCard";
 import { useMelhorIdade } from "../context/MelhorIdadeContext";
 import { agendaService } from "../services/agendaService";
-import { mensagensService } from "../services/mensagensService";
 
 const ICON_MAP = {
     medicacao: Pill,
@@ -25,7 +24,6 @@ export default function HomePage() {
     const navigate = useNavigate();
     const { profile, updateHumor } = useMelhorIdade();
     const tarefas = useMemo(() => agendaService.list().slice(0, 3), []);
-    const msgsNaoLidas = mensagensService.countNaoLidas();
 
     const fotoPerfil =
         profile.fotoUrl ||
@@ -72,36 +70,35 @@ export default function HomePage() {
                                 titulo={t.titulo}
                                 descricao={t.descricao}
                                 horario={t.horario}
-                                onClick={() => navigate("/melhor-idade/meu-dia")}
+                                onClick={() => navigate("/melhor-idade/minha-rotina")}
                             />
                         );
                     })}
                 </div>
                 <button
                     type="button"
-                    onClick={() => navigate("/melhor-idade/meu-dia")}
+                    onClick={() => navigate("/melhor-idade/minha-rotina")}
                     className="text-sm font-semibold text-[#5ba58c] hover:underline flex items-center gap-1 px-1"
                 >
-                    Ver meu dia completo <ChevronRight className="h-4 w-4" />
+                    Ver minha rotina completa <ChevronRight className="h-4 w-4" />
                 </button>
             </section>
 
             <MiCard
                 variant="accent"
-                onClick={() => navigate("/melhor-idade/mensagens")}
+                onClick={() => navigate("/melhor-idade/familia")}
                 className="p-4 sm:p-5"
             >
                 <div className="flex items-center gap-3 sm:gap-4">
                     <div className="p-3 sm:p-4 rounded-2xl bg-violet-100 shadow-sm shrink-0">
-                        <Mail className="h-6 w-6 sm:h-7 sm:w-7 text-violet-600" />
+                        <Users className="h-6 w-6 sm:h-7 sm:w-7 text-violet-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="font-bold text-[#255f4f] text-sm sm:text-base">
-                            Mensagens para você
+                            Minha família
                         </p>
                         <p className="text-xs sm:text-sm text-[#6b8c7d]">
-                            Você tem {msgsNaoLidas} mensagen{msgsNaoLidas === 1 ? "" : "s"} nova
-                            {msgsNaoLidas === 1 ? "" : "s"}
+                            Veja mensagens e memórias compartilhadas
                         </p>
                     </div>
                     <ChevronRight className="h-5 w-5 text-[#9db4aa] shrink-0" />

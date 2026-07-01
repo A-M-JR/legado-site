@@ -39,7 +39,19 @@ type PersonData = {
     imagem_url?: string;
 };
 
-export default function RecordacoesListPage() {
+type RecordacoesListPageProps = {
+    embedded?: boolean;
+    backPath?: string;
+    novaBasePath?: string;
+    apoioPath?: string;
+};
+
+export default function RecordacoesListPage({
+    embedded = false,
+    backPath,
+    novaBasePath = "/legado-app/recordacoes/nova",
+    apoioPath = "/legado-app/parcerias/acalme-coracao",
+}: RecordacoesListPageProps) {
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -178,13 +190,18 @@ export default function RecordacoesListPage() {
         return filtro === "todos" ? "Exibindo: Todos" : filtro === "7dias" ? "Últimos 7 dias" : "Últimos 30 dias";
     }
 
+    const voltar = () => {
+        if (backPath) navigate(backPath);
+        else navigate(-1);
+    };
+
     return (
-        <div className="legado-app-wrapper min-h-screen pb-32 pt-4 px-4 overflow-x-hidden bg-gradient-to-b from-[#e6f4f1] to-white">
+        <div className={`legado-app-wrapper min-h-screen ${embedded ? "pb-8" : "pb-32"} pt-4 px-4 overflow-x-hidden bg-gradient-to-b from-[#e6f4f1] to-white`}>
 
             {/* Top Bar - Botão Voltar ao Menu de Módulos */}
             <div className="w-full max-w-md mx-auto mb-6 flex items-center justify-between animate-in fade-in slide-in-from-top duration-500">
                 <button
-                    onClick={() => navigate(-1)}
+                    onClick={voltar}
                     className="flex items-center gap-2 text-[#255f4f] font-bold text-sm bg-white/60 backdrop-blur-sm px-3 py-2 rounded-xl hover:bg-white transition-all active:scale-95 shadow-sm"
                     aria-label="Voltar"
                 >
@@ -294,7 +311,7 @@ export default function RecordacoesListPage() {
                 <div className="pt-2 px-2 flex flex-col items-center gap-3 w-full">
                     <button
                         className="bg-[#FFADB2] px-5 py-3 rounded-xl font-extrabold flex items-center justify-center gap-3 w-full max-w-md text-base shadow-lg hover:shadow-xl transition"
-                        onClick={() => navigate("/legado-app/parcerias/acalme-coracao")}
+                        onClick={() => navigate(apoioPath)}
                         aria-label="Acalme seu coração"
                     >
                         <HeartHandshake className="text-[#b22222]" size={20} />
@@ -312,7 +329,7 @@ export default function RecordacoesListPage() {
                         </button>
                         <button
                             className="bg-[#5BA58C] flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-extrabold shadow-md hover:shadow-lg transition"
-                            onClick={() => navigate(`/legado-app/recordacoes/nova/${dependenteId}`)}
+                            onClick={() => navigate(`${novaBasePath}/${dependenteId}`)}
                             aria-label="Adicionar recordação"
                         >
                             <PlusCircle size={20} />
@@ -498,6 +515,7 @@ export default function RecordacoesListPage() {
                 )}
             </div>
 
+            {!embedded && (
             <nav
                 className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-md bg-white/95 backdrop-blur-md border border-[#d8e8e0] rounded-2xl shadow-2xl px-6 py-3.5 flex items-center justify-between z-50 animate-in slide-in-from-bottom duration-500"
             >
@@ -514,6 +532,7 @@ export default function RecordacoesListPage() {
                     <span className="text-[11px] font-bold uppercase tracking-tighter">Exercícios</span>
                 </button>
             </nav>
+            )}
         </div>
     );
 }

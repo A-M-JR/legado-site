@@ -41,13 +41,10 @@ const AdminParceiroDashboard = lazy(() => import('./admin-parceiro/dashboard'))
 const ParceiroLayout = lazy(() => import('./admin-parceiro/ParceiroLayout'))
 const MelhorIdadeLayout = lazy(() => import('./modules/melhor-idade/components/MelhorIdadeLayout'))
 const MiHomePage = lazy(() => import('./modules/melhor-idade/pages/HomePage'))
-const MiMeuDiaPage = lazy(() => import('./modules/melhor-idade/pages/MeuDiaPage'))
-const MiMensagensPage = lazy(() => import('./modules/melhor-idade/pages/MensagensPage'))
-const MiMomentosPage = lazy(() => import('./modules/melhor-idade/pages/MomentosPage'))
-const MiApoioPage = lazy(() => import('./modules/melhor-idade/pages/ApoioPage'))
 const SaudePage = lazy(() => import('./modules/melhor-idade/pages/SaudePage'))
 const CuidadoPage = lazy(() => import('./modules/melhor-idade/pages/CuidadoPage'))
 const ReceitasPage = lazy(() => import('./modules/melhor-idade/pages/ReceitasPage'))
+const MiFamiliaPage = lazy(() => import('./modules/melhor-idade/pages/FamiliaPage'))
 
 export default function App() {
   return (
@@ -97,16 +94,67 @@ export default function App() {
 
             <Route path="/melhor-idade" element={<MelhorIdadeLayout />}>
               <Route index element={<MiHomePage />} />
-              <Route path="meu-dia" element={<MiMeuDiaPage />} />
-              <Route path="mensagens" element={<MiMensagensPage />} />
-              <Route path="momentos" element={<MiMomentosPage />} />
-              <Route path="apoio" element={<MiApoioPage />} />
+              <Route path="minha-rotina" element={<CuidadoPage />} />
+              <Route path="meu-cuidado" element={<ReceitasPage />} />
+              <Route
+                path="historias"
+                element={
+                  <DiarioListPage
+                    embedded
+                    basePath="/melhor-idade/historias"
+                    pageTitle="Histórias e memórias"
+                    pageSubtitle="Registre fotos, textos e momentos do seu dia em um espaço só seu."
+                  />
+                }
+              />
+              <Route
+                path="historias/novo"
+                element={<DiarioFormPage embedded basePath="/melhor-idade/historias" />}
+              />
+              <Route
+                path="historias/editar/:id"
+                element={<DiarioFormPage embedded basePath="/melhor-idade/historias" />}
+              />
+              <Route path="familia" element={<MiFamiliaPage />} />
+              <Route path="familia/nova/:id" element={<NovaRecordacaoPage embedded />} />
+              <Route
+                path="familia/:id"
+                element={
+                  <RecordacoesListPage
+                    embedded
+                    backPath="/melhor-idade/familia"
+                    novaBasePath="/melhor-idade/familia/nova"
+                    apoioPath="/melhor-idade/apoio-orientacao"
+                  />
+                }
+              />
+              <Route
+                path="apoio-orientacao"
+                element={
+                  <AcolhimentoPage
+                    embedded
+                    pageTitle="Conteúdo de apoio e orientação"
+                    pageSubtitle={
+                      <>
+                        <strong className="text-[#007080]">Você não está sozinho</strong>
+                        <span className="block text-sm text-[#4f665a]">
+                          Vídeos e orientações para cuidar de si com carinho.
+                        </span>
+                      </>
+                    }
+                  />
+                }
+              />
+              <Route path="meu-dia" element={<Navigate to="/melhor-idade/minha-rotina" replace />} />
+              <Route path="mensagens" element={<Navigate to="/melhor-idade/familia" replace />} />
+              <Route path="momentos" element={<Navigate to="/melhor-idade/historias" replace />} />
+              <Route path="apoio" element={<Navigate to="/melhor-idade/apoio-orientacao" replace />} />
+              <Route path="agenda" element={<Navigate to="/melhor-idade/minha-rotina" replace />} />
+              <Route path="receitas" element={<Navigate to="/melhor-idade/meu-cuidado" replace />} />
               <Route path="saude" element={<SaudePage />} />
-              <Route path="agenda" element={<CuidadoPage />} />
-              <Route path="receitas" element={<ReceitasPage />} />
               <Route path="onboarding" element={<Navigate to="/melhor-idade" replace />} />
-              <Route path="diario" element={<Navigate to="/melhor-idade/momentos" replace />} />
-              <Route path="equipe" element={<Navigate to="/melhor-idade/apoio" replace />} />
+              <Route path="diario" element={<Navigate to="/melhor-idade/historias" replace />} />
+              <Route path="equipe" element={<Navigate to="/melhor-idade/apoio-orientacao" replace />} />
             </Route>
           </Route>
         </Routes>

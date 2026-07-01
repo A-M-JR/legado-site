@@ -5,7 +5,7 @@ import { supabase } from "../../../lib/supabaseClient";
 import "@/styles/legado-app.css";
 import LegadoLayout from "@/components/legado/LegadoLayout";
 
-export default function NovaRecordacaoPage() {
+export default function NovaRecordacaoPage({ embedded = false }: { embedded?: boolean }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -100,7 +100,7 @@ export default function NovaRecordacaoPage() {
   const nomeHomenageado = useMemo(() => homenageado?.nome || "Homenageado", [homenageado]);
 
   return (
-    <LegadoLayout title="Nova Recordação" subtitle={`Escreva uma mensagem carinhosa para ${nomeHomenageado}`}> 
+    <LegadoLayout embedded={embedded} showBack={!embedded} title="Nova Recordação" subtitle={`Escreva uma mensagem carinhosa para ${nomeHomenageado}`}>
       <form onSubmit={handleSubmit} className="bg-white/70 backdrop-blur-sm border border-white/40 rounded-3xl p-6 shadow-xl space-y-5 w-full">
         {homenageado && (
           <div className="flex flex-col items-center">

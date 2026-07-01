@@ -15,7 +15,15 @@ type FormState = {
     tipo_pessoa?: "titular" | "dependente" | null;
 };
 
-export default function DiarioFormPage() {
+type DiarioFormPageProps = {
+    embedded?: boolean;
+    basePath?: string;
+};
+
+export default function DiarioFormPage({
+    embedded = false,
+    basePath = "/legado-app/diario",
+}: DiarioFormPageProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const { id } = useParams();
@@ -85,7 +93,7 @@ export default function DiarioFormPage() {
             if (error) {
                 toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar." });
             } else {
-                navigate("/legado-app/diario");
+                navigate(basePath);
             }
         } else {
             const { error } = await supabase.from("diarios_luto").insert({
@@ -100,7 +108,7 @@ export default function DiarioFormPage() {
             if (error) {
                 toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar." });
             } else {
-                navigate("/legado-app/diario");
+                navigate(basePath);
             }
         }
         setLoading(false);
@@ -110,6 +118,8 @@ export default function DiarioFormPage() {
 
     return (
         <LegadoLayout
+            embedded={embedded}
+            showBack={!embedded}
             title={id ? "Editar entrada" : "Nova entrada"}
             subtitle={<span className="text-sm text-[#4f665a]">Um espaço seguro para acolher seus sentimentos.</span>}
         >

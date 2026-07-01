@@ -3,13 +3,11 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
     Home,
     CalendarDays,
-    Mail,
-    Image,
+    Pill,
+    BookOpen,
+    Users,
     HeartHandshake,
     LayoutGrid,
-    Activity,
-    Pill,
-    ClipboardList,
     type LucideIcon,
 } from "lucide-react";
 import clsx from "clsx";
@@ -20,23 +18,36 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: {
+    label: string;
+    shortLabel?: string;
+    path: string;
+    icon: LucideIcon;
+    end?: boolean;
+}[] = [
     { label: "Início", path: "/melhor-idade", icon: Home, end: true },
-    { label: "Meu dia", path: "/melhor-idade/meu-dia", icon: CalendarDays },
-    { label: "Mensagens", path: "/melhor-idade/mensagens", icon: Mail },
-    { label: "Momentos", path: "/melhor-idade/momentos", icon: Image },
-    { label: "Apoio", path: "/melhor-idade/apoio", icon: HeartHandshake },
+    { label: "Minha rotina", shortLabel: "Rotina", path: "/melhor-idade/minha-rotina", icon: CalendarDays },
+    { label: "Meu cuidado", shortLabel: "Cuidado", path: "/melhor-idade/meu-cuidado", icon: Pill },
+    { label: "Histórias e memórias", shortLabel: "Histórias", path: "/melhor-idade/historias", icon: BookOpen },
+    { label: "Minha família", shortLabel: "Família", path: "/melhor-idade/familia", icon: Users },
+    { label: "Apoio e orientação", shortLabel: "Apoio", path: "/melhor-idade/apoio-orientacao", icon: HeartHandshake },
 ];
 
-const EXTRA_NAV_ITEMS: { label: string; path: string; icon: LucideIcon }[] = [
-    { label: "Saúde e Bem-estar", path: "/melhor-idade/saude", icon: Activity },
-    { label: "Receitas e Consultas", path: "/melhor-idade/receitas", icon: Pill },
-    { label: "Hora do Cuidado", path: "/melhor-idade/agenda", icon: ClipboardList },
-];
+const MOBILE_PRIMARY = NAV_ITEMS.slice(0, 4);
+const MOBILE_EXTRA = NAV_ITEMS.slice(4);
 
 function isExtraPath(pathname: string) {
-    return EXTRA_NAV_ITEMS.some(
+    return MOBILE_EXTRA.some(
         (item) => pathname === item.path || pathname.startsWith(`${item.path}/`)
+    );
+}
+
+function isNavPath(pathname: string) {
+    return NAV_ITEMS.some(
+        (item) =>
+            item.end
+                ? pathname === item.path
+                : pathname === item.path || pathname.startsWith(`${item.path}/`)
     );
 }
 
@@ -49,7 +60,7 @@ export function BottomNav() {
     return (
         <>
             <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#d1e5dc] px-0.5 py-1.5 flex justify-around items-center z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
-                {NAV_ITEMS.map((item) => (
+                {MOBILE_PRIMARY.map((item) => (
                     <NavLink
                         key={item.path}
                         to={item.path}
@@ -63,7 +74,7 @@ export function BottomNav() {
                     >
                         <item.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                         <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-center leading-tight">
-                            {item.label}
+                            {item.shortLabel || item.label}
                         </span>
                     </NavLink>
                 ))}
@@ -91,8 +102,10 @@ export function BottomNav() {
                         <SheetTitle className="text-[#255f4f]">Mais recursos</SheetTitle>
                     </SheetHeader>
                     <nav className="space-y-1">
-                        {EXTRA_NAV_ITEMS.map((item) => {
-                            const active = location.pathname === item.path;
+                        {MOBILE_EXTRA.map((item) => {
+                            const active =
+                                location.pathname === item.path ||
+                                location.pathname.startsWith(`${item.path}/`);
                             return (
                                 <button
                                     key={item.path}
@@ -120,4 +133,4 @@ export function BottomNav() {
     );
 }
 
-export { NAV_ITEMS, EXTRA_NAV_ITEMS, isExtraPath };
+export { NAV_ITEMS, isNavPath };

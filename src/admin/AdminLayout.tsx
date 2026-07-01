@@ -84,16 +84,9 @@ export default function AdminLayout() {
                 const { data: { user } } = await supabase.auth.getUser();
 
                 if (user) {
-                    // Busca nome/email da tabela usuarios_app
-                    const { data: perfilApp, error: perfilError } = await supabase
-                        .from("usuarios_app")
-                        .select("nome, email, role")
-                        .eq("auth_id", user.id)
-                        .maybeSingle();
-
                     setAdminProfile({
-                        nome: perfilApp?.nome || user.user_metadata?.full_name || "Administrador",
-                        email: perfilApp?.email || user.email || "master@legado.com",
+                        nome: user.user_metadata?.full_name || "Administrador",
+                        email: user.email || "master@legado.com",
                     });
                 }
 

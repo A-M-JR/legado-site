@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { maskCPF, maskTelefone } from "@/lib/masks";
 import {
@@ -49,12 +49,11 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
     const [moduloIdoso, setModuloIdoso] = useState(false);
     const [moduloPaliativo, setModuloPaliativo] = useState(false);
 
-    // Carregar parceiros ao abrir
-    useState(() => {
+    useEffect(() => {
         if (open) {
             loadParceiros();
         }
-    });
+    }, [open]);
 
     async function loadParceiros() {
         const { data } = await supabase
@@ -140,24 +139,54 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
         return true;
     }
 
-    async function criarTitular() {
-        if (!validarCampos()) return;
+    function traduzirErro(mensagem: string) {
+        const erros: Record<string, string> = {
+            "User already registered":
+                "Este e-mail já existe na autenticação. Use outro e-mail ou remova o cadastro incompleto no painel do Supabase.",
+            "A user with this email address has already been registered":
+                "Este e-mail já existe na autenticação. Use outro e-mail ou remova o cadastro incompleto no painel do Supabase.",
+        };
+        return erros[mensagem] ?? mensagem;
+    }
 
-        setLoading(true);
+    async function verificarDuplicados() {
+        const emailNorm = email.trim().toLowerCase();
+        const cpfLimpo = cpf.replace(/\D/g, "");
 
-        try {
-            // 1. Criar usuário no auth.users
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email,
-                password: senha,
+        const { data: porEmail } = await supabase
+            .from("titulares")
+            .select("id")
+            .ilike("email", emailNorm)
+            .maybeSingle();
+
+        if (porEmail) {
+            toast({
+                title: "E-mail já cadastrado",
+                description: "Já existe um titular com este e-mail.",
+                variant: "destructive",
             });
+            return false;
+        }
 
-            if (authError) throw authError;
-            if (!authData.user) throw new Error("Erro ao criar usuário na autenticação");
+        const { data: porCpf } = await supabase
+            .from("titulares")
+            .select("id")
+            .eq("cpf", cpfLimpo)
+            .maybeSingle();
 
-            const authId = authData.user.id;
+        if (porCpf) {
+            toast({
+                title: "CPF já cadastrado",
+                description: "Já existe um titular com este CPF.",
+                variant: "destructive",
+            });
+            return false;
+        }
 
-            // 2. Upload da foto (se houver)
+        return true;
+    }
+
+    async function finalizarCadastro(authId: string) {
             let fotoUrl = null;
             if (fotoFile) {
                 const fileName = `${authId}-${Date.now()}.${fotoFile.name.split(".").pop()}`;
@@ -186,7 +215,6 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
                     data_nascimento: dataNascimento,
                     email,
                     imagem_url: fotoUrl,
-                    parceiro_id: parceiroId === "none" ? null : parceiroId,
                 })
                 .select("id")
                 .single();
@@ -201,6 +229,7 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
                 role: "titular",
                 titular_id: titularId,
                 parceiro_id: parceiroId === "none" ? null : parceiroId,
+                status: "ativo",
             });
 
             if (usuarioAppError) throw usuarioAppError;
@@ -213,17 +242,17 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
 
                 if (moduloLegado) {
                     const legado = modulos.find((m) => m.nome === "Legado");
-                    if (legado) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: legado.id });
+                    if (legado) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: legado.id, habilitado: true });
                 }
 
                 if (moduloIdoso) {
                     const idoso = modulos.find((m) => m.nome === "Cuidados ao Idoso");
-                    if (idoso) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: idoso.id });
+                    if (idoso) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: idoso.id, habilitado: true });
                 }
 
                 if (moduloPaliativo) {
                     const paliativo = modulos.find((m) => m.nome === "Cuidados Paliativos");
-                    if (paliativo) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: paliativo.id });
+                    if (paliativo) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: paliativo.id, habilitado: true });
                 }
 
                 if (modulosParaHabilitar.length > 0) {
@@ -239,6 +268,27 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
             limparFormulario();
             refresh();
             onClose();
+    }
+
+    async function criarTitular() {
+        if (!validarCampos()) return;
+
+        setLoading(true);
+
+        const { data: { session: adminSession } } = await supabase.auth.getSession();
+
+        try {
+            if (!(await verificarDuplicados())) return;
+
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: email.trim(),
+                password: senha,
+            });
+
+            if (authError) throw new Error(traduzirErro(authError.message));
+            if (!authData.user) throw new Error("Erro ao criar usuário na autenticação");
+
+            await finalizarCadastro(authData.user.id);
         } catch (error: any) {
             toast({
                 title: "Erro ao criar titular",
@@ -246,6 +296,12 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
                 variant: "destructive",
             });
         } finally {
+            if (adminSession) {
+                await supabase.auth.setSession({
+                    access_token: adminSession.access_token,
+                    refresh_token: adminSession.refresh_token,
+                });
+            }
             setLoading(false);
         }
     }

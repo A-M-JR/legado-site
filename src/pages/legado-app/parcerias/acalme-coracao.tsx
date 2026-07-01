@@ -68,7 +68,22 @@ const PSICOLOGAS: Psicologa[] = [
     },
 ];
 
-export default function AcolhimentoPage() {
+type AcolhimentoPageProps = {
+    embedded?: boolean;
+    pageTitle?: string;
+    pageSubtitle?: React.ReactNode;
+};
+
+export default function AcolhimentoPage({
+    embedded = false,
+    pageTitle = "Acolhimento",
+    pageSubtitle = (
+        <>
+            <strong className="text-[#007080]">Você não está sozinho</strong>
+            <span className="block text-sm text-[#4f665a]">A saudade é a prova do amor que permanece. Sinta, honre e cuide do seu coração no seu tempo.</span>
+        </>
+    ),
+}: AcolhimentoPageProps) {
     const navigate = useNavigate();
     const [expanded, setExpanded] = useState<number | null>(null);
 
@@ -84,13 +99,10 @@ export default function AcolhimentoPage() {
 
     return (
         <LegadoLayout
-            title="Acolhimento"
-            subtitle={
-                <>
-                    <strong className="text-[#007080]">Você não está sozinho</strong>
-                    <span className="block text-sm text-[#4f665a]">A saudade é a prova do amor que permanece. Sinta, honre e cuide do seu coração no seu tempo.</span>
-                </>
-            }
+            embedded={embedded}
+            showBack={!embedded}
+            title={pageTitle}
+            subtitle={pageSubtitle}
         >
             <div className="w-full">
                 <div className="space-y-4 px-1">

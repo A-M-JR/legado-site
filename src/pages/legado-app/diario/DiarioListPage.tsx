@@ -19,7 +19,19 @@ type Diario = {
   updated_at: string;
 };
 
-export default function DiarioListPage() {
+type DiarioListPageProps = {
+  embedded?: boolean;
+  basePath?: string;
+  pageTitle?: string;
+  pageSubtitle?: string;
+};
+
+export default function DiarioListPage({
+  embedded = false,
+  basePath = "/legado-app/diario",
+  pageTitle = "Meu Diário do Luto",
+  pageSubtitle = "Um espaço seguro para acolher seus sentimentos. Escreva no seu tempo.",
+}: DiarioListPageProps) {
   const navigate = useNavigate();
   const [items, setItems] = useState<Diario[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,15 +86,17 @@ export default function DiarioListPage() {
 
   return (
     <LegadoLayout
-      title="Meu Diário do Luto"
-      subtitle="Um espaço seguro para acolher seus sentimentos. Escreva no seu tempo."
+      embedded={embedded}
+      title={pageTitle}
+      subtitle={pageSubtitle}
+      showBack={!embedded}
     >
       <div className="w-full space-y-6">
         {/* CTA central */}
         <div className="w-full flex justify-center">
           <button
             className="flex items-center justify-center gap-2 bg-[#6c63ff] text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-[#5a52d5] transition-all active:scale-95 w-full max-w-[280px]"
-            onClick={() => navigate("/legado-app/diario/novo")}
+            onClick={() => navigate(`${basePath}/novo`)}
           >
             <Plus size={20} />
             Nova entrada
@@ -114,7 +128,7 @@ export default function DiarioListPage() {
             </p>
             <button
               className="mt-6 text-[#6c63ff] font-bold hover:underline"
-              onClick={() => navigate("/legado-app/diario/novo")}
+              onClick={() => navigate(`${basePath}/novo`)}
             >
               Começar agora
             </button>
@@ -145,7 +159,7 @@ export default function DiarioListPage() {
                       title="Editar"
                       className="p-2 text-[#64748b] hover:text-[#255f4f] hover:bg-[#f1f5f9] rounded-lg transition-colors"
                       onClick={() =>
-                        navigate(`/legado-app/diario/editar/${it.id}`)
+                        navigate(`${basePath}/editar/${it.id}`)
                       }
                     >
                       <Edit size={18} />
@@ -189,7 +203,7 @@ export default function DiarioListPage() {
                   <button
                     className="text-[#6c63ff] text-sm font-bold hover:underline flex items-center gap-1"
                     onClick={() =>
-                      navigate(`/legado-app/diario/editar/${it.id}`)
+                      navigate(`${basePath}/editar/${it.id}`)
                     }
                   >
                     Ler entrada completa

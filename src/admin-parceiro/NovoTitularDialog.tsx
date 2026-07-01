@@ -54,6 +54,8 @@ export default function NovoTitularDialog({ open, onClose, refresh, parceiroId }
 
         setLoading(true);
 
+        const { data: { session: adminSession } } = await supabase.auth.getSession();
+
         try {
             // 1. Criar usuário no Auth
             const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -133,6 +135,12 @@ export default function NovoTitularDialog({ open, onClose, refresh, parceiroId }
         } catch (error: any) {
             toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" });
         } finally {
+            if (adminSession) {
+                await supabase.auth.setSession({
+                    access_token: adminSession.access_token,
+                    refresh_token: adminSession.refresh_token,
+                });
+            }
             setLoading(false);
         }
     }

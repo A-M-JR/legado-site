@@ -19,21 +19,33 @@ const VARIANTS: Record<MiCardVariant, string> = {
 };
 
 export function MiCard({ children, onClick, className, variant = "default" }: MiCardProps) {
-    const Tag = onClick ? "button" : "div";
-    return (
-        <Tag
-            type={onClick ? "button" : undefined}
-            onClick={onClick}
-            className={clsx(
-                "w-full text-left rounded-[20px] sm:rounded-2xl border shadow-sm transition-all duration-200",
-                VARIANTS[variant],
-                onClick && "hover:shadow-md active:scale-[0.99] cursor-pointer",
-                className
-            )}
-        >
-            {children}
-        </Tag>
+    const classes = clsx(
+        "w-full text-left rounded-[20px] sm:rounded-2xl border shadow-sm transition-all duration-200",
+        VARIANTS[variant],
+        onClick && "hover:shadow-md active:scale-[0.99] cursor-pointer",
+        className
     );
+
+    if (onClick) {
+        return (
+            <div
+                role="button"
+                tabIndex={0}
+                onClick={onClick}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onClick();
+                    }
+                }}
+                className={classes}
+            >
+                {children}
+            </div>
+        );
+    }
+
+    return <div className={classes}>{children}</div>;
 }
 
 interface MiListItemProps {

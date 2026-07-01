@@ -9,10 +9,25 @@ type Props = {
     showBack?: boolean;
     className?: string;
     backPath?: string;
+    embedded?: boolean;
 };
 
-export default function LegadoLayout({ title, subtitle, children, showBack = true, className = "", backPath }: Props) {
+export default function LegadoLayout({ title, subtitle, children, showBack = true, className = "", backPath, embedded = false }: Props) {
     const navigate = useNavigate();
+
+    if (embedded) {
+        return (
+            <div className={`w-full space-y-4 ${className}`}>
+                {title && (
+                    <div className="space-y-1">
+                        <h2 className="text-xl sm:text-2xl font-bold text-[#255f4f] tracking-tight">{title}</h2>
+                        {subtitle && <p className="text-sm text-[#6b8c7d]">{subtitle}</p>}
+                    </div>
+                )}
+                {children}
+            </div>
+        );
+    }
 
     return (
         <div className={`legado-app-wrapper min-h-screen flex flex-col pb-24 px-4 bg-gradient-to-b from-[#e6f4f1] to-white ${className}`}>
