@@ -16,6 +16,7 @@ import {
     SheetContent,
     SheetHeader,
     SheetTitle,
+    SheetDescription,
 } from "@/components/ui/sheet";
 
 const NAV_ITEMS: {
@@ -100,6 +101,9 @@ export function BottomNav() {
                     <div className="w-10 h-1 bg-[#d1e5dc] rounded-full mx-auto mb-4" />
                     <SheetHeader className="text-left mb-4">
                         <SheetTitle className="text-[#255f4f]">Mais recursos</SheetTitle>
+                        <SheetDescription className="sr-only">
+                            Links adicionais de navegação
+                        </SheetDescription>
                     </SheetHeader>
                     <nav className="space-y-1">
                         {MOBILE_EXTRA.map((item) => {

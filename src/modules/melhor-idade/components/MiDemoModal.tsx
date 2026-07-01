@@ -43,11 +43,11 @@ export function MiDemoModal({
                         <DialogTitle className="text-xl font-bold text-[#255f4f]">
                             {title}
                         </DialogTitle>
-                        {description && (
-                            <DialogDescription className="text-[#6b8c7d] text-sm">
-                                {description}
-                            </DialogDescription>
-                        )}
+                        <DialogDescription
+                            className={description ? "text-[#6b8c7d] text-sm" : "sr-only"}
+                        >
+                            {description || title}
+                        </DialogDescription>
                     </DialogHeader>
                     {children}
                 </div>

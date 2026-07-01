@@ -1,21 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { validateImageFile, MAX_RECORDACAO_MENSAGEM, MAX_RECORDACAO_NOME } from '@/lib/validation';
-import { FaUserCircle } from 'react-icons/fa';
+import RecordacaoForm, { type HomenageadoInfo } from '@/components/recordacoes/RecordacaoForm';
+import { Loader2 } from 'lucide-react';
 
 export default function RecordacaoPublica() {
     const { id: dependenteId } = useParams();
-    const [nome, setNome] = useState('');
-    const [mensagem, setMensagem] = useState('');
-    const [anonimo, setAnonimo] = useState(false);
-    const [imagem, setImagem] = useState<File | null>(null);
-    const [imagemPreview, setImagemPreview] = useState<string | null>(null);
     const [enviando, setEnviando] = useState(false);
-    const [sucesso, setSucesso] = useState(false);
     const [carregandoDependente, setCarregandoDependente] = useState(true);
     const [dependenteNaoEncontrado, setDependenteNaoEncontrado] = useState(false);
-    const [dependente, setDependente] = useState<{ nome: string; data_nascimento?: string; data_falecimento?: string; imagem_url?: string } | null>(null);
+    const [dependente, setDependente] = useState<HomenageadoInfo | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,134 +18,84 @@ export default function RecordacaoPublica() {
             setCarregandoDependente(true);
             setDependenteNaoEncontrado(false);
             const cleanId = dependenteId.trim();
-            // Tenta buscar como dependente
+
             let { data, error } = await supabase
                 .from('dependentes')
-                .select('nome, data_nascimento, data_falecimento, imagem_url')
+                .select('nome, data_nascimento, data_falecimento, imagem_url, falecido')
                 .eq('id', cleanId)
                 .single();
 
             if (!data || error) {
-                // Se não achar, tenta como titular
                 const { data: titularData, error: titularError } = await supabase
                     .from('titulares')
-                    .select('nome, data_nascimento, data_falecimento, imagem_url')
+                    .select('nome, data_nascimento, data_falecimento, imagem_url, falecido')
                     .eq('id', cleanId)
                     .single();
 
                 if (titularData && !titularError) {
                     setDependente(titularData);
-                    setCarregandoDependente(false);
-                    return;
                 } else {
                     setDependente(null);
                     setDependenteNaoEncontrado(true);
-                    setCarregandoDependente(false);
-                    return;
                 }
+            } else {
+                setDependente(data);
             }
-            setDependente(data);
             setCarregandoDependente(false);
         };
 
         fetchDependente();
     }, [dependenteId]);
 
-    // Atualiza preview ao selecionar imagem
-    useEffect(() => {
-        if (!imagem) {
-            setImagemPreview(null);
-            return;
-        }
-        const url = URL.createObjectURL(imagem);
-        setImagemPreview(url);
-
-        return () => {
-            URL.revokeObjectURL(url);
-        };
-    }, [imagem]);
-
-    const handleUpload = async () => {
-        if (!dependenteId || !mensagem.trim()) return;
-
-        if (mensagem.length > MAX_RECORDACAO_MENSAGEM) {
-            alert(`Mensagem muito longa. Máximo ${MAX_RECORDACAO_MENSAGEM} caracteres.`);
-            return;
-        }
-        if (nome.length > MAX_RECORDACAO_NOME) {
-            alert(`Nome muito longo. Máximo ${MAX_RECORDACAO_NOME} caracteres.`);
-            return;
-        }
-        if (imagem) {
-            const imgError = validateImageFile(imagem);
-            if (imgError) {
-                alert(imgError);
-                return;
-            }
-        }
+    async function handleSubmit({
+        mensagem,
+        nome,
+        anonimo,
+        file,
+    }: {
+        mensagem: string;
+        nome: string;
+        anonimo: boolean;
+        file: File | null;
+    }) {
+        if (!dependenteId) return;
 
         setEnviando(true);
 
-        // 1. Tenta encontrar como dependente
         let found = false;
-        let tipo = ""; // "dependente" ou "titular"
+        const { data: dep } = await supabase.from('dependentes').select('id').eq('id', dependenteId).maybeSingle();
+        if (dep) found = true;
 
-        const { data: dep, error: depError } = await supabase
-            .from('dependentes')
-            .select('id')
-            .eq('id', dependenteId)
-            .maybeSingle();
-
-        if (dep && !depError) {
-            found = true;
-            tipo = "dependente";
-        }
-
-        // 2. Se não encontrou como dependente, tenta titular
         if (!found) {
-            const { data: tit, error: titError } = await supabase
-                .from('titulares')
-                .select('id')
-                .eq('id', dependenteId)
-                .maybeSingle();
-
-            if (tit && !titError) {
-                found = true;
-                tipo = "titular";
-            }
+            const { data: tit } = await supabase.from('titulares').select('id').eq('id', dependenteId).maybeSingle();
+            if (tit) found = true;
         }
 
         if (!found) {
-            alert("Pessoa não encontrada (titular ou dependente). Não é possível enviar recordação.");
+            alert('Pessoa não encontrada. Não é possível enviar recordação.');
             setEnviando(false);
             return;
         }
 
-        // prossegue upload normalmente...
         let imagem_url: string | null = null;
 
-        if (imagem) {
-            const filename = `recordacao-${Date.now()}.${imagem.name.split('.').pop()}`;
-            const { error: uploadError } = await supabase
-                .storage
-                .from('recordacoes')
-                .upload(`publicas/${filename}`, imagem);
+        if (file) {
+            const ext = file.name.split('.').pop() || 'bin';
+            const filename = `recordacao-${Date.now()}.${ext}`;
+            const path = `publicas/${filename}`;
+            const { error: uploadError } = await supabase.storage.from('recordacoes').upload(path, file);
 
-            if (!uploadError) {
-                const { data: urlData } = supabase
-                    .storage
-                    .from('recordacoes')
-                    .getPublicUrl(`publicas/${filename}`);
-                imagem_url = urlData?.publicUrl ?? null;
-            } else {
-                alert('Erro ao fazer upload da imagem.');
+            if (uploadError) {
+                alert('Erro ao enviar arquivo. Tente novamente.');
                 setEnviando(false);
                 return;
             }
+
+            const { data: urlData } = supabase.storage.from('recordacoes').getPublicUrl(path);
+            imagem_url = urlData?.publicUrl ?? null;
         }
 
         const remetente = anonimo ? 'Anônimo' : nome || 'Anônimo';
-
         const { error: insertError } = await supabase.from('recordacoes').insert({
             dependente_id: dependenteId,
             mensagem: `${mensagem}\n\n– ${remetente}`,
@@ -161,125 +105,31 @@ export default function RecordacaoPublica() {
         setEnviando(false);
 
         if (!insertError) {
-            setSucesso(true);
-            setMensagem('');
-            setNome('');
-            setImagem(null);
-            setImagemPreview(null);
-            setTimeout(() => navigate(`/recordacoes-publicas/sucesso/${dependenteId}`), 1800);
+            navigate(`/recordacoes-publicas/sucesso/${dependenteId}`);
         } else {
             alert('Erro ao enviar a recordação.');
         }
-    };
+    }
 
     return (
-        <div className="min-h-screen bg-[#E3F1EB] flex items-center justify-center px-4 py-10">
-            <div className="bg-white w-full max-w-xl p-6 rounded-2xl shadow-xl border border-[#D1F2EB] animate-fade-in">
+        <div className="min-h-screen bg-gradient-to-b from-[#e3f1eb] to-[#f8fcfb] flex items-center justify-center px-4 py-8 sm:py-12">
+            <div className="bg-white w-full max-w-lg p-5 sm:p-8 rounded-3xl shadow-xl border border-[#d1e5dc]">
                 {carregandoDependente ? (
-                    <div className="text-center py-12 text-[#007080]">Carregando...</div>
+                    <div className="flex flex-col items-center py-16 text-[#5ba58c] gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <span className="text-sm font-medium">Carregando...</span>
+                    </div>
                 ) : dependenteNaoEncontrado ? (
-                    <div className="text-center py-12">
-                        <p className="text-red-600 font-medium">Homenageado não encontrado.</p>
+                    <div className="text-center py-16">
+                        <p className="text-red-600 font-semibold">Homenageado não encontrado.</p>
                     </div>
-                ) : (
-                <>
-                {dependente && (
-                    <div className="flex flex-col items-center mb-8">
-                        {dependente.imagem_url ? (
-                            <img
-                                src={dependente.imagem_url}
-                                alt={dependente.nome}
-                                className="w-28 h-28 rounded-full object-cover mb-3 border-4 border-[#5BA58C] shadow-md"
-                            />
-                        ) : (
-                            <FaUserCircle
-                                size={112}
-                                className="text-gray-400 mb-3"
-                            />
-                        )}
-                        <h2 className="text-xl font-bold text-[#007080]">{dependente.nome}</h2>
-                        <div className="text-sm text-gray-600 mt-1 text-center">
-                            {dependente.data_nascimento && <p>Nascimento: {dependente.data_nascimento}</p>}
-                            {dependente.data_falecimento && <p>Falecimento: {dependente.data_falecimento}</p>}
-                        </div>
-                    </div>
-                )}
-
-                <h1 className="text-2xl font-bold text-center mb-6 text-[#007080]">
-                    Deixe sua recordação 💙
-                </h1>
-
-                <textarea
-                    placeholder="Escreva sua mensagem com carinho..."
-                    className="w-full p-4 text-[#2D2D2D] border border-[#B2D8D8] rounded-lg mb-4 placeholder-gray-400 focus:ring-2 focus:ring-[#5BA58C] focus:outline-none transition"
-                    rows={5}
-                    value={mensagem}
-                    onChange={(e) => setMensagem(e.target.value)}
-                />
-
-                <input
-                    type="file"
-                    accept="image/*"
-                    className="mb-4 text-sm text-gray-600 block w-full"
-                    onChange={(e) => setImagem(e.target.files?.[0] || null)}
-                />
-
-                {imagemPreview && (
-                    <img
-                        src={imagemPreview}
-                        alt="Preview da imagem selecionada"
-                        className="w-48 h-48 object-cover rounded-lg mb-4 mx-auto border border-gray-300"
+                ) : dependente ? (
+                    <RecordacaoForm
+                        person={dependente}
+                        loading={enviando}
+                        onSubmit={handleSubmit}
                     />
-                )}
-                <label
-                    htmlFor="inputImagem"
-                    className="block cursor-pointer mb-4 text-center py-3 bg-[#5BA58C] text-white rounded-lg font-semibold hover:bg-[#4a8c75] transition"
-                >
-                    Selecionar imagem
-                </label>
-                <input
-                    id="inputImagem"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => setImagem(e.target.files?.[0] || null)}
-                />
-
-                <input
-                    type="text"
-                    placeholder="Seu nome (opcional)"
-                    disabled={anonimo}
-                    className={`w-full p-4 border border-[#B2D8D8] rounded-lg mb-4 text-[#2D2D2D] placeholder-gray-400 transition ${anonimo ? 'bg-gray-100 text-gray-500' : 'focus:ring-2 focus:ring-[#5BA58C]'
-                        }`}
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                />
-
-                <label className="flex items-center gap-2 text-sm text-[#007080] font-medium mb-4">
-                    <input
-                        type="checkbox"
-                        checked={anonimo}
-                        onChange={(e) => setAnonimo(e.target.checked)}
-                        className="accent-[#5BA58C]"
-                    />
-                    Enviar como anônimo
-                </label>
-
-                <button
-                    onClick={handleUpload}
-                    disabled={enviando}
-                    className="w-full bg-[#5BA58C] text-white py-3 rounded-lg font-bold hover:bg-[#4a8c75] transition disabled:opacity-60"
-                >
-                    {enviando ? 'Enviando...' : 'Enviar recordação'}
-                </button>
-
-                {sucesso && (
-                    <div className="mt-4 bg-green-100 text-green-700 text-center p-3 rounded-lg shadow-sm">
-                        Recordação enviada com sucesso 💙
-                    </div>
-                )}
-                </>
-                )}
+                ) : null}
             </div>
         </div>
     );

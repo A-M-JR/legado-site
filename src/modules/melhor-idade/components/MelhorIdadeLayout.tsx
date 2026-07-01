@@ -11,6 +11,7 @@ import {
     SheetContent,
     SheetHeader,
     SheetTitle,
+    SheetDescription,
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { MelhorIdadeProvider } from "../context/MelhorIdadeContext";
@@ -46,6 +47,9 @@ function MelhorIdadeShell() {
                         <SheetContent side="left" className="w-72">
                             <SheetHeader>
                                 <SheetTitle className="text-[#255f4f]">Melhor Idade</SheetTitle>
+                                <SheetDescription className="sr-only">
+                                    Menu de navegação do módulo Melhor Idade
+                                </SheetDescription>
                             </SheetHeader>
                             <nav className="mt-6 space-y-1">
                                 {NAV_ITEMS.map((item) => (

@@ -15,6 +15,7 @@ import {
     SheetContent,
     SheetHeader,
     SheetTitle,
+    SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { notificacoesService } from "../services/notificacoesService";
@@ -82,6 +83,9 @@ export function NotificacoesBell() {
                     <SheetHeader className="px-5 pt-5 pb-3 border-b border-[#e6efe9] text-left space-y-0">
                         <div className="flex items-center justify-between pr-8">
                             <SheetTitle className="text-[#255f4f]">Notificações</SheetTitle>
+                            <SheetDescription className="sr-only">
+                                Lista de alertas e lembretes do dia
+                            </SheetDescription>
                             {naoLidas > 0 && (
                                 <Button
                                     type="button"

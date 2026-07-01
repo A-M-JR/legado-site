@@ -21,6 +21,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import "@/styles/legado-app.css";
 import logoVerde from "@/assets/Legado - Verde.png";
 import { formatBR } from "../../../utils/formatDateToBR";
+import { isVideoMediaUrl } from "@/lib/validation";
 
 type Recordacao = {
     id: string;
@@ -258,49 +259,54 @@ export default function RecordacoesListPage({
                             return (
                                 <div
                                     key={item.id}
-                                    className="bg-white/90 border border-[#e6f4f1] rounded-2xl p-4 mb-4 shadow-sm hover:shadow-md transition-all legado-recordacao-card"
-                                    tabIndex={0}
-                                    role="button"
-                                    aria-label={`Recordação de ${autor || "Anônimo"}`}
+                                    className="bg-white border border-[#e6f4f1] rounded-2xl p-4 mb-4 shadow-sm hover:shadow-md transition-all"
                                 >
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-[#f0fbf8] flex items-center justify-center text-[#255f4f]">
-                                                <User size={18} />
-                                            </div>
-                                            <div>
-                                                <div className="font-semibold text-[#255f4f]">{autor || "Anônimo"}</div>
-                                                <div className="text-sm text-[#6b6b6b] mt-1 whitespace-pre-wrap">{(texto || "").trim()}</div>
-                                            </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-[#e3f1eb] flex items-center justify-center text-[#255f4f] shrink-0">
+                                            <User size={18} />
                                         </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <p className="font-bold text-[#255f4f]">{autor || "Anônimo"}</p>
+                                                    <p className="text-[10px] text-[#9db4aa] mt-0.5">
+                                                        {formatarDataHora(item.created_at)}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => excluirRecordacao(item.id)}
+                                                    className="text-[#c33] hover:bg-red-50 p-2 rounded-lg shrink-0"
+                                                    aria-label="Excluir recordação"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <p className="text-sm text-[#4f665a] mt-2 whitespace-pre-wrap leading-relaxed">
+                                                {(texto || "").trim()}
+                                            </p>
 
-                                        <div className="flex flex-col items-end gap-2">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    excluirRecordacao(item.id);
-                                                }}
-                                                className="text-[#c33] bg-white/50 hover:bg-[#fff0f0] p-2 rounded-md"
-                                                aria-label="Excluir recordação"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {item.imagem_url && (
+                                                <div className="mt-3 rounded-xl overflow-hidden border border-[#e6efe9] bg-[#f8fcfb]">
+                                                    {isVideoMediaUrl(item.imagem_url) ? (
+                                                        <video
+                                                            src={item.imagem_url}
+                                                            controls
+                                                            className="w-full max-h-64 object-contain bg-black"
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src={item.imagem_url}
+                                                            alt="Mídia da recordação"
+                                                            className="w-full max-h-64 object-contain cursor-zoom-in"
+                                                            loading="lazy"
+                                                            onClick={() => setImagemExpandida(item.imagem_url!)}
+                                                        />
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-
-                                    {item.imagem_url && (
-                                        <div className="mt-3 flex justify-center">
-                                            <img
-                                                src={item.imagem_url}
-                                                alt="Imagem recordação"
-                                                className="rounded-lg max-h-56 w-auto object-contain shadow-md cursor-zoom-in border border-white"
-                                                loading="lazy"
-                                                onClick={() => setImagemExpandida(item.imagem_url!)}
-                                            />
-                                        </div>
-                                    )}
-
-                                    <div className="text-sm text-[#4f665a] text-right italic select-none mt-3">Enviado em: {formatarDataHora(item.created_at)}</div>
                                 </div>
                             );
                         })
