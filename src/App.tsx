@@ -45,6 +45,8 @@ const SaudePage = lazy(() => import('./modules/melhor-idade/pages/SaudePage'))
 const CuidadoPage = lazy(() => import('./modules/melhor-idade/pages/CuidadoPage'))
 const ReceitasPage = lazy(() => import('./modules/melhor-idade/pages/ReceitasPage'))
 const MiFamiliaPage = lazy(() => import('./modules/melhor-idade/pages/FamiliaPage'))
+const MiHistoriasPage = lazy(() => import('./modules/melhor-idade/pages/HistoriasPage'))
+const MiFamiliaMemoriasPage = lazy(() => import('./modules/melhor-idade/pages/FamiliaMemoriasPage'))
 
 export default function App() {
   return (
@@ -96,38 +98,12 @@ export default function App() {
               <Route index element={<MiHomePage />} />
               <Route path="minha-rotina" element={<CuidadoPage />} />
               <Route path="meu-cuidado" element={<ReceitasPage />} />
-              <Route
-                path="historias"
-                element={
-                  <DiarioListPage
-                    embedded
-                    basePath="/melhor-idade/historias"
-                    pageTitle="Histórias e memórias"
-                    pageSubtitle="Registre fotos, textos e momentos do seu dia em um espaço só seu."
-                  />
-                }
-              />
-              <Route
-                path="historias/novo"
-                element={<DiarioFormPage embedded basePath="/melhor-idade/historias" />}
-              />
-              <Route
-                path="historias/editar/:id"
-                element={<DiarioFormPage embedded basePath="/melhor-idade/historias" />}
-              />
+              <Route path="historias" element={<MiHistoriasPage />} />
+              <Route path="historias/novo" element={<Navigate to="/melhor-idade/historias" replace />} />
+              <Route path="historias/editar/:id" element={<Navigate to="/melhor-idade/historias" replace />} />
               <Route path="familia" element={<MiFamiliaPage />} />
-              <Route path="familia/nova/:id" element={<NovaRecordacaoPage embedded />} />
-              <Route
-                path="familia/:id"
-                element={
-                  <RecordacoesListPage
-                    embedded
-                    backPath="/melhor-idade/familia"
-                    novaBasePath="/melhor-idade/familia/nova"
-                    apoioPath="/melhor-idade/apoio-orientacao"
-                  />
-                }
-              />
+              <Route path="familia/:id" element={<MiFamiliaMemoriasPage />} />
+              <Route path="familia/nova/:id" element={<Navigate to="/melhor-idade/familia" replace />} />
               <Route
                 path="apoio-orientacao"
                 element={

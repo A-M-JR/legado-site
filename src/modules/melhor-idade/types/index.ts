@@ -121,3 +121,24 @@ export interface Notificacao {
     lida: boolean;
     link?: string;
 }
+
+export interface HistoriaEntrada {
+    id: string;
+    titulo: string;
+    conteudo: string;
+    privado: boolean;
+    mediaUrl?: string;
+    mediaTipo?: "foto" | "video";
+    criadoEm: string;
+}
+
+export interface FamiliaMemoria {
+    id: string;
+    pessoaId: string;
+    mensagem: string;
+    remetente: string;
+    anonimo: boolean;
+    mediaUrl?: string;
+    mediaTipo?: "foto" | "video";
+    criadoEm: string;
+}
