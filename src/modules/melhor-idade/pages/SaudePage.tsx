@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Activity,
     Thermometer,
@@ -18,7 +18,7 @@ import { MiDemoModal } from "../components/MiDemoModal";
 import { MoodSelector } from "../components/MoodSelector";
 import { useMelhorIdade } from "../context/MelhorIdadeContext";
 import { saudeService } from "../services/saudeService";
-import type { HumorTipo } from "../types";
+import type { HumorTipo, RegistroSaude } from "../types";
 
 const TIPOS = [
     { key: "pressao", label: "Pressão Arterial", unit: "mmHg", icon: Activity, color: "text-blue-600 bg-blue-50" },
@@ -30,9 +30,13 @@ const FORM_INICIAL = { tipo: "Pressão Arterial", value: "", unit: "mmHg", note:
 
 export default function SaudePage() {
     const { profile, updateHumor } = useMelhorIdade();
-    const [historico, setHistorico] = useState(() => saudeService.list());
+    const [historico, setHistorico] = useState<RegistroSaude[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState(FORM_INICIAL);
+
+    useEffect(() => {
+        saudeService.list().then(setHistorico);
+    }, []);
 
     const grouped = useMemo(() => saudeService.groupByDate(historico), [historico]);
 
@@ -47,10 +51,10 @@ export default function SaudePage() {
         setModalOpen(true);
     }
 
-    function salvar(e: React.FormEvent) {
+    async function salvar(e: React.FormEvent) {
         e.preventDefault();
         setHistorico(
-            saudeService.add({
+            await saudeService.add({
                 tipo: form.tipo,
                 value: form.value || "—",
                 unit: form.unit,
@@ -59,7 +63,7 @@ export default function SaudePage() {
         );
         setForm(FORM_INICIAL);
         setModalOpen(false);
-        toast({ title: "Registro salvo", description: "Demonstração — salvo localmente." });
+        toast({ title: "Registro salvo" });
     }
 
     return (
@@ -177,7 +181,7 @@ export default function SaudePage() {
                 open={modalOpen}
                 onOpenChange={setModalOpen}
                 title="Novo registro de saúde"
-                description="Demonstração — dados salvos neste navegador."
+                description="Registre um novo valor de saúde."
             >
                 <form onSubmit={salvar} className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -258,7 +262,7 @@ export default function SaudePage() {
                             type="submit"
                             className="flex-1 rounded-xl h-12 bg-[#5ba58c] text-white"
                         >
-                            Salvar (demo)
+                            Salvar
                         </Button>
                     </div>
                 </form>

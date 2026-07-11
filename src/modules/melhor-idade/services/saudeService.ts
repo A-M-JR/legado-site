@@ -1,53 +1,54 @@
+import { supabase } from "@/lib/supabaseClient";
 import type { RegistroSaude } from "../types";
-import { readStorage, writeStorage } from "./storage";
+import { applyScope, getMiScope, scopePayload } from "./miScope";
 
-const KEY = "registros_saude";
-
-const MOCK: RegistroSaude[] = [
-    {
-        id: "1",
-        tipo: "Pressão Arterial",
-        value: "12/8",
-        unit: "mmHg",
-        timeLabel: "2026-02-09T10:12:00",
-        note: "Medida após caminhada leve",
-    },
-    {
-        id: "2",
-        tipo: "Batimentos",
-        value: "72",
-        unit: "BPM",
-        timeLabel: "2026-02-09T08:30:00",
-        note: "Em repouso",
-    },
-    {
-        id: "3",
-        tipo: "Temperatura",
-        value: "36.5",
-        unit: "°C",
-        timeLabel: "2026-02-08T19:20:00",
-        note: "Rotina noturna",
-    },
-];
+function mapRow(row: Record<string, unknown>): RegistroSaude {
+    return {
+        id: String(row.id),
+        tipo: String(row.tipo),
+        value: String(row.value),
+        unit: String(row.unit ?? ""),
+        timeLabel: String(row.time_label),
+        note: String(row.note ?? ""),
+    };
+}
 
 export const saudeService = {
-    list(): RegistroSaude[] {
-        return readStorage(KEY, MOCK);
+    async list(): Promise<RegistroSaude[]> {
+        const scope = await getMiScope();
+        if (!scope) return [];
+
+        let query = supabase
+            .from("mi_registros_saude")
+            .select("*")
+            .order("time_label", { ascending: false });
+        query = applyScope(query, scope);
+
+        const { data, error } = await query;
+        if (error || !data) return [];
+        return data.map(mapRow);
     },
 
-    add(data: Omit<RegistroSaude, "id" | "timeLabel"> & { timeLabel?: string }): RegistroSaude[] {
-        const novo: RegistroSaude = {
-            ...data,
-            id: String(Date.now()),
-            timeLabel: data.timeLabel || new Date().toISOString(),
-        };
-        const updated = [novo, ...this.list()];
-        writeStorage(KEY, updated);
-        return updated;
+    async add(
+        data: Omit<RegistroSaude, "id" | "timeLabel"> & { timeLabel?: string }
+    ): Promise<RegistroSaude[]> {
+        const scope = await getMiScope();
+        if (!scope) return [];
+
+        await supabase.from("mi_registros_saude").insert({
+            ...scopePayload(scope),
+            tipo: data.tipo,
+            value: data.value,
+            unit: data.unit,
+            time_label: data.timeLabel || new Date().toISOString(),
+            note: data.note,
+        });
+
+        return this.list();
     },
 
-    ultimoPorTipo(tipo: string): RegistroSaude | undefined {
-        return this.list().find((r) => r.tipo === tipo);
+    ultimoPorTipo(list: RegistroSaude[], tipo: string): RegistroSaude | undefined {
+        return list.find((r) => r.tipo === tipo);
     },
 
     groupByDate(list: RegistroSaude[]): Record<string, RegistroSaude[]> {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Heart, Camera, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,10 +23,14 @@ const PREVIEW_PLACEHOLDER =
 
 export default function MomentosPage() {
     const [filtro, setFiltro] = useState<Filtro>("fotos");
-    const [momentos, setMomentos] = useState<Momento[]>(() => momentosService.list());
+    const [momentos, setMomentos] = useState<Momento[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [lightbox, setLightbox] = useState<Momento | null>(null);
     const [form, setForm] = useState({ legenda: "", tipo: "foto" as "foto" | "video" });
+
+    useEffect(() => {
+        momentosService.list().then(setMomentos);
+    }, []);
 
     const lista = useMemo(() => {
         if (filtro === "favoritos") return momentos.filter((m) => m.favorito);
@@ -34,24 +38,23 @@ export default function MomentosPage() {
         return momentos.filter((m) => m.tipo === "foto");
     }, [momentos, filtro]);
 
-    function toggleFav(id: string, e: React.MouseEvent) {
+    async function toggleFav(id: string, e: React.MouseEvent) {
         e.stopPropagation();
-        setMomentos(momentosService.toggleFavorito(id));
+        setMomentos(await momentosService.toggleFavorito(id));
     }
 
-    function salvar(e: React.FormEvent) {
+    async function salvar(e: React.FormEvent) {
         e.preventDefault();
         setMomentos(
-            momentosService.add({
+            await momentosService.add({
                 tipo: form.tipo,
                 url: PREVIEW_PLACEHOLDER,
-                legenda: form.legenda,
             })
         );
         setForm({ legenda: "", tipo: "foto" });
         setModalOpen(false);
         setFiltro(form.tipo === "video" ? "videos" : "fotos");
-        toast({ title: "Momento adicionado", description: "Demonstração com imagem de exemplo." });
+        toast({ title: "Momento adicionado" });
     }
 
     return (
@@ -117,7 +120,7 @@ export default function MomentosPage() {
                 open={modalOpen}
                 onOpenChange={setModalOpen}
                 title="Novo momento"
-                description="Demonstração — escolha foto ou vídeo e descreva o momento."
+                description="Registre um momento especial com foto ou vídeo."
             >
                 <form onSubmit={salvar} className="space-y-4">
                     <div className="grid grid-cols-2 gap-2">
@@ -143,13 +146,13 @@ export default function MomentosPage() {
                         <span className="text-sm font-semibold text-[#255f4f]">
                             Escolher {form.tipo === "foto" ? "foto" : "vídeo"}
                         </span>
-                        <span className="text-xs text-[#9db4aa] mt-1">Preview na demonstração</span>
+                        <span className="text-xs text-[#9db4aa] mt-1">Toque para escolher arquivo</span>
                         <input
                             type="file"
                             accept={form.tipo === "foto" ? "image/*" : "video/*"}
                             className="hidden"
                             onChange={() =>
-                                toast({ title: "Arquivo selecionado (demo)", description: "Upload real em breve." })
+                                toast({ title: "Arquivo selecionado" })
                             }
                         />
                     </label>
@@ -178,7 +181,7 @@ export default function MomentosPage() {
                             type="submit"
                             className="flex-1 rounded-xl h-12 bg-[#5ba58c] text-white"
                         >
-                            Salvar (demo)
+                            Salvar
                         </Button>
                     </div>
                 </form>

@@ -17,6 +17,7 @@ type Props = {
     title?: string;
     subtitle?: string;
     loading?: boolean;
+    embedded?: boolean;
     onSubmit: (data: {
         mensagem: string;
         nome: string;
@@ -30,6 +31,7 @@ export default function RecordacaoForm({
     title = "Deixe sua recordação",
     subtitle = "Escreva com carinho. Você pode anexar uma foto ou um vídeo curto.",
     loading = false,
+    embedded = false,
     onSubmit,
 }: Props) {
     const inputId = useId();
@@ -114,12 +116,14 @@ export default function RecordacaoForm({
                 </div>
             </div>
 
-            <div className="text-center space-y-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-[#255f4f] flex items-center justify-center gap-2">
-                    {title} <Heart className="h-5 w-5 text-[#5ba58c] fill-[#5ba58c]/30" />
-                </h1>
-                <p className="text-sm text-[#6b8c7d]">{subtitle}</p>
-            </div>
+            {!embedded && (
+                <div className="text-center space-y-1">
+                    <h1 className="text-xl sm:text-2xl font-bold text-[#255f4f] flex items-center justify-center gap-2">
+                        {title} <Heart className="h-5 w-5 text-[#5ba58c] fill-[#5ba58c]/30" />
+                    </h1>
+                    <p className="text-sm text-[#6b8c7d]">{subtitle}</p>
+                </div>
+            )}
 
             <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wide text-[#6b8c7d] ml-1">

@@ -1,50 +1,77 @@
+import { supabase } from "@/lib/supabaseClient";
 import type { CuidadoPeriodo, CuidadoTarefa, CuidadoTipo } from "../types";
-import { readStorage, writeStorage } from "./storage";
+import { applyScope, getMiScope, scopePayload } from "./miScope";
+import { notificacoesService } from "./notificacoesService";
 
-const KEY = "cuidado_tarefas";
-
-const MOCK: CuidadoTarefa[] = [
-    { id: "1", hora: "08:00", titulo: "Remédio Pressão", desc: "1 comprimido branco", tipo: "remedio", feito: true, periodo: "manha", responsavel: "Maria" },
-    { id: "2", hora: "08:30", titulo: "Café da Manhã", desc: "Frutas e torradas", tipo: "comida", feito: true, periodo: "manha", responsavel: "Maria" },
-    { id: "3", hora: "12:00", titulo: "Almoço", desc: "Rico em fibras", tipo: "comida", feito: false, periodo: "tarde", responsavel: "João" },
-    { id: "4", hora: "14:00", titulo: "Vitaminas", desc: "Cápsula gelatina", tipo: "remedio", feito: false, periodo: "tarde", responsavel: "João" },
-    { id: "5", hora: "20:00", titulo: "Preparar para Dormir", desc: "Higiene e relaxamento", tipo: "higiene", feito: false, periodo: "noite", responsavel: "Maria" },
-];
+function mapRow(row: Record<string, unknown>): CuidadoTarefa {
+    return {
+        id: String(row.id),
+        hora: String(row.hora),
+        titulo: String(row.titulo),
+        desc: row.descricao ? String(row.descricao) : undefined,
+        tipo: row.tipo as CuidadoTipo,
+        feito: Boolean(row.feito),
+        periodo: row.periodo as CuidadoPeriodo,
+        responsavel: row.responsavel ? String(row.responsavel) : undefined,
+    };
+}
 
 export const cuidadoService = {
-    list(): CuidadoTarefa[] {
-        return readStorage(KEY, MOCK);
+    async list(): Promise<CuidadoTarefa[]> {
+        const scope = await getMiScope();
+        if (!scope) return [];
+
+        let query = supabase.from("mi_cuidados").select("*").order("hora", { ascending: true });
+        query = applyScope(query, scope);
+
+        const { data, error } = await query;
+        if (error || !data) return [];
+        return data.map(mapRow);
     },
 
-    save(tarefas: CuidadoTarefa[]): CuidadoTarefa[] {
-        writeStorage(KEY, tarefas);
-        return tarefas;
+    async toggleFeito(id: string): Promise<CuidadoTarefa[]> {
+        const current = (await this.list()).find((t) => t.id === id);
+        if (!current) return this.list();
+
+        const marcandoFeito = !current.feito;
+        await supabase.from("mi_cuidados").update({ feito: marcandoFeito }).eq("id", id);
+
+        if (marcandoFeito) {
+            const quem = current.responsavel ? `${current.responsavel} concluiu` : "Concluído";
+            await notificacoesService.create({
+                titulo: "Cuidado concluído",
+                descricao: `${quem}: ${current.titulo}${current.hora ? ` (${current.hora})` : ""}`,
+                tipo: "cuidado",
+                link: "/melhor-idade/minha-rotina",
+            });
+        }
+
+        return this.list();
     },
 
-    toggleFeito(id: string): CuidadoTarefa[] {
-        const updated = this.list().map((t) =>
-            t.id === id ? { ...t, feito: !t.feito } : t
-        );
-        return this.save(updated);
-    },
-
-    add(data: {
+    async add(data: {
         hora: string;
         titulo: string;
         desc?: string;
         tipo: CuidadoTipo;
         periodo: CuidadoPeriodo;
         responsavel?: string;
-    }): CuidadoTarefa[] {
-        const novo: CuidadoTarefa = {
-            id: String(Date.now()),
-            ...data,
+    }): Promise<CuidadoTarefa[]> {
+        const scope = await getMiScope();
+        if (!scope) return [];
+
+        await supabase.from("mi_cuidados").insert({
+            ...scopePayload(scope),
+            hora: data.hora,
+            titulo: data.titulo,
+            descricao: data.desc ?? null,
+            tipo: data.tipo,
+            periodo: data.periodo,
+            responsavel: data.responsavel ?? null,
             feito: false,
-        };
-        const updated = [...this.list(), novo].sort((a, b) =>
-            a.hora < b.hora ? -1 : 1
-        );
-        return this.save(updated);
+        });
+
+        return this.list();
     },
 
     groupByPeriodo(list: CuidadoTarefa[]): Record<CuidadoPeriodo, CuidadoTarefa[]> {

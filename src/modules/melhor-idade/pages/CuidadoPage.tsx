@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     CheckCircle2,
     Circle,
@@ -19,7 +19,8 @@ import { MiCard, MiFilterPills } from "../components/MiCard";
 import { MiPageHeader } from "../components/MiPageHeader";
 import { MiDemoModal } from "../components/MiDemoModal";
 import { cuidadoService } from "../services/cuidadoService";
-import type { CuidadoPeriodo, CuidadoTarefa, CuidadoTipo } from "../types";
+import { useMelhorIdade } from "../context/MelhorIdadeContext";
+import type { CuidadoPeriodo, CuidadoTarefa, CuidadoTipo, MiProfile } from "../types";
 
 const FILTROS = [
     { id: "hoje", label: "Hoje" },
@@ -33,8 +34,6 @@ const PERIODOS: { id: CuidadoPeriodo | "todos"; label: string; icon: typeof Sun 
     { id: "noite", label: "Noite", icon: Moon },
 ];
 
-const RESPONSAVEIS = ["Maria", "João", "Ana"];
-
 const TIPO_LABEL: Record<CuidadoTipo, string> = {
     remedio: "Remédio",
     comida: "Alimentação",
@@ -42,22 +41,71 @@ const TIPO_LABEL: Record<CuidadoTipo, string> = {
     atividade: "Atividade",
 };
 
-const FORM_INICIAL = {
-    hora: "",
-    titulo: "",
-    desc: "",
-    tipo: "remedio" as CuidadoTipo,
-    periodo: "manha" as CuidadoPeriodo,
-    responsavel: "Maria",
-};
+type ResponsavelOpcao = { id: string; value: string; label: string };
+
+function buildResponsaveis(profile: MiProfile): ResponsavelOpcao[] {
+    const seen = new Set<string>();
+    const opts: ResponsavelOpcao[] = [];
+
+    for (const p of profile.rede) {
+        const nome = p.nome.trim();
+        if (!nome) continue;
+        const relacao = p.relacao?.trim() ?? "";
+        const key = `${nome.toLowerCase()}|${relacao.toLowerCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const label = relacao ? `${nome} (${relacao})` : nome;
+        opts.push({ id: p.id, value: label, label });
+    }
+
+    const meuNome = profile.nome.trim();
+    if (meuNome && !seen.has(`${meuNome.toLowerCase()}|eu`)) {
+        opts.push({ id: "eu", value: meuNome, label: `${meuNome} (Eu)` });
+    }
+
+    return opts;
+}
+
+function defaultResponsavel(profile: MiProfile): string {
+    const familia = buildResponsaveis(profile).filter((o) => !o.label.endsWith("(Eu)"));
+    return familia[0]?.value ?? (profile.nome.trim() || "");
+}
+
+function createFormInicial(profile: MiProfile) {
+    return {
+        hora: "",
+        titulo: "",
+        desc: "",
+        tipo: "remedio" as CuidadoTipo,
+        periodo: "manha" as CuidadoPeriodo,
+        responsavel: defaultResponsavel(profile),
+    };
+}
 
 export default function CuidadoPage() {
-    const [tarefas, setTarefas] = useState<CuidadoTarefa[]>(() => cuidadoService.list());
+    const { profile, refreshProfile } = useMelhorIdade();
+    const [tarefas, setTarefas] = useState<CuidadoTarefa[]>([]);
     const [filtro, setFiltro] = useState("hoje");
     const [periodoAtivo, setPeriodoAtivo] = useState<CuidadoPeriodo | "todos">("todos");
     const [modalNova, setModalNova] = useState(false);
     const [detalhe, setDetalhe] = useState<CuidadoTarefa | null>(null);
-    const [form, setForm] = useState(FORM_INICIAL);
+    const [form, setForm] = useState(() => createFormInicial(profile));
+
+    const responsaveis = useMemo(() => buildResponsaveis(profile), [profile]);
+
+    useEffect(() => {
+        refreshProfile();
+        cuidadoService.list().then(setTarefas);
+    }, [refreshProfile]);
+
+    useEffect(() => {
+        if (!modalNova) setForm(createFormInicial(profile));
+    }, [profile, modalNova]);
+
+    function abrirModal() {
+        setForm(createFormInicial(profile));
+        setModalNova(true);
+    }
 
     const filtered = useMemo(() => {
         return tarefas.filter((t) => {
@@ -69,15 +117,15 @@ export default function CuidadoPage() {
 
     const grouped = useMemo(() => cuidadoService.groupByPeriodo(filtered), [filtered]);
 
-    function toggle(id: string) {
-        setTarefas(cuidadoService.toggleFeito(id));
+    async function toggle(id: string) {
+        setTarefas(await cuidadoService.toggleFeito(id));
     }
 
-    function salvar(e: React.FormEvent) {
+    async function salvar(e: React.FormEvent) {
         e.preventDefault();
         if (!form.titulo || !form.hora) return;
         setTarefas(
-            cuidadoService.add({
+            await cuidadoService.add({
                 hora: form.hora,
                 titulo: form.titulo,
                 desc: form.desc,
@@ -86,9 +134,9 @@ export default function CuidadoPage() {
                 responsavel: form.responsavel,
             })
         );
-        setForm(FORM_INICIAL);
+        setForm(createFormInicial(profile));
         setModalNova(false);
-        toast({ title: "Cuidado registrado", description: "Demonstração — salvo localmente." });
+        toast({ title: "Cuidado registrado" });
     }
 
     return (
@@ -100,7 +148,7 @@ export default function CuidadoPage() {
                     subtitle="Registre, acompanhe e delegue tarefas do dia a dia."
                 />
                 <Button
-                    onClick={() => setModalNova(true)}
+                    onClick={abrirModal}
                     className="hidden sm:flex bg-[#5ba58c] text-white rounded-xl shrink-0"
                 >
                     <Plus className="mr-2 h-4 w-4" /> Novo cuidado
@@ -249,7 +297,7 @@ export default function CuidadoPage() {
 
             <div className="fixed left-4 right-4 bottom-24 sm:hidden z-40">
                 <Button
-                    onClick={() => setModalNova(true)}
+                    onClick={abrirModal}
                     className="w-full py-5 rounded-2xl bg-[#5ba58c] text-white font-bold shadow-xl"
                 >
                     <Plus className="mr-2 h-5 w-5" /> Novo cuidado
@@ -260,7 +308,7 @@ export default function CuidadoPage() {
                 open={modalNova}
                 onOpenChange={setModalNova}
                 title="Registrar cuidado"
-                description="Demonstração — salvo neste navegador."
+                description="Preencha os dados do cuidado do dia."
             >
                 <form onSubmit={salvar} className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
@@ -320,17 +368,26 @@ export default function CuidadoPage() {
                             </select>
                         </Field>
                         <Field label="Responsável">
-                            <select
-                                value={form.responsavel}
-                                onChange={(e) => setForm({ ...form, responsavel: e.target.value })}
-                                className="w-full h-11 rounded-xl border border-input px-3 text-sm"
-                            >
-                                {RESPONSAVEIS.map((r) => (
-                                    <option key={r} value={r}>
-                                        {r}
-                                    </option>
-                                ))}
-                            </select>
+                            {responsaveis.length > 0 ? (
+                                <select
+                                    value={form.responsavel}
+                                    onChange={(e) =>
+                                        setForm({ ...form, responsavel: e.target.value })
+                                    }
+                                    className="w-full h-11 rounded-xl border border-input px-3 text-sm"
+                                >
+                                    {responsaveis.map((r) => (
+                                        <option key={r.id} value={r.value}>
+                                            {r.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <p className="text-xs text-[#9db4aa] py-2">
+                                    Adicione familiares em Meu perfil (onboarding) para delegar
+                                    cuidados.
+                                </p>
+                            )}
                         </Field>
                     </div>
                     <div className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
@@ -343,7 +400,7 @@ export default function CuidadoPage() {
                             Cancelar
                         </Button>
                         <Button type="submit" className="flex-1 rounded-xl h-12 bg-[#5ba58c] text-white">
-                            Salvar (demo)
+                            Salvar
                         </Button>
                     </div>
                 </form>

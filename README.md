@@ -47,6 +47,8 @@ src/
 ├── admin/           # Painel admin_master
 ├── admin-parceiro/  # Painel parceiro_admin
 ├── pages/           # Rotas públicas e legado-app
+├── modules/         # Módulos (melhor-idade, etc.)
 ├── components/      # UI compartilhada
-└── lib/             # Supabase client, validação, upload
+├── lib/             # Supabase client, validação, upload
+└── supabase/        # Migrations SQL (rodar no painel)
 ```

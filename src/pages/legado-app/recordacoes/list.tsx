@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import "@/styles/legado-app.css";
+import { confirmDialog } from "@/components/ui/confirm-dialog";
 import logoVerde from "@/assets/Legado - Verde.png";
 import { formatBR } from "../../../utils/formatDateToBR";
 import { isVideoMediaUrl } from "@/lib/validation";
@@ -125,7 +126,11 @@ export default function RecordacoesListPage({
     }, [dependenteId, filtro]);
 
     async function excluirRecordacao(recordacaoId: string) {
-        if (!window.confirm("Deseja realmente excluir esta recordação?")) return;
+        const ok = await confirmDialog({
+            title: "Excluir esta recordação?",
+            description: "Essa ação não pode ser desfeita.",
+        });
+        if (!ok) return;
         const { error } = await supabase.from("recordacoes").delete().eq("id", recordacaoId);
         if (error) {
             setAlerta("Não foi possível excluir a recordação.");

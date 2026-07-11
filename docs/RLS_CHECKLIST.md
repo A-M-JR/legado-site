@@ -11,6 +11,13 @@ Aplicar manualmente no painel Supabase (SQL Editor / Authentication / Policies).
 - [ ] `diarios_luto` — CRUD apenas `auth_id` do usuário
 - [ ] `exercicios_realizados` — CRUD apenas `auth_id` do usuário
 
+## Melhor Idade (`mi_*`)
+
+- [ ] `mi_perfis`, `mi_tarefas`, `mi_cuidados`, `mi_registros_saude`, `mi_receitas`, `mi_consultas`
+- [ ] `mi_historias`, `mi_familia_memorias`, `mi_mensagens`, `mi_notificacoes`, `mi_momentos`, `mi_contatos_apoio`
+- [ ] Acesso via `mi_can_access(titular_id, auth_id)` — titular/familiar compartilham `titular_id`
+- [ ] Bucket `mi-midias` — upload autenticado, leitura pública
+
 ## Operações públicas
 
 - [ ] `recordacoes` INSERT anônimo — limitar colunas, rate limit (Edge Function ou Supabase)

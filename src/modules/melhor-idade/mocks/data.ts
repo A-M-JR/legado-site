@@ -43,7 +43,7 @@ export const MENSAGENS_MOCK: Mensagem[] = [
         id: "2",
         tipo: "texto",
         remetente: "Carlos",
-        relacao: "Amigo",
+        relacao: "Amigo(a)",
         horaLabel: "Ontem — 20:30",
         conteudo: "Estive pensando em você!",
         lida: true,

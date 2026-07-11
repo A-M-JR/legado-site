@@ -1,28 +1,59 @@
-import { TAREFAS_DIA_MOCK } from "../mocks/data";
+import { supabase } from "@/lib/supabaseClient";
 import type { TarefaDia } from "../types";
-import { readStorage, writeStorage } from "./storage";
+import { applyScope, getMiScope, scopePayload } from "./miScope";
 
-const TAREFAS_KEY = "tarefas_dia";
+function mapRow(row: Record<string, unknown>): TarefaDia {
+    return {
+        id: String(row.id),
+        tipo: row.tipo as TarefaDia["tipo"],
+        titulo: String(row.titulo),
+        descricao: String(row.descricao ?? ""),
+        horario: row.horario ? String(row.horario) : undefined,
+        feito: Boolean(row.feito),
+    };
+}
 
 export const agendaService = {
-    list(): TarefaDia[] {
-        return readStorage(TAREFAS_KEY, TAREFAS_DIA_MOCK);
+    async list(): Promise<TarefaDia[]> {
+        const scope = await getMiScope();
+        if (!scope) return [];
+
+        let query = supabase.from("mi_tarefas").select("*").order("created_at", { ascending: true });
+        query = applyScope(query, scope);
+
+        const { data, error } = await query;
+        if (error || !data) return [];
+        return data.map(mapRow);
     },
 
-    save(tarefas: TarefaDia[]): TarefaDia[] {
-        writeStorage(TAREFAS_KEY, tarefas);
-        return tarefas;
+    async toggleFeito(id: string): Promise<TarefaDia[]> {
+        const scope = await getMiScope();
+        if (!scope) return [];
+
+        const current = (await this.list()).find((t) => t.id === id);
+        if (!current) return this.list();
+
+        await supabase
+            .from("mi_tarefas")
+            .update({ feito: !current.feito })
+            .eq("id", id);
+
+        return this.list();
     },
 
-    toggleFeito(id: string): TarefaDia[] {
-        const updated = this.list().map((t) =>
-            t.id === id ? { ...t, feito: !t.feito } : t
-        );
-        return this.save(updated);
-    },
+    async add(tarefa: Omit<TarefaDia, "id">): Promise<TarefaDia[]> {
+        const scope = await getMiScope();
+        if (!scope) return [];
 
-    add(tarefa: Omit<TarefaDia, "id">): TarefaDia[] {
-        const novo: TarefaDia = { ...tarefa, id: String(Date.now()) };
-        return this.save([novo, ...this.list()]);
+        await supabase.from("mi_tarefas").insert({
+            ...scopePayload(scope),
+            tipo: tarefa.tipo,
+            titulo: tarefa.titulo,
+            descricao: tarefa.descricao,
+            horario: tarefa.horario ?? null,
+            feito: tarefa.feito ?? false,
+        });
+
+        return this.list();
     },
 };

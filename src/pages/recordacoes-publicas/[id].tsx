@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import RecordacaoForm, { type HomenageadoInfo } from '@/components/recordacoes/RecordacaoForm';
 import { Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 export default function RecordacaoPublica() {
     const { id: dependenteId } = useParams();
@@ -72,7 +73,11 @@ export default function RecordacaoPublica() {
         }
 
         if (!found) {
-            alert('Pessoa não encontrada. Não é possível enviar recordação.');
+            toast({
+                title: 'Pessoa não encontrada',
+                description: 'Não é possível enviar a recordação.',
+                variant: 'destructive',
+            });
             setEnviando(false);
             return;
         }
@@ -86,7 +91,11 @@ export default function RecordacaoPublica() {
             const { error: uploadError } = await supabase.storage.from('recordacoes').upload(path, file);
 
             if (uploadError) {
-                alert('Erro ao enviar arquivo. Tente novamente.');
+                toast({
+                    title: 'Erro ao enviar arquivo',
+                    description: 'Tente novamente em instantes.',
+                    variant: 'destructive',
+                });
                 setEnviando(false);
                 return;
             }
@@ -107,7 +116,11 @@ export default function RecordacaoPublica() {
         if (!insertError) {
             navigate(`/recordacoes-publicas/sucesso/${dependenteId}`);
         } else {
-            alert('Erro ao enviar a recordação.');
+            toast({
+                title: 'Erro ao enviar a recordação',
+                description: 'Tente novamente em instantes.',
+                variant: 'destructive',
+            });
         }
     }
 

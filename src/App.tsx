@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from "./components/ThemeProvider"
 import PrivateRoute from './components/PrivateRoute'
 import { Toaster } from "@/components/ui/toaster";
+import { ConfirmDialogHost } from "@/components/ui/confirm-dialog";
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -47,6 +48,8 @@ const ReceitasPage = lazy(() => import('./modules/melhor-idade/pages/ReceitasPag
 const MiFamiliaPage = lazy(() => import('./modules/melhor-idade/pages/FamiliaPage'))
 const MiHistoriasPage = lazy(() => import('./modules/melhor-idade/pages/HistoriasPage'))
 const MiFamiliaMemoriasPage = lazy(() => import('./modules/melhor-idade/pages/FamiliaMemoriasPage'))
+const MiPerfilPage = lazy(() => import('./modules/melhor-idade/pages/PerfilPage'))
+const MiRecordacaoPublicaPage = lazy(() => import('./pages/mi-recordacao-publica'))
 
 export default function App() {
   return (
@@ -57,6 +60,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/recordacoes-publicas/:id" element={<RecordacaoPublica />} />
           <Route path="/recordacoes-publicas/sucesso/:id" element={<Sucesso />} />
+          <Route path="/melhor-idade/memoria/:titularId/:pessoaId" element={<MiRecordacaoPublicaPage />} />
           <Route path="/consulta-recordacao" element={<ConsultaRecordacao />} />
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/legado-app/login" element={<Login />} />
@@ -103,6 +107,7 @@ export default function App() {
               <Route path="historias/editar/:id" element={<Navigate to="/melhor-idade/historias" replace />} />
               <Route path="familia" element={<MiFamiliaPage />} />
               <Route path="familia/:id" element={<MiFamiliaMemoriasPage />} />
+              <Route path="perfil" element={<MiPerfilPage />} />
               <Route path="familia/nova/:id" element={<Navigate to="/melhor-idade/familia" replace />} />
               <Route
                 path="apoio-orientacao"
@@ -136,6 +141,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <Toaster />
+      <ConfirmDialogHost />
     </BrowserRouter>
   )
 }

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, ChevronRight, User } from "lucide-react";
 import { MiCard } from "../components/MiCard";
@@ -7,7 +7,11 @@ import { useMelhorIdade } from "../context/MelhorIdadeContext";
 
 export default function FamiliaPage() {
     const navigate = useNavigate();
-    const { profile } = useMelhorIdade();
+    const { profile, refreshProfile } = useMelhorIdade();
+
+    useEffect(() => {
+        refreshProfile();
+    }, [refreshProfile]);
 
     const pessoas = useMemo(() => {
         const eu = {
@@ -33,10 +37,17 @@ export default function FamiliaPage() {
                 subtitle="Escolha um perfil para ver e registrar mensagens e memórias."
             />
 
-            {pessoas.length === 0 ? (
-                <MiCard variant="soft" className="p-6 text-center text-[#6b8c7d]">
-                    <Users className="h-10 w-10 mx-auto mb-3 text-[#9db4aa]" />
-                    <p>Complete seu perfil no onboarding para ver sua rede de apoio.</p>
+            {pessoas.length <= 1 && profile.rede.length === 0 ? (
+                <MiCard variant="soft" className="p-6 text-center text-[#6b8c7d] space-y-3">
+                    <Users className="h-10 w-10 mx-auto text-[#9db4aa]" />
+                    <p>Nenhum familiar cadastrado ainda.</p>
+                    <button
+                        type="button"
+                        onClick={() => navigate("/melhor-idade/perfil")}
+                        className="text-sm font-semibold text-[#5ba58c] hover:underline"
+                    >
+                        Adicionar família em Meu perfil
+                    </button>
                 </MiCard>
             ) : (
                 <div className="space-y-3">

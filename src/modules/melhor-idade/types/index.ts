@@ -86,6 +86,8 @@ export interface ReceitaMedica {
     especialidade: string;
     data_consulta: string;
     foto_url?: string;
+    ativa?: boolean;
+    observacoes?: string;
 }
 
 export interface ConsultaMedica {

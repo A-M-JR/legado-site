@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Bell,
@@ -18,7 +18,9 @@ import {
     SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabaseClient";
 import { notificacoesService } from "../services/notificacoesService";
+import { getMiScope } from "../services/miScope";
 import type { Notificacao, NotificacaoTipo } from "../types";
 
 const ICONES: Record<NotificacaoTipo, typeof Bell> = {
@@ -40,23 +42,56 @@ const CORES: Record<NotificacaoTipo, string> = {
 export function NotificacoesBell() {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
-    const [lista, setLista] = useState(() => notificacoesService.list());
+    const [lista, setLista] = useState<Notificacao[]>([]);
+
+    useEffect(() => {
+        let ativo = true;
+        const recarregar = () => {
+            notificacoesService.list().then((n) => ativo && setLista(n));
+        };
+
+        recarregar();
+
+        const intervalo = setInterval(recarregar, 60000);
+
+        let channel: ReturnType<typeof supabase.channel> | null = null;
+        getMiScope().then((scope) => {
+            if (!ativo || !scope) return;
+            const filtro = scope.titularId
+                ? `titular_id=eq.${scope.titularId}`
+                : `auth_id=eq.${scope.authId}`;
+            channel = supabase
+                .channel("mi_notificacoes_bell")
+                .on(
+                    "postgres_changes",
+                    { event: "*", schema: "public", table: "mi_notificacoes", filter: filtro },
+                    recarregar
+                )
+                .subscribe();
+        });
+
+        return () => {
+            ativo = false;
+            clearInterval(intervalo);
+            if (channel) supabase.removeChannel(channel);
+        };
+    }, []);
 
     const naoLidas = lista.filter((n) => !n.lida).length;
 
-    function abrir() {
-        setLista(notificacoesService.list());
+    async function abrir() {
+        setLista(await notificacoesService.list());
         setOpen(true);
     }
 
-    function handleClick(n: Notificacao) {
-        setLista(notificacoesService.marcarLida(n.id));
+    async function handleClick(n: Notificacao) {
+        setLista(await notificacoesService.marcarLida(n.id));
         setOpen(false);
         if (n.link) navigate(n.link);
     }
 
-    function marcarTodas() {
-        setLista(notificacoesService.marcarTodasLidas());
+    async function marcarTodas() {
+        setLista(await notificacoesService.marcarTodasLidas());
     }
 
     return (

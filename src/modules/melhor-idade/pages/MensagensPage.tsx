@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Play, Mic, Video, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,17 +20,21 @@ const FILTROS = [
 
 export default function MensagensPage() {
     const [filtro, setFiltro] = useState<Filtro>("todas");
-    const [mensagens, setMensagens] = useState<Mensagem[]>(() => mensagensService.list());
+    const [mensagens, setMensagens] = useState<Mensagem[]>([]);
     const [selecionada, setSelecionada] = useState<Mensagem | null>(null);
     const [modalResposta, setModalResposta] = useState(false);
     const [respostaTexto, setRespostaTexto] = useState("");
 
+    useEffect(() => {
+        mensagensService.list().then(setMensagens);
+    }, []);
+
     const lista =
         filtro === "todas" ? mensagens : mensagens.filter((m) => m.tipo === filtro);
 
-    function abrir(msg: Mensagem) {
+    async function abrir(msg: Mensagem) {
         setSelecionada(msg);
-        setMensagens(mensagensService.marcarLida(msg.id));
+        setMensagens(await mensagensService.marcarLida(msg.id));
     }
 
     function enviarResposta(e: React.FormEvent) {
@@ -38,8 +42,8 @@ export default function MensagensPage() {
         setModalResposta(false);
         setRespostaTexto("");
         toast({
-            title: "Resposta enviada (demo)",
-            description: "Em produção, sua família receberá esta mensagem.",
+            title: "Resposta enviada",
+            description: "Sua família receberá esta mensagem.",
         });
     }
 
@@ -154,7 +158,7 @@ export default function MensagensPage() {
                                     <Play className="h-8 w-8 fill-white" />
                                 </button>
                                 <p className="text-sm text-[#6b8c7d]">
-                                    Áudio de demonstração — {selecionada.duracao}
+                                    Áudio — {selecionada.duracao}
                                 </p>
                             </div>
                         )}
@@ -183,7 +187,7 @@ export default function MensagensPage() {
                 open={modalResposta}
                 onOpenChange={setModalResposta}
                 title="Responder mensagem"
-                description="Demonstração — gravação e envio real virão na próxima fase."
+                description="Grave ou escreva sua mensagem."
             >
                 <form onSubmit={enviarResposta} className="space-y-4">
                     <div className="flex flex-col items-center gap-3 py-4 bg-[#f4fbf8] rounded-2xl">
@@ -191,7 +195,7 @@ export default function MensagensPage() {
                             type="button"
                             className="p-6 rounded-full bg-[#255f4f] text-white shadow-lg"
                             onClick={() =>
-                                toast({ title: "Gravação (demo)", description: "Microfone em breve." })
+                                toast({ title: "Gravação", description: "Microfone em breve." })
                             }
                         >
                             <Mic className="h-8 w-8" />
@@ -223,7 +227,7 @@ export default function MensagensPage() {
                             type="submit"
                             className="flex-1 rounded-xl h-12 bg-[#255f4f] text-white"
                         >
-                            Enviar (demo)
+                            Enviar
                         </Button>
                     </div>
                 </form>

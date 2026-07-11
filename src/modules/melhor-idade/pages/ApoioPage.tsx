@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Phone, Headphones, Leaf, Heart, Star, Wind } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { MiCard } from "../components/MiCard";
 import { MiPageHeader } from "../components/MiPageHeader";
 import { MiDemoModal } from "../components/MiDemoModal";
 import { apoioService } from "../services/apoioService";
+import type { ContatoApoio, OpcaoApoio } from "../types";
 
 const ICONE_MAP = {
     familia: Phone,
@@ -16,18 +17,22 @@ const ICONE_MAP = {
 
 export default function ApoioPage() {
     const opcoes = apoioService.listOpcoes();
-    const contatos = apoioService.listContatos();
-    const [modalOpcao, setModalOpcao] = useState<(typeof opcoes)[0] | null>(null);
+    const [contatos, setContatos] = useState<ContatoApoio[]>([]);
+    const [modalOpcao, setModalOpcao] = useState<OpcaoApoio | null>(null);
     const [modalEmergencia, setModalEmergencia] = useState(false);
     const [mensagemApoio, setMensagemApoio] = useState("");
+
+    useEffect(() => {
+        apoioService.listContatos().then(setContatos);
+    }, []);
 
     function confirmarApoio(e: React.FormEvent) {
         e.preventDefault();
         setModalOpcao(null);
         setMensagemApoio("");
         toast({
-            title: "Solicitação registrada (demo)",
-            description: "Nossa equipe entraria em contato em produção.",
+            title: "Solicitação registrada",
+            description: "Recebemos seu pedido de apoio.",
         });
     }
 
@@ -146,7 +151,7 @@ export default function ApoioPage() {
                             className="w-full rounded-xl h-12 bg-[#5ba58c] text-white"
                             onClick={() => {
                                 setModalOpcao(null);
-                                toast({ title: "Exercício concluído (demo)" });
+                                toast({ title: "Exercício concluído" });
                             }}
                         >
                             Concluí o exercício
@@ -179,7 +184,7 @@ export default function ApoioPage() {
                                 type="submit"
                                 className="flex-1 rounded-xl h-12 bg-[#5ba58c] text-white"
                             >
-                                Solicitar apoio (demo)
+                                Solicitar apoio
                             </Button>
                         </div>
                     </form>

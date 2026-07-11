@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Camera, Mic, MessageSquare, Heart, Image as ImageIcon, Plus, X } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 type Post = {
     id: number;
@@ -58,7 +59,10 @@ export default function DiarioPage(): JSX.Element {
 
     function handlePublish(e?: React.FormEvent) {
         if (e) e.preventDefault();
-        if (!texto.trim() && !preview) return alert("Escreva algo ou escolha uma foto.");
+        if (!texto.trim() && !preview) {
+            toast({ title: "Escreva algo ou escolha uma foto.", variant: "destructive" });
+            return;
+        }
         const now = new Date();
         const hora = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
         const novo: Post = {

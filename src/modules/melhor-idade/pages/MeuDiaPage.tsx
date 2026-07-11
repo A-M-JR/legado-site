@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pill, Calendar, Sparkles, Sun, CheckCircle2, Circle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,27 +33,31 @@ const FORM_INICIAL = {
 };
 
 export default function MeuDiaPage() {
-    const [tarefas, setTarefas] = useState<TarefaDia[]>(() => agendaService.list());
+    const [tarefas, setTarefas] = useState<TarefaDia[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [detalhe, setDetalhe] = useState<TarefaDia | null>(null);
     const [form, setForm] = useState(FORM_INICIAL);
 
-    function toggle(id: string) {
-        setTarefas(agendaService.toggleFeito(id));
+    useEffect(() => {
+        agendaService.list().then(setTarefas);
+    }, []);
+
+    async function toggle(id: string) {
+        setTarefas(await agendaService.toggleFeito(id));
     }
 
     function abrirDetalhe(t: TarefaDia) {
         setDetalhe(t);
     }
 
-    function salvarNovo(e: React.FormEvent) {
+    async function salvarNovo(e: React.FormEvent) {
         e.preventDefault();
         if (!form.titulo.trim()) return;
         const desc =
             form.descricao.trim() ||
             (form.horario ? `Horário: ${form.horario}` : "Novo cuidado registrado");
         setTarefas(
-            agendaService.add({
+            await agendaService.add({
                 titulo: form.titulo.trim(),
                 descricao: desc,
                 horario: form.horario || undefined,
@@ -63,7 +67,7 @@ export default function MeuDiaPage() {
         );
         setForm(FORM_INICIAL);
         setModalOpen(false);
-        toast({ title: "Cuidado adicionado", description: "Demonstração — salvo localmente." });
+        toast({ title: "Cuidado adicionado" });
     }
 
     return (
@@ -149,7 +153,7 @@ export default function MeuDiaPage() {
                 open={modalOpen}
                 onOpenChange={setModalOpen}
                 title="Registrar cuidado"
-                description="Preencha para demonstração. Os dados ficam salvos neste navegador."
+                description="Adicione uma tarefa ao seu dia."
             >
                 <form onSubmit={salvarNovo} className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -211,7 +215,7 @@ export default function MeuDiaPage() {
                             type="submit"
                             className="flex-1 rounded-xl h-12 bg-[#5ba58c] hover:bg-[#4a8a75] text-white"
                         >
-                            Salvar (demo)
+                            Salvar
                         </Button>
                     </div>
                 </form>
