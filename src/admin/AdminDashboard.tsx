@@ -42,8 +42,24 @@ interface LoginLog {
     login_at: string;
     sucesso: boolean;
     ip: string | null;
+    auth_id: string | null;
     parceiro_id: string | null;
+    usuario_nome: string | null;
+    usuario_email: string | null;
+    usuario_role: string | null;
     parceiros?: { nome?: string } | null;
+}
+
+const ROLE_LABELS: Record<string, string> = {
+    admin_master: "Admin Master",
+    parceiro_admin: "Parceiro Admin",
+    titular: "Titular",
+    familiar: "Familiar",
+};
+
+function labelRole(role: string | null | undefined) {
+    if (!role) return null;
+    return ROLE_LABELS[role] ?? role;
 }
 
 export default function AdminDashboard() {
@@ -161,8 +177,12 @@ export default function AdminDashboard() {
               login_at,
               sucesso,
               ip,
-              parceiro_id
-
+              auth_id,
+              parceiro_id,
+              usuario_nome,
+              usuario_email,
+              usuario_role,
+              parceiros ( nome )
             `
                     )
                     .order("login_at", { ascending: false })
@@ -171,7 +191,37 @@ export default function AdminDashboard() {
                 if (logsError) {
                     console.error("Erro ao buscar logs de login:", logsError);
                 } else {
-                    setRecentLogins((logsData as LoginLog[]) || []);
+                    let logs = (logsData as LoginLog[]) || [];
+
+                    const precisaEnriquecer = logs.some(
+                        (log) => !log.usuario_nome && log.auth_id
+                    );
+
+                    if (precisaEnriquecer) {
+                        const { data: usuarios } = await supabase.rpc(
+                            "get_usuarios_com_email"
+                        );
+                        const mapaUsuarios = new Map(
+                            (usuarios || []).map((u: any) => [u.auth_id, u])
+                        );
+
+                        logs = logs.map((log) => {
+                            if (log.usuario_nome || !log.auth_id) return log;
+                            const usuario = mapaUsuarios.get(log.auth_id);
+                            if (!usuario) return log;
+                            return {
+                                ...log,
+                                usuario_nome:
+                                    usuario.titular_nome ||
+                                    usuario.email ||
+                                    "Usuário",
+                                usuario_email: usuario.email ?? log.usuario_email,
+                                usuario_role: usuario.role ?? log.usuario_role,
+                            };
+                        });
+                    }
+
+                    setRecentLogins(logs);
                 }
             } catch (err: any) {
                 console.error("Erro ao carregar estatísticas:", err);
@@ -327,13 +377,25 @@ export default function AdminDashboard() {
                                             )}
                                             <div>
                                                 <p className="text-sm font-medium text-slate-900">
-                                                    {log.parceiros?.nome || "Acesso Direto / Titular"}
+                                                    {log.usuario_nome ||
+                                                        log.parceiros?.nome ||
+                                                        "Usuário não identificado"}
                                                 </p>
                                                 <p className="text-xs text-slate-500">
-                                                    IP: {log.ip ?? "—"} •{" "}
-                                                    {format(new Date(log.login_at), "HH:mm 'de' dd/MM", {
-                                                        locale: ptBR,
-                                                    })}
+                                                    {[
+                                                        log.usuario_email,
+                                                        labelRole(log.usuario_role),
+                                                        log.parceiros?.nome &&
+                                                        log.usuario_nome !== log.parceiros.nome
+                                                            ? log.parceiros.nome
+                                                            : null,
+                                                        `IP: ${log.ip ?? "—"}`,
+                                                        format(new Date(log.login_at), "HH:mm 'de' dd/MM", {
+                                                            locale: ptBR,
+                                                        }),
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(" • ")}
                                                 </p>
                                             </div>
                                         </div>

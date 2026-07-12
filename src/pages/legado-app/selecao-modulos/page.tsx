@@ -12,6 +12,7 @@ export default function SelecaoModulosPage() {
     const { userProfile } = useOutletContext<any>();
     const [modulos, setModulos] = useState<any[]>([]);
     const [parceiroInfo, setParceiroInfo] = useState<any>(null);
+    const [configSistema, setConfigSistema] = useState<{ logo_url: string | null; nome_sistema: string | null } | null>(null);
     const [loading, setLoading] = useState(true);
     const [loggingOut, setLoggingOut] = useState(false);
 
@@ -58,15 +59,46 @@ export default function SelecaoModulosPage() {
                     }
                 }
 
-                if (userProfile.parceiro_id) {
+                let parceiroId = userProfile.parceiro_id ?? null;
+
+                if (!parceiroId && userProfile.titular_id) {
+                    const { data: titular } = await supabase
+                        .from("titulares")
+                        .select("parceiro_id")
+                        .eq("id", userProfile.titular_id)
+                        .maybeSingle();
+
+                    parceiroId = titular?.parceiro_id ?? null;
+
+                    if (!parceiroId) {
+                        const { data: titularConta } = await supabase
+                            .from("usuarios_app")
+                            .select("parceiro_id")
+                            .eq("titular_id", userProfile.titular_id)
+                            .eq("role", "titular")
+                            .maybeSingle();
+
+                        parceiroId = titularConta?.parceiro_id ?? null;
+                    }
+                }
+
+                if (parceiroId) {
                     const { data: parcData } = await supabase
                         .from("parceiros")
                         .select("nome, logo_url")
-                        .eq("id", userProfile.parceiro_id)
+                        .eq("id", parceiroId)
                         .single();
 
                     if (parcData) setParceiroInfo(parcData);
                 }
+
+                const { data: configData } = await supabase
+                    .from("config_sistema")
+                    .select("logo_url, nome_sistema")
+                    .limit(1)
+                    .maybeSingle();
+
+                if (configData) setConfigSistema(configData);
             } catch (error) {
                 toast({
                     title: "Erro ao carregar módulos",
@@ -101,7 +133,8 @@ export default function SelecaoModulosPage() {
         }
     };
 
-    const logoParaExibir = parceiroInfo?.logo_url || logoPadrao;
+    const logoParaExibir = parceiroInfo?.logo_url || configSistema?.logo_url || logoPadrao;
+    const nomePlataforma = configSistema?.nome_sistema || "Legado & Conforto";
 
     if (loading) {
         return (
@@ -219,7 +252,7 @@ export default function SelecaoModulosPage() {
                         <div className="h-[1px] w-12 bg-slate-900" />
                     </div>
                     <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.3em]">
-                        Legado & Conforto • 2026
+                        {nomePlataforma} • 2026
                     </p>
                 </div>
             </div>

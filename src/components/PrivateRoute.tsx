@@ -10,6 +10,45 @@ interface UserProfile {
     status: "ativo" | "inativo" | "inadimplente" | "vitalicio";
 }
 
+async function resolverIdentidadeLogin(
+    profile: UserProfile,
+    user: { email?: string; user_metadata?: Record<string, unknown> }
+) {
+    let usuarioNome =
+        (user.user_metadata?.full_name as string | undefined) ||
+        user.email ||
+        "Usuário";
+
+    if (profile.titular_id) {
+        const { data: titular } = await supabase
+            .from("titulares")
+            .select("nome")
+            .eq("id", profile.titular_id)
+            .maybeSingle();
+
+        if (titular?.nome) usuarioNome = titular.nome;
+    } else if (profile.role === "parceiro_admin" && profile.parceiro_id) {
+        const { data: parceiro } = await supabase
+            .from("parceiros")
+            .select("nome")
+            .eq("id", profile.parceiro_id)
+            .maybeSingle();
+
+        if (parceiro?.nome) usuarioNome = parceiro.nome;
+    } else if (profile.role === "admin_master") {
+        usuarioNome =
+            (user.user_metadata?.full_name as string | undefined) ||
+            user.email ||
+            "Administrador";
+    }
+
+    return {
+        usuario_nome: usuarioNome,
+        usuario_email: user.email ?? null,
+        usuario_role: profile.role,
+    };
+}
+
 let isLoggingIn = false;
 
 interface PrivateRouteProps {
@@ -76,11 +115,13 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
 
                 if (!logRegistrado && !isLoggingIn) {
                     isLoggingIn = true;
+                    const identidade = await resolverIdentidadeLogin(profile, user);
                     await supabase.from("login_logs").insert({
                         auth_id: user.id,
                         parceiro_id: profile.parceiro_id,
                         user_agent: navigator.userAgent,
                         sucesso: true,
+                        ...identidade,
                     });
                     sessionStorage.setItem(logKey, "true");
                     isLoggingIn = false;

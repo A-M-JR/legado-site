@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { maskCNPJ } from "@/lib/masks";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,11 +65,13 @@ export default function ParceirosPage() {
             setFilteredParceiros(parceiros);
         } else {
             const term = searchTerm.toLowerCase();
+            const termDigits = searchTerm.replace(/\D/g, "");
             const filtered = parceiros.filter(
                 (p) =>
                     p.nome.toLowerCase().includes(term) ||
                     p.tipo.toLowerCase().includes(term) ||
-                    (p.cnpj ?? "").includes(searchTerm)
+                    (termDigits.length > 0 &&
+                        (p.cnpj ?? "").replace(/\D/g, "").includes(termDigits))
             );
             setFilteredParceiros(filtered);
         }
@@ -176,8 +179,8 @@ export default function ParceirosPage() {
                     </CardContent>
                 </Card>
             ) : (
-                <Card>
-                    <Table>
+                <Card className="overflow-x-auto">
+                    <Table className="min-w-[800px]">
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Parceiro</TableHead>
@@ -193,29 +196,29 @@ export default function ParceirosPage() {
                                 const status = getStatusBadge(parceiro.status);
                                 return (
                                     <TableRow key={parceiro.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
+                                        <TableCell className="max-w-[220px]">
+                                            <div className="flex items-center gap-3 min-w-0">
                                                 {parceiro.logo_url ? (
                                                     <img
                                                         src={parceiro.logo_url}
                                                         alt={parceiro.nome}
-                                                        className="h-10 w-10 rounded bg-gray-50 p-1 object-contain"
+                                                        className="h-10 w-10 shrink-0 rounded bg-gray-50 p-1 object-contain"
                                                     />
                                                 ) : (
-                                                    <div className="h-10 w-10 rounded bg-gray-200" />
+                                                    <div className="h-10 w-10 shrink-0 rounded bg-gray-200" />
                                                 )}
-                                                <span className="font-medium">
+                                                <span className="font-medium truncate">
                                                     {parceiro.nome}
                                                 </span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="capitalize">
+                                        <TableCell className="capitalize whitespace-nowrap">
                                             {parceiro.tipo}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="whitespace-nowrap">
                                             {parceiro.cnpj ? (
-                                                <span className="text-sm text-gray-700">
-                                                    {parceiro.cnpj}
+                                                <span className="text-sm text-gray-700 font-mono">
+                                                    {maskCNPJ(parceiro.cnpj)}
                                                 </span>
                                             ) : (
                                                 <span className="text-xs text-gray-400">

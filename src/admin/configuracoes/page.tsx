@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
     Save,
@@ -7,7 +7,8 @@ import {
     ShieldAlert,
     Mail,
     Upload,
-    AlertTriangle
+    AlertTriangle,
+    Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast"; // ⬅️ ADICIONE ESTA LINHA
 
@@ -26,6 +27,8 @@ export default function ConfiguracoesPage() {
     const [saving, setSaving] = useState(false);
     const [config, setConfig] = useState<ConfigSistema | null>(null);
     const [loadError, setLoadError] = useState(false);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+    const logoInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -74,6 +77,56 @@ export default function ConfiguracoesPage() {
             });
         }
         setSaving(false);
+    };
+
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !config) return;
+
+        if (!file.type.startsWith("image/")) {
+            toast({
+                variant: "destructive",
+                title: "Arquivo inválido",
+                description: "Envie uma imagem PNG, JPG, WebP ou SVG.",
+            });
+            e.target.value = "";
+            return;
+        }
+
+        setUploadingLogo(true);
+
+        try {
+            const ext = file.name.split(".").pop() || "png";
+            const fileName = `sistema-logo-${config.id}-${Date.now()}.${ext}`;
+            const { error: uploadError } = await supabase.storage
+                .from("parceiros-logos")
+                .upload(fileName, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from("parceiros-logos")
+                .getPublicUrl(fileName);
+
+            setConfig({
+                ...config,
+                logo_url: data.publicUrl,
+            });
+
+            toast({
+                title: "Logo enviada",
+                description: "Clique em Salvar para aplicar no sistema.",
+            });
+        } catch (err: any) {
+            toast({
+                variant: "destructive",
+                title: "Erro no upload",
+                description: err.message ?? "Não foi possível enviar a logo.",
+            });
+        } finally {
+            setUploadingLogo(false);
+            e.target.value = "";
+        }
     };
 
     if (loading) {
@@ -188,7 +241,7 @@ export default function ConfiguracoesPage() {
 
                             <div className="md:col-span-2 space-y-2">
                                 <label className="text-sm font-bold text-[#4f665a]">
-                                    URL da Logo (PNG/SVG)
+                                    Logo da Plataforma (PNG/SVG)
                                 </label>
                                 <div className="flex gap-3">
                                     <input
@@ -203,11 +256,24 @@ export default function ConfiguracoesPage() {
                                         className="flex-1 p-3 rounded-xl border border-[#d1e5dc] outline-none"
                                         placeholder="https://link-da-sua-logo.com/logo.png"
                                     />
+                                    <input
+                                        ref={logoInputRef}
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                        onChange={handleLogoUpload}
+                                        className="hidden"
+                                    />
                                     <button
                                         type="button"
-                                        className="p-3 bg-[#f4fbf8] text-legado-primary rounded-xl border border-[#d1e5dc] hover:bg-[#e3f1eb] transition-all"
+                                        onClick={() => logoInputRef.current?.click()}
+                                        disabled={uploadingLogo}
+                                        className="p-3 bg-[#f4fbf8] text-legado-primary rounded-xl border border-[#d1e5dc] hover:bg-[#e3f1eb] transition-all disabled:opacity-50"
                                     >
-                                        <Upload size={20} />
+                                        {uploadingLogo ? (
+                                            <Loader2 size={20} className="animate-spin" />
+                                        ) : (
+                                            <Upload size={20} />
+                                        )}
                                     </button>
                                 </div>
 
