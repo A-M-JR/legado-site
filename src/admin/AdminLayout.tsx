@@ -227,7 +227,7 @@ export default function AdminLayout() {
 
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
                     {/* Header Superior Refinado */}
-                    <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#d1e5dc] px-8 flex items-center justify-between sticky top-0 z-10">
+                    <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#d1e5dc] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-10">
                         <div className="flex items-center gap-4">
                             <SidebarTrigger className="text-[#6b8c7d] hover:text-[#255f4f] transition-colors" />
                             <div className="h-4 w-[1px] bg-[#d1e5dc] mx-2 hidden sm:block" />
@@ -244,7 +244,7 @@ export default function AdminLayout() {
                     </header>
 
                     {/* Área de Conteúdo */}
-                    <div className="flex-1 overflow-auto p-8 custom-scrollbar">
+                    <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
                         <div className="max-w-7xl mx-auto animate-in fade-in duration-500">
                             <Outlet />
                         </div>

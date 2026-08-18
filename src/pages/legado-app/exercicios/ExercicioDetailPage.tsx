@@ -69,26 +69,38 @@ export default function ExercicioDetailPage() {
     const [pageLoading, setPageLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [vezesRealizado, setVezesRealizado] = useState(0);
 
     useEffect(() => {
         (async () => {
-            if (!id) return;
-            const { data } = await supabase
-                .from("exercicios_autocuidado")
-                .select("*")
-                .eq("id", id)
-                .maybeSingle();
-
-            if (data) {
-                setExercicio(data as Exercicio);
-            } else {
+            if (!id) {
                 setNotFound(true);
+                setPageLoading(false);
+                return;
             }
 
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            if (user && id) {
+            try {
+                const { data, error } = await supabase
+                    .from("exercicios_autocuidado")
+                    .select("*")
+                    .eq("id", id)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (data) {
+                    setExercicio(data as Exercicio);
+                } else {
+                    setNotFound(true);
+                    return;
+                }
+
+                const {
+                    data: { user },
+                } = await supabase.auth.getUser();
+
+                if (!user) return;
+
                 const start = new Date();
                 start.setHours(0, 0, 0, 0);
                 const end = new Date();
@@ -103,20 +115,21 @@ export default function ExercicioDetailPage() {
                     .lte("realizado_em", end.toISOString())
                     .maybeSingle();
 
-                if (realData) {
-                    setConcluido(true);
-                    toast({ title: "Exercício concluído", description: "Seu progresso foi salvo." });
-                }
+                if (realData) setConcluido(true);
 
-                const { count, error } = await supabase
+                const { count, error: countErr } = await supabase
                     .from("exercicios_realizados")
                     .select("*", { count: "exact", head: true })
                     .eq("auth_id", user.id)
                     .eq("exercicio_id", id);
 
-                if (!error) setVezesRealizado(count ?? 0);
+                if (!countErr) setVezesRealizado(count ?? 0);
+            } catch (err) {
+                console.error("Erro carregando exercício:", err);
+                setNotFound(true);
+            } finally {
+                setPageLoading(false);
             }
-            setPageLoading(false);
         })();
     }, [id]);
 

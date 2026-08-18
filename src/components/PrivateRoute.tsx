@@ -169,7 +169,7 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
                 // 🎯 REDIRECIONAMENTO INTELIGENTE
                 // -------------------------------------
 
-                // admin master -> /admin (exceto preview de módulos)
+                // preview de módulos (admin master e parceiro podem visualizar o app)
                 const isAdminModuloPreview =
                     path.startsWith("/legado-app") || path.startsWith("/melhor-idade");
                 if (
@@ -181,7 +181,12 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
                 }
 
                 // parceiro -> /admin-parceiro (padronizado)
-                if (profile.role === "parceiro_admin" && !path.startsWith("/admin-parceiro") && !path.startsWith("/parceiro")) {
+                if (
+                    profile.role === "parceiro_admin" &&
+                    !path.startsWith("/admin-parceiro") &&
+                    !path.startsWith("/parceiro") &&
+                    !isAdminModuloPreview
+                ) {
                     return navigate("/admin-parceiro", { replace: true });
                 }
 

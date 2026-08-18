@@ -132,14 +132,14 @@ export default function ParceirosPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold">Parceiros</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold">Parceiros</h2>
                     <p className="mt-1 text-gray-600">
                         Gerencie clínicas, funerárias, prefeituras e outros parceiros.
                     </p>
                 </div>
-                <Button onClick={() => setShowNovoDialog(true)}>
+                <Button onClick={() => setShowNovoDialog(true)} className="w-full sm:w-auto">
                     <Plus className="mr-2 h-4 w-4" />
                     Novo Parceiro
                 </Button>

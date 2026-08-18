@@ -155,7 +155,7 @@ export default function ConfiguracoesPage() {
     return (
         <div className="space-y-8 pb-12">
             {/* HEADER */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-[#255f4f]">
                         Configurações do Sistema
@@ -167,7 +167,7 @@ export default function ConfiguracoesPage() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 bg-legado-primary hover:bg-legado-primary-dark text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 bg-legado-primary hover:bg-legado-primary-dark text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 w-full sm:w-auto"
                 >
                     {saving ? (
                         <div className="h-5 w-5 animate-spin border-2 border-white/30 border-t-white rounded-full" />
@@ -368,8 +368,16 @@ export default function ConfiguracoesPage() {
                                         }
                                         className="sr-only peer"
                                     />
-                                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-red-500 relative transition-colors">
-                                        <div className="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+                                    <div
+                                        className={`w-11 h-6 rounded-full relative transition-colors ${
+                                            config.manutencao_ativa ? "bg-red-500" : "bg-gray-200"
+                                        }`}
+                                    >
+                                        <div
+                                            className={`absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                                                config.manutencao_ativa ? "translate-x-5" : "translate-x-0"
+                                            }`}
+                                        />
                                     </div>
                                 </label>
                             </div>
@@ -397,8 +405,16 @@ export default function ConfiguracoesPage() {
                                         }
                                         className="sr-only peer"
                                     />
-                                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-legado-primary relative transition-colors">
-                                        <div className="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+                                    <div
+                                        className={`w-11 h-6 rounded-full relative transition-colors ${
+                                            config.permite_novos_cadastros ? "bg-legado-primary" : "bg-gray-200"
+                                        }`}
+                                    >
+                                        <div
+                                            className={`absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                                                config.permite_novos_cadastros ? "translate-x-5" : "translate-x-0"
+                                            }`}
+                                        />
                                     </div>
                                 </label>
                             </div>

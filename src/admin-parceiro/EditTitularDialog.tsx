@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Upload, X, Eye, EyeOff } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
@@ -26,7 +26,6 @@ interface Props {
 export default function EditTitularDialog({ open, onClose, titularId, parceiroId, refresh }: Props) {
     const [loading, setLoading] = useState(false);
     const [loadingData, setLoadingData] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
 
     // form
     const [nome, setNome] = useState("");
@@ -134,7 +133,7 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
                     nome,
                     cpf: cpf.replace(/\D/g, ""),
                     telefone: telefone.replace(/\D/g, ""),
-                    data_nascimento: dataNascimento,
+                    data_nascimento: dataNascimento || null,
                     email,
                     imagem_url: imagemUrl,
                 })
@@ -200,7 +199,7 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
 
                         <Separator />
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <Label>Nome</Label>
                                 <Input value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -211,7 +210,7 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <Label>Telefone</Label>
                                 <Input value={telefone} onChange={(e) => setTelefone(maskTelefone(e.target.value))} placeholder="(00) 00000-0000" maxLength={15} />
@@ -232,7 +231,8 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
                             <select value={status ?? "ativo"} onChange={(e) => setStatus(e.target.value)} className="w-full border rounded px-3 py-2">
                                 <option value="ativo">Ativo</option>
                                 <option value="inativo">Inativo</option>
-                                <option value="suspenso">Suspenso</option>
+                                <option value="inadimplente">Inadimplente</option>
+                                <option value="vitalicio">Vitalício</option>
                             </select>
                         </div>
 

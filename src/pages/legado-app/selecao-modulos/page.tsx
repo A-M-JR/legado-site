@@ -17,10 +17,11 @@ export default function SelecaoModulosPage() {
     const [loggingOut, setLoggingOut] = useState(false);
 
     const isAdminPreview = userProfile?.role === "admin_master";
+    const isParceiroPreview = userProfile?.role === "parceiro_admin";
 
     useEffect(() => {
         async function loadInitialData() {
-            if (!userProfile?.titular_id && !isAdminPreview) {
+            if (!userProfile?.titular_id && !isAdminPreview && !isParceiroPreview) {
                 setLoading(false);
                 return;
             }
@@ -35,6 +36,29 @@ export default function SelecaoModulosPage() {
 
                     if (detError) throw detError;
                     setModulos(detalhes || []);
+                } else if (isParceiroPreview) {
+                    const { data: habilitados, error: modError } = await supabase
+                        .from("parceiro_modulos")
+                        .select("modulo_id")
+                        .eq("parceiro_id", userProfile.parceiro_id)
+                        .eq("habilitado", true);
+
+                    if (modError) throw modError;
+
+                    if (habilitados && habilitados.length > 0) {
+                        const ids = habilitados.map((h: any) => h.modulo_id);
+                        const { data: detalhes, error: detError } = await supabase
+                            .from("modulos")
+                            .select("id, nome, ativo")
+                            .in("id", ids)
+                            .eq("ativo", true)
+                            .order("nome");
+
+                        if (detError) throw detError;
+                        setModulos(detalhes || []);
+                    } else {
+                        setModulos([]);
+                    }
                 } else {
                     const { data: habilitados, error: modError } = await supabase
                         .from("titular_modulos")
@@ -110,7 +134,7 @@ export default function SelecaoModulosPage() {
             }
         }
         loadInitialData();
-    }, [userProfile, isAdminPreview]);
+    }, [userProfile, isAdminPreview, isParceiroPreview]);
 
     const direcionarParaModulo = (nome: string) => {
         const n = nome.toLowerCase();
@@ -170,7 +194,11 @@ export default function SelecaoModulosPage() {
                         Olá, <span className="font-semibold text-legado-primary">Bem-vindo</span>
                     </h2>
                     <p className="text-slate-500 mt-2 text-sm font-medium">
-                        {isAdminPreview ? "Modo preview — todos os módulos ativos" : "Qual jornada deseja seguir hoje?"}
+                        {isAdminPreview
+                            ? "Modo preview — todos os módulos ativos"
+                            : isParceiroPreview
+                                ? "Modo preview — módulos liberados para o seu parceiro"
+                                : "Qual jornada deseja seguir hoje?"}
                     </p>
                 </div>
 
@@ -214,6 +242,17 @@ export default function SelecaoModulosPage() {
                     )}
 
                     <div className="pt-4 space-y-3">
+                        {isParceiroPreview && (
+                            <button
+                                onClick={() => navigate("/admin-parceiro/dashboard")}
+                                className="group w-full bg-[#e3f1eb] hover:bg-[#d1e5dc] p-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 border border-[#c2e1d4] active:scale-[0.98]"
+                            >
+                                <ShieldCheck className="h-5 w-5 text-[#5ba58c]" />
+                                <span className="text-sm font-bold text-[#255f4f]">
+                                    Voltar ao Painel Parceiro
+                                </span>
+                            </button>
+                        )}
                         {isAdminPreview && (
                             <button
                                 onClick={() => navigate("/admin/dashboard")}

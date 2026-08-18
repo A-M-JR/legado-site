@@ -83,12 +83,33 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
         setModuloLegado(false);
         setModuloIdoso(false);
         setModuloPaliativo(false);
+        setNome("");
+        setCpf("");
+        setTelefone("");
+        setDataNascimento("");
+        setEmail(user?.email || "");
+        setFotoFile(null);
+        setFotoAtual(null);
+        setFotoPreview(null);
 
-        // Se o usuário não tem titular_id, usa informações diretas do user
+        // Fonte da verdade para role/status/parceiro é o usuarios_app
+        // (a listagem não devolve o status, e usar o default "ativo" reativava contas).
+        let vinculo: { role?: string; status?: StatusUsuario; parceiro_id?: string | null } | null = null;
+        if (user?.auth_id) {
+            const { data } = await supabase
+                .from("usuarios_app")
+                .select("role, status, parceiro_id")
+                .eq("auth_id", user.auth_id)
+                .maybeSingle();
+            vinculo = data ?? null;
+        }
+
+        setRole(vinculo?.role ?? user?.role ?? "");
+        setStatus((vinculo?.status as StatusUsuario) ?? (user?.status as StatusUsuario) ?? "ativo");
+        setParceiroId(vinculo?.parceiro_id ?? user?.parceiro_id ?? "none");
+
+        // Se o usuário não tem titular_id, não há dados de titular para carregar
         if (!user?.titular_id) {
-            setRole(user.role || "");
-            setStatus((user.status as StatusUsuario) || "ativo");
-            setParceiroId(user.parceiro_id ?? "none");
             return;
         }
 
@@ -107,15 +128,11 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
             setFotoAtual(titular.imagem_url || null);
             setFotoPreview(titular.imagem_url || null);
 
-            // Preencher parceiroId caso exista no titular
-            if ((titular.parceiro_id)) {
+            // Só usa o parceiro do titular se o vínculo em usuarios_app não tiver um
+            if (titular.parceiro_id && !vinculo?.parceiro_id) {
                 setParceiroId(titular.parceiro_id);
             }
         }
-
-        setRole(user.role || "");
-        setStatus((user.status as StatusUsuario) || "ativo");
-        setParceiroId(user.parceiro_id ?? parceiroId);
 
         const { data: modulos } = await supabase
             .from("titular_modulos")
@@ -187,7 +204,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                     nome,
                     cpf: cpf.replace(/\D/g, ""),
                     telefone: telefone.replace(/\D/g, ""),
-                    data_nascimento: dataNascimento,
+                    data_nascimento: dataNascimento || null,
                     email,
                     imagem_url: fotoUrl,
                 }).eq("id", user.titular_id);
@@ -446,8 +463,14 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                             setLoading(true);
                             const { error } = await supabase.rpc('alterar_senha_usuario', { user_id: user.auth_id, nova_senha: novaSenha });
                             setLoading(false);
-                            if (!error) { toast({ title: "Sucesso", description: "Senha alterada" }); setShowPasswordDialog(false); }
-                        }}>Confirmar Nova Senha</Button>
+                            if (error) {
+                                return toast({ title: "❌ Erro", description: error.message || "Não foi possível alterar a senha", variant: "destructive" });
+                            }
+                            toast({ title: "Sucesso", description: "Senha alterada" });
+                            setNovaSenha("");
+                            setConfirmarSenha("");
+                            setShowPasswordDialog(false);
+                        }} disabled={loading}>Confirmar Nova Senha</Button>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -461,7 +484,11 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction className="bg-red-600" onClick={async () => {
-                            await supabase.from("usuarios_app").update({ status: "inativo" }).eq("auth_id", user.auth_id);
+                            const { error } = await supabase.from("usuarios_app").update({ status: "inativo" }).eq("auth_id", user.auth_id);
+                            if (error) {
+                                return toast({ title: "❌ Erro", description: error.message || "Não foi possível inativar o usuário", variant: "destructive" });
+                            }
+                            toast({ title: "Usuário inativado", description: "O acesso foi revogado." });
                             refresh(); onClose();
                         }}>Sim, Inativar</AlertDialogAction>
                     </AlertDialogFooter>

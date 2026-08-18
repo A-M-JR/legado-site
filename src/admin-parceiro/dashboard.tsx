@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { sanitizePostgrestSearch } from "@/lib/validation";
 import { supabase } from "@/lib/supabaseClient";
-import { useOutletContext, useNavigate } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Users, Plus, Settings2, Edit2, Eye, Grid, Search } from "lucide-react";
 import GerenciarModulosTitular from "./GerenciarModulosTitular";
+import MeusModulos from "./MeusModulos";
 import NovoTitularDialog from "./NovoTitularDialog";
 import EditTitularDialog from "./EditTitularDialog";
 
@@ -24,12 +25,12 @@ interface UsuarioTabela {
 export default function AdminParceiroDashboard() {
     const { userProfile } = useOutletContext<{ userProfile?: any }>();
     const parceiroId = userProfile?.parceiro_id || null;
-    const navigate = useNavigate();
 
     const [usuarios, setUsuarios] = useState<UsuarioTabela[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedUsuario, setSelectedUsuario] = useState<{ id: string; nome: string } | null>(null);
     const [showModulos, setShowModulos] = useState(false);
+    const [showMeusModulos, setShowMeusModulos] = useState(false);
     const [showNovoTitular, setShowNovoTitular] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [editingTitularId, setEditingTitularId] = useState<string | null>(null);
@@ -37,6 +38,11 @@ export default function AdminParceiroDashboard() {
     const [page, setPage] = useState(1);
     const [pageSize] = useState(10);
     const [totalCount, setTotalCount] = useState(0);
+
+    // Ao mudar a busca, volta para a primeira página
+    useEffect(() => {
+        setPage((p) => (p === 1 ? p : 1));
+    }, [searchTerm]);
 
     useEffect(() => {
         if (parceiroId) {
@@ -115,6 +121,7 @@ export default function AdminParceiroDashboard() {
                 .filter((v: any) => v.role === "titular" && v.titular_id)
                 .map((v: any) => v.titular_id);
 
+            const modulosPorTitular = new Map<string, string[]>();
             const titularesMap = new Map<string, any>();
             if (titularIds.length > 0) {
                 const { data: tData, error: tErr } = await supabase
@@ -129,6 +136,27 @@ export default function AdminParceiroDashboard() {
                 }
             }
 
+            // 4.1) Módulos habilitados de cada titular (coluna "Jornadas Ativas")
+            if (titularIds.length > 0) {
+                const { data: tmData, error: tmErr } = await supabase
+                    .from("titular_modulos")
+                    .select("titular_id, modulos(nome)")
+                    .in("titular_id", titularIds)
+                    .eq("habilitado", true);
+
+                if (tmErr) {
+                    console.error("Erro buscando módulos dos titulares:", tmErr);
+                } else {
+                    (tmData || []).forEach((tm: any) => {
+                        const nomeModulo = tm.modulos?.nome;
+                        if (!nomeModulo) return;
+                        const atuais = modulosPorTitular.get(tm.titular_id) || [];
+                        atuais.push(nomeModulo);
+                        modulosPorTitular.set(tm.titular_id, atuais);
+                    });
+                }
+            }
+
             // 5) Montar lista final para UI
             const lista = (vinculos || []).map((v: any) => {
                 if (v.role === "titular") {
@@ -140,7 +168,7 @@ export default function AdminParceiroDashboard() {
                         cpf: t?.cpf || "-",
                         role: "titular",
                         status: v.status,
-                        modulos: [] // preencher se necessário (buscar titular_modulos separadamente)
+                        modulos: modulosPorTitular.get(v.titular_id) || []
                     } as UsuarioTabela;
                 } else {
                     return {
@@ -175,8 +203,8 @@ export default function AdminParceiroDashboard() {
                     <h1 className="text-2xl font-bold text-[#255f4f]">Meus Clientes</h1>
                     <p className="text-sm text-[#6b8c7d]">Gerencie os acessos e jornadas dos seus pacientes.</p>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full md:w-auto">
+                    <div className="relative w-full sm:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9db4aa]" />
                         <input
                             type="text"
@@ -187,15 +215,15 @@ export default function AdminParceiroDashboard() {
                         />
                     </div>
                     <Button
-                        className="bg-[#5ba58c] hover:bg-[#4a8a75] text-white rounded-xl shadow-sm"
+                        className="bg-[#5ba58c] hover:bg-[#4a8a75] text-white rounded-xl shadow-sm flex-1 sm:flex-none"
                         onClick={() => setShowNovoTitular(true)}
                     >
                         <Plus className="h-4 w-4 mr-2" /> Novo Cliente
                     </Button>
                     <Button
                         variant="outline"
-                        className="border-[#d1e5dc] text-[#255f4f] hover:bg-[#f4fbf8] rounded-xl"
-                        onClick={() => navigate("/legado-app/selecao-modulos")}
+                        className="border-[#d1e5dc] text-[#255f4f] hover:bg-[#f4fbf8] rounded-xl flex-1 sm:flex-none"
+                        onClick={() => setShowMeusModulos(true)}
                     >
                         <Grid className="mr-2 h-4 w-4" /> Módulos
                     </Button>
@@ -279,17 +307,17 @@ export default function AdminParceiroDashboard() {
                                                             >
                                                                 <Edit2 className="h-4 w-4" />
                                                             </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-[#9db4aa] hover:bg-[#f4fbf8] rounded-lg"
+                                                                aria-label="Visualizar titular"
+                                                                onClick={() => abrirEdicao(usuario.id)}
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
                                                         </>
                                                     )}
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-[#9db4aa] hover:bg-[#f4fbf8] rounded-lg"
-                                                        aria-label="Visualizar titular"
-                                                        onClick={() => abrirEdicao(usuario.id)}
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -336,6 +364,13 @@ export default function AdminParceiroDashboard() {
                 open={showModulos}
                 onClose={() => setShowModulos(false)}
                 refresh={fetchUsuarios}
+            />
+
+            <MeusModulos
+                open={showMeusModulos}
+                onClose={() => setShowMeusModulos(false)}
+                parceiroId={parceiroId}
+                parceiroNome={userProfile?.nome}
             />
 
             <NovoTitularDialog

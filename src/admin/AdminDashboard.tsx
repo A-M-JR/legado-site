@@ -305,7 +305,7 @@ export default function AdminDashboard() {
         <div className="space-y-8">
             {/* Header de Boas-vindas */}
             <div>
-                <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
                     Visão Geral da Plataforma
                 </h2>
                 <p className="text-slate-500 text-sm">
@@ -353,7 +353,7 @@ export default function AdminDashboard() {
 
             {/* Distribuição por módulo */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4 border-none shadow-sm bg-white">
+                <Card className="md:col-span-2 lg:col-span-4 border-none shadow-sm bg-white">
                     <CardHeader>
                         <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
                             <Clock className="h-5 w-5 text-indigo-600" />
@@ -417,12 +417,12 @@ export default function AdminDashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="col-span-3 border-none shadow-sm bg-white">
+                <Card className="md:col-span-2 lg:col-span-3 border-none shadow-sm bg-white">
                     <CardHeader>
                         <CardTitle className="text-lg font-bold text-slate-800">Uso por Módulo</CardTitle>
                         <CardDescription>Distribuição real de titulares por módulo</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col justify-center h-[250px]">
+                    <CardContent className="flex flex-col justify-center min-h-[250px]">
                         <div className="space-y-4">
                             <div>
                                 <div className="flex justify-between text-sm mb-1">

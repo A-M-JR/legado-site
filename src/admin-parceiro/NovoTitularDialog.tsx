@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Upload, X, Eye, EyeOff } from "lucide-react";
+import { Loader2, Upload, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface NovoTitularDialogProps {
@@ -90,7 +90,7 @@ export default function NovoTitularDialog({ open, onClose, refresh, parceiroId }
                     email,
                     cpf: cpf.replace(/\D/g, ""),
                     telefone: telefone.replace(/\D/g, ""),
-                    data_nascimento: dataNascimento,
+                    data_nascimento: dataNascimento || null,
                     imagem_url: fotoUrl,
                     auth_id: authId
                 }])
@@ -171,7 +171,7 @@ export default function NovoTitularDialog({ open, onClose, refresh, parceiroId }
                         <span className="text-xs text-gray-500">Foto de Perfil</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Nome Completo</Label>
                             <Input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome do paciente" />
@@ -182,7 +182,7 @@ export default function NovoTitularDialog({ open, onClose, refresh, parceiroId }
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Telefone</Label>
                             <Input value={telefone} onChange={e => setTelefone(maskTelefone(e.target.value))} placeholder="(00) 00000-0000" maxLength={15} />

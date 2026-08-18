@@ -16,11 +16,10 @@ import {
 } from "@/components/ui/sidebar";
 import {
     Users,
-    Settings,
     LogOut,
-    LayoutDashboard,
     ShieldCheck,
     ChevronRight,
+    Puzzle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,7 +27,13 @@ import { cn } from "@/lib/utils";
 import logoPadrao from "@/assets/legado/logo_degrade.png";
 
 const menuItems = [
-    { title: "Meus Clientes", icon: Users, path: "/admin-parceiro/dashboard" },
+    { title: "Meus Clientes", icon: Users, path: "/admin-parceiro/dashboard", external: false },
+    {
+        title: "Visualizar Módulos",
+        icon: Puzzle,
+        path: "/legado-app/selecao-modulos",
+        external: true,
+    },
     // { title: "Configurações", icon: Settings, path: "/admin-parceiro/configuracoes" },
 ];
 
@@ -179,7 +184,7 @@ export default function ParceiroLayout() {
                             <SidebarGroupContent className="px-3 pb-4">
                                 <SidebarMenu>
                                     {menuItems.map((item) => {
-                                        const isActive = location.pathname === item.path;
+                                        const isActive = !item.external && location.pathname === item.path;
                                         return (
                                             <SidebarMenuItem key={item.path} className="mb-1">
                                                 <SidebarMenuButton
@@ -231,7 +236,7 @@ export default function ParceiroLayout() {
                 </Sidebar>
 
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#d1e5dc] px-8 flex items-center justify-between sticky top-0 z-10">
+                    <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#d1e5dc] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-10">
                         <div className="flex items-center gap-4">
                             <SidebarTrigger className="text-[#6b8c7d] hover:text-[#255f4f] transition-colors" />
                             <div className="h-4 w-[1px] bg-[#d1e5dc] mx-2 hidden sm:block" />
@@ -243,7 +248,7 @@ export default function ParceiroLayout() {
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-auto p-8 custom-scrollbar">
+                    <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
                         <div className="max-w-7xl mx-auto animate-in fade-in duration-500">
                             <Outlet context={{ userProfile: parceiroProfile }} />
                         </div>
