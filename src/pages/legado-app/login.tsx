@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
-import logo from "@/assets/Legado - Branco.png";
+import logo from "@/assets/logo-ilc.png";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -161,9 +161,13 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
           <img
             src={logo}
-            alt="Logo"
-            className="mx-auto w-32 sm:w-40 h-auto mb-3 relative z-10 drop-shadow-lg"
+            alt="Instituto Legado e Conforto"
+            className="mx-auto w-24 h-24 sm:w-28 sm:h-28 object-contain relative z-10 drop-shadow-[0_4px_12px_rgba(0,0,0,0.35)]"
           />
+          <p className="text-white text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] mt-3 relative z-10">
+            Instituto Legado e Conforto
+          </p>
+          <div className="mx-auto mt-3 mb-3 h-px w-16 bg-white/30 relative z-10"></div>
           <h1 className="text-white text-xl sm:text-2xl font-bold relative z-10">
             {forgotMode ? "Recuperar Senha" : "Bem-vindo!"}
           </h1>

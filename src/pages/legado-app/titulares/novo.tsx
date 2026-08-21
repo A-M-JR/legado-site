@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { validarCPF } from "../../../utils/validarCPF";
 import { useToast } from "@/hooks/use-toast";
-import logo from "@/assets/Legado - Branco.png";
+import logo from "@/assets/logo-ilc.png";
 
 export default function CadastroTitular() {
     const navigate = useNavigate();
@@ -221,12 +221,15 @@ export default function CadastroTitular() {
                         <ArrowLeft size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
                     </button>
                     <div className="relative z-10">
-                        {/* Aumentei de w-24/28 para w-36/44 */}
                         <img
                             src={logo}
-                            alt="Logo"
-                            className="mx-auto w-36 sm:w-44 h-auto mb-4 drop-shadow-lg"
+                            alt="Instituto Legado e Conforto"
+                            className="mx-auto w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.35)]"
                         />
+                        <p className="text-white text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] mt-3">
+                            Instituto Legado e Conforto
+                        </p>
+                        <div className="mx-auto mt-3 mb-3 h-px w-16 bg-white/30"></div>
                         <h1 className="text-white text-2xl sm:text-3xl font-bold tracking-tight">
                             Criar Conta
                         </h1>

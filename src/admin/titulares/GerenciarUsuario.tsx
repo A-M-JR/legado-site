@@ -56,6 +56,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
     const [moduloLegado, setModuloLegado] = useState(false);
     const [moduloIdoso, setModuloIdoso] = useState(false);
     const [moduloPaliativo, setModuloPaliativo] = useState(false);
+    const [moduloPreventiva, setModuloPreventiva] = useState(false);
 
     // Parceiros
     const [parceiros, setParceiros] = useState<any[]>([]);
@@ -83,6 +84,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
         setModuloLegado(false);
         setModuloIdoso(false);
         setModuloPaliativo(false);
+        setModuloPreventiva(false);
         setNome("");
         setCpf("");
         setTelefone("");
@@ -146,6 +148,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                 if (nome?.includes("legado")) setModuloLegado(true);
                 if (nome?.includes("idoso")) setModuloIdoso(true);
                 if (nome?.includes("paliativo")) setModuloPaliativo(true);
+                if (nome?.includes("preventiva")) setModuloPreventiva(true);
             });
         }
     }
@@ -226,6 +229,10 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                     }
                     if (moduloPaliativo) {
                         const m = todosModulos.find((x: any) => x.nome.toLowerCase().includes("paliativo"));
+                        if (m) inserts.push({ titular_id: user.titular_id, modulo_id: m.id, habilitado: true });
+                    }
+                    if (moduloPreventiva) {
+                        const m = todosModulos.find((x: any) => x.nome.toLowerCase().includes("preventiva"));
                         if (m) inserts.push({ titular_id: user.titular_id, modulo_id: m.id, habilitado: true });
                     }
                     if (inserts.length > 0) {
@@ -384,6 +391,10 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
                                             <div className="flex items-center gap-3">
                                                 <Checkbox id="idoso" checked={moduloIdoso} onCheckedChange={v => setModuloIdoso(!!v)} />
                                                 <Label htmlFor="idoso" className="font-normal">👴 Cuidados ao Idoso</Label>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Checkbox id="preventiva" checked={moduloPreventiva} onCheckedChange={v => setModuloPreventiva(!!v)} />
+                                                <Label htmlFor="preventiva" className="font-normal">🩺 Medicina Preventiva</Label>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <Checkbox id="paliativo" checked={moduloPaliativo} onCheckedChange={v => setModuloPaliativo(!!v)} />

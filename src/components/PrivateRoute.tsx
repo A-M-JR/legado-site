@@ -4,7 +4,7 @@ import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 
 interface UserProfile {
-    role: "admin_master" | "parceiro_admin" | "titular" | "familiar";
+    role: "admin_master" | "parceiro_admin" | "parceiro_operador" | "titular" | "familiar";
     parceiro_id: string | null;
     titular_id: string | null;
     status: "ativo" | "inativo" | "inadimplente" | "vitalicio";
@@ -27,7 +27,7 @@ async function resolverIdentidadeLogin(
             .maybeSingle();
 
         if (titular?.nome) usuarioNome = titular.nome;
-    } else if (profile.role === "parceiro_admin" && profile.parceiro_id) {
+    } else if (ehEquipeParceiro(profile.role) && profile.parceiro_id) {
         const { data: parceiro } = await supabase
             .from("parceiros")
             .select("nome")
@@ -47,6 +47,10 @@ async function resolverIdentidadeLogin(
         usuario_email: user.email ?? null,
         usuario_role: profile.role,
     };
+}
+
+function ehEquipeParceiro(role?: string | null): boolean {
+    return role === "parceiro_admin" || role === "parceiro_operador";
 }
 
 let isLoggingIn = false;
@@ -147,7 +151,7 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
                 // -------------------------------------
 
                 // Se o caminho for de painel parceiro, só parceiro_admin pode acessar
-                if ((path.startsWith("/parceiro") || path.startsWith("/admin-parceiro")) && profile.role !== "parceiro_admin") {
+                if ((path.startsWith("/parceiro") || path.startsWith("/admin-parceiro")) && !ehEquipeParceiro(profile.role)) {
                     return navigate("/bloqueado", { replace: true, state: { status: "bloqueado" } });
                 }
 
@@ -171,7 +175,9 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
 
                 // preview de módulos (admin master e parceiro podem visualizar o app)
                 const isAdminModuloPreview =
-                    path.startsWith("/legado-app") || path.startsWith("/melhor-idade");
+                    path.startsWith("/legado-app") ||
+                    path.startsWith("/melhor-idade") ||
+                    path.startsWith("/medicina-preventiva");
                 if (
                     profile.role === "admin_master" &&
                     !path.startsWith("/admin") &&
@@ -182,7 +188,7 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
 
                 // parceiro -> /admin-parceiro (padronizado)
                 if (
-                    profile.role === "parceiro_admin" &&
+                    ehEquipeParceiro(profile.role) &&
                     !path.startsWith("/admin-parceiro") &&
                     !path.startsWith("/parceiro") &&
                     !isAdminModuloPreview
@@ -210,6 +216,7 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
                         const nomeModulo = modulos[0];
                         if (nomeModulo === "Legado") return navigate("/legado-app/menu", { replace: true });
                         if (nomeModulo === "Cuidado ao Idoso") return navigate("/melhor-idade", { replace: true });
+                        if (nomeModulo === "Medicina Preventiva") return navigate("/medicina-preventiva", { replace: true });
                         if (nomeModulo === "Cuidados Paliativos") return navigate("/bloqueado", { replace: true, state: { status: "em_breve" } });
                     } else {
                         return navigate("/legado-app/selecao-modulos", { replace: true });

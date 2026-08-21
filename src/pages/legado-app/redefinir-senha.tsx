@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import logo from "@/assets/Legado - Branco.png";
+import logo from "@/assets/logo-ilc.png";
 
 export default function RedefinirSenhaPage() {
   const [password, setPassword] = useState("");
@@ -57,7 +57,15 @@ export default function RedefinirSenhaPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-legado-primary/5 via-white to-legado-primary/10 px-4 py-6">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100">
         <div className="bg-gradient-to-br from-legado-primary to-legado-primary-dark p-8 text-center">
-          <img src={logo} alt="Logo" className="mx-auto w-32 h-auto mb-3" />
+          <img
+            src={logo}
+            alt="Instituto Legado e Conforto"
+            className="mx-auto w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.35)]"
+          />
+          <p className="text-white text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] mt-3">
+            Instituto Legado e Conforto
+          </p>
+          <div className="mx-auto mt-3 mb-3 h-px w-16 bg-white/30"></div>
           <h1 className="text-white text-xl font-bold">Nova Senha</h1>
           <p className="text-white/80 text-sm mt-1">Defina sua nova senha de acesso</p>
         </div>

@@ -93,6 +93,14 @@ export const redeService = {
         return legacy;
     },
 
+    /**
+     * Sincroniza a rede de forma diferencial: atualiza quem já existe, insere
+     * quem é novo e apaga só quem saiu da lista.
+     *
+     * A versão anterior apagava tudo e reinseria com os MESMOS ids — se o delete
+     * falhasse (linha legada sem titular_id, RLS), o insert seguinte batia em
+     * chave duplicada e derrubava adicionar, editar e remover de uma vez.
+     */
     async sync(rede: PessoaRede[]): Promise<PessoaRede[]> {
         const scope = await getMiScope();
         const validas = dedupeRede(rede.filter((p) => p.nome.trim()));
@@ -110,57 +118,77 @@ export const redeService = {
             writeStorage(REDE_KEY, validas);
             return validas;
         }
+        if (listError) throw new Error(listError.message);
 
-        if (existing?.length) {
-            await supabase
-                .from("mi_rede")
-                .delete()
-                .in(
-                    "id",
-                    existing.map((r) => r.id)
-                );
-        }
+        const idsExistentes = new Set((existing ?? []).map((r) => String(r.id)));
+        const idsMantidos = new Set<string>();
 
-        if (!validas.length) {
-            writeStorage(REDE_KEY, []);
-            let perfilQuery = supabase.from("mi_perfis").select("id");
-            perfilQuery = applyScope(perfilQuery, scope);
-            const { data: perfil } = await perfilQuery.maybeSingle();
-            if (perfil?.id) {
-                await supabase
-                    .from("mi_perfis")
-                    .update({ rede: [], updated_at: new Date().toISOString() })
-                    .eq("id", perfil.id);
-            }
-            return [];
-        }
-
-        const rows = validas.map((p, ordem) => {
-            const norm = normalizePessoaRede(p);
-            const row: Record<string, unknown> = {
-                ...scopePayload(scope),
+        for (const [ordem, pessoa] of validas.entries()) {
+            const norm = normalizePessoaRede(pessoa);
+            const dados: Record<string, unknown> = {
                 nome: norm.nome,
                 relacao: norm.relacao,
                 foto_url: norm.fotoUrl ?? null,
                 ordem,
             };
-            if (isUuid(norm.id)) row.id = norm.id;
-            return row;
-        });
 
-        const { data, error } = await supabase.from("mi_rede").insert(rows).select("*");
+            if (isUuid(norm.id) && idsExistentes.has(norm.id)) {
+                // Cura linhas antigas que ficaram sem titular_id.
+                if (scope.titularId) dados.titular_id = scope.titularId;
 
-        if (error) {
-            if (isDbUnavailable(error)) {
-                writeStorage(REDE_KEY, validas);
-                return validas;
+                const { error } = await supabase.from("mi_rede").update(dados).eq("id", norm.id);
+
+                if (error) {
+                    if (isDbUnavailable(error)) {
+                        writeStorage(REDE_KEY, validas);
+                        return validas;
+                    }
+                    throw new Error(error.message);
+                }
+
+                idsMantidos.add(norm.id);
+                continue;
             }
-            throw new Error(error.message);
+
+            const { data: criada, error } = await supabase
+                .from("mi_rede")
+                .insert({ ...scopePayload(scope), ...dados })
+                .select("id")
+                .single();
+
+            if (error) {
+                if (isDbUnavailable(error)) {
+                    writeStorage(REDE_KEY, validas);
+                    return validas;
+                }
+                throw new Error(error.message);
+            }
+
+            if (criada?.id) idsMantidos.add(String(criada.id));
         }
 
-        const saved = (data ?? []).map(mapRow);
+        const idsRemovidos = [...idsExistentes].filter((id) => !idsMantidos.has(id));
+
+        if (idsRemovidos.length) {
+            const { error } = await supabase.from("mi_rede").delete().in("id", idsRemovidos);
+            if (error && !isDbUnavailable(error)) {
+                throw new Error("Não foi possível remover: " + error.message);
+            }
+        }
+
+        const saved = await this.list();
+
+        // Delete sem erro mas sem efeito (RLS) faria a pessoa reaparecer calada.
+        const sobrou = saved.find((p) => idsRemovidos.includes(p.id));
+        if (sobrou) {
+            throw new Error(
+                `Sem permissão para remover ${sobrou.nome}. Entre com a conta do titular e tente de novo.`
+            );
+        }
+
         writeStorage(REDE_KEY, saved);
 
+        // Espelho legado em mi_perfis.rede (telas antigas ainda leem daí).
         let perfilQuery = supabase.from("mi_perfis").select("id");
         perfilQuery = applyScope(perfilQuery, scope);
         const { data: perfil } = await perfilQuery.maybeSingle();

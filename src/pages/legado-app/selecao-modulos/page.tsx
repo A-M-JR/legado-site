@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { BookHeart, HeartPulse, UserRoundPlus, ChevronRight, Sparkles, ShieldCheck, Loader2, LogOut } from "lucide-react";
+import { BookHeart, HeartPulse, UserRoundPlus, Stethoscope, ChevronRight, Sparkles, ShieldCheck, Loader2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import logoPadrao from "@/assets/legado/logo_degrade.png";
+import logoPadrao from "@/assets/logo-ilc.png";
 
 export default function SelecaoModulosPage() {
     const navigate = useNavigate();
@@ -17,7 +17,8 @@ export default function SelecaoModulosPage() {
     const [loggingOut, setLoggingOut] = useState(false);
 
     const isAdminPreview = userProfile?.role === "admin_master";
-    const isParceiroPreview = userProfile?.role === "parceiro_admin";
+    const isParceiroPreview =
+        userProfile?.role === "parceiro_admin" || userProfile?.role === "parceiro_operador";
 
     useEffect(() => {
         async function loadInitialData() {
@@ -140,6 +141,7 @@ export default function SelecaoModulosPage() {
         const n = nome.toLowerCase();
         if (n.includes("legado")) navigate("/legado-app/menu");
         else if (n.includes("idoso")) navigate("/melhor-idade");
+        else if (n.includes("preventiva")) navigate("/medicina-preventiva");
         else if (n.includes("paliativo")) navigate("/bloqueado", { state: { status: "em_breve" } });
     };
 
@@ -177,8 +179,8 @@ export default function SelecaoModulosPage() {
                     <div className="relative inline-block mb-8">
                         <img
                             src={logoParaExibir}
-                            alt="Logo"
-                            className="max-h-24 w-auto mx-auto drop-shadow-sm grayscale-[0.2] opacity-90"
+                            alt={nomePlataforma}
+                            className="max-h-24 w-auto mx-auto drop-shadow-sm"
                         />
                         {parceiroInfo && (
                             <div className="mt-4 flex items-center justify-center gap-1.5 opacity-60">
@@ -218,10 +220,12 @@ export default function SelecaoModulosPage() {
                             >
                                 <div className={`p-4 rounded-2xl transition-all duration-500 group-hover:scale-110 ${mod.nome.toLowerCase().includes("legado") ? "bg-amber-50 text-amber-700" :
                                         mod.nome.toLowerCase().includes("idoso") ? "bg-emerald-50 text-emerald-700" :
-                                            "bg-rose-50 text-rose-700"
+                                            mod.nome.toLowerCase().includes("preventiva") ? "bg-sky-50 text-sky-700" :
+                                                "bg-rose-50 text-rose-700"
                                     }`}>
                                     {mod.nome.toLowerCase().includes("legado") && <BookHeart size={26} strokeWidth={1.5} />}
                                     {mod.nome.toLowerCase().includes("idoso") && <UserRoundPlus size={26} strokeWidth={1.5} />}
+                                    {mod.nome.toLowerCase().includes("preventiva") && <Stethoscope size={26} strokeWidth={1.5} />}
                                     {mod.nome.toLowerCase().includes("paliativo") && <HeartPulse size={26} strokeWidth={1.5} />}
                                 </div>
 
@@ -230,7 +234,8 @@ export default function SelecaoModulosPage() {
                                     <p className="text-xs text-slate-400 font-medium mt-0.5">
                                         {mod.nome.toLowerCase().includes("legado") ? "Preserve memórias e histórias" :
                                             mod.nome.toLowerCase().includes("idoso") ? "Cuidado e acompanhamento" :
-                                                "Suporte e conforto humanizado"}
+                                                mod.nome.toLowerCase().includes("preventiva") ? "Consultas, exames e sintomas" :
+                                                    "Suporte e conforto humanizado"}
                                     </p>
                                 </div>
 

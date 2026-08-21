@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Plus, X, Loader2 } from "lucide-react";
-import logoPadrao from "@/assets/legado/logo_degrade.png";
+import logoPadrao from "@/assets/logo-ilc.png";
 import { MoodSelector } from "../../components/MoodSelector";
 import { RedePessoaAvatar } from "../../components/RedePessoaAvatar";
 import { profileService } from "../../services/profileService";
@@ -132,7 +132,11 @@ export default function OnboardingFlow() {
                 <div className="bg-white rounded-3xl shadow-lg border border-[#e6efe9] p-8 animate-in fade-in duration-500">
                     {step === 0 && (
                         <div className="text-center space-y-6">
-                            <img src={logoPadrao} alt="Legado" className="h-20 mx-auto" />
+                            <img
+                                src={logoPadrao}
+                                alt="Instituto Legado e Conforto"
+                                className="h-20 w-20 mx-auto object-contain"
+                            />
                             <div className="text-6xl">👋</div>
                             <div>
                                 <h1 className="text-2xl font-bold text-[#255f4f]">Bem-vindo</h1>

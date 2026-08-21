@@ -48,6 +48,7 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
     const [moduloLegado, setModuloLegado] = useState(true);
     const [moduloIdoso, setModuloIdoso] = useState(false);
     const [moduloPaliativo, setModuloPaliativo] = useState(false);
+    const [moduloPreventiva, setModuloPreventiva] = useState(false);
 
     useEffect(() => {
         if (open) {
@@ -250,6 +251,11 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
                     if (idoso) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: idoso.id, habilitado: true });
                 }
 
+                if (moduloPreventiva) {
+                    const preventiva = modulos.find((m) => m.nome === "Medicina Preventiva");
+                    if (preventiva) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: preventiva.id, habilitado: true });
+                }
+
                 if (moduloPaliativo) {
                     const paliativo = modulos.find((m) => m.nome === "Cuidados Paliativos");
                     if (paliativo) modulosParaHabilitar.push({ titular_id: titularId, modulo_id: paliativo.id, habilitado: true });
@@ -319,6 +325,7 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
         setModuloLegado(true);
         setModuloIdoso(false);
         setModuloPaliativo(false);
+        setModuloPreventiva(false);
     }
 
     return (
@@ -488,6 +495,17 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
                                 />
                                 <label htmlFor="idoso" className="text-sm cursor-pointer">
                                     👴 Cuidados ao Idoso
+                                </label>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="preventiva"
+                                    checked={moduloPreventiva}
+                                    onCheckedChange={(checked) => setModuloPreventiva(!!checked)}
+                                />
+                                <label htmlFor="preventiva" className="text-sm cursor-pointer">
+                                    🩺 Medicina Preventiva
                                 </label>
                             </div>
 

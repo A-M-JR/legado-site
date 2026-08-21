@@ -17,24 +17,72 @@ import {
 import {
     Users,
     LogOut,
-    ShieldCheck,
     ChevronRight,
     Puzzle,
+    CalendarClock,
+    Activity,
+    ListChecks,
+    FlaskConical,
+    Building2,
+    UserCog,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import logoPadrao from "@/assets/legado/logo_degrade.png";
+import logoPadrao from "@/assets/logo-ilc.png";
+import { ParceiroNotificacoesBell } from "./components/ParceiroNotificacoesBell";
+import { limparParceiroScope } from "./services/parceiroScope";
 
-const menuItems = [
-    { title: "Meus Clientes", icon: Users, path: "/admin-parceiro/dashboard", external: false },
+type MenuItem = {
+    title: string;
+    icon: typeof Users;
+    path: string;
+    external?: boolean;
+    somenteAdmin?: boolean;
+    /** Só aparece se o parceiro tiver o módulo Medicina Preventiva habilitado. */
+    moduloPreventiva?: boolean;
+};
+
+const menuItems: MenuItem[] = [
+    { title: "Meus Clientes", icon: Users, path: "/admin-parceiro/dashboard" },
+    {
+        title: "Agenda",
+        icon: CalendarClock,
+        path: "/admin-parceiro/agenda",
+        moduloPreventiva: true,
+    },
+    {
+        title: "Sintomas recebidos",
+        icon: Activity,
+        path: "/admin-parceiro/sintomas",
+        moduloPreventiva: true,
+    },
+    {
+        title: "Exames",
+        icon: FlaskConical,
+        path: "/admin-parceiro/exames",
+        moduloPreventiva: true,
+    },
+    {
+        title: "Cadastro de sintomas",
+        icon: ListChecks,
+        path: "/admin-parceiro/sintomas/catalogo",
+        moduloPreventiva: true,
+    },
+    {
+        title: "Unidades e WhatsApp",
+        icon: Building2,
+        path: "/admin-parceiro/unidades",
+        somenteAdmin: true,
+        moduloPreventiva: true,
+    },
+    { title: "Equipe", icon: UserCog, path: "/admin-parceiro/equipe", somenteAdmin: true },
     {
         title: "Visualizar Módulos",
         icon: Puzzle,
         path: "/legado-app/selecao-modulos",
         external: true,
     },
-    // { title: "Configurações", icon: Settings, path: "/admin-parceiro/configuracoes" },
 ];
 
 interface ParceiroProfile {
@@ -42,6 +90,7 @@ interface ParceiroProfile {
     email: string | null;
     logo_url: string | null;
     parceiro_id: string | null;
+    role: string | null;
 }
 
 export default function ParceiroLayout() {
@@ -49,6 +98,7 @@ export default function ParceiroLayout() {
     const location = useLocation();
 
     const [parceiroProfile, setParceiroProfile] = useState<ParceiroProfile | null>(null);
+    const [moduloPreventivaAtivo, setModuloPreventivaAtivo] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -67,6 +117,7 @@ export default function ParceiroLayout() {
                         email: null,
                         logo_url: null,
                         parceiro_id: null,
+                        role: null,
                     });
                     setLoading(false);
                     return;
@@ -87,9 +138,27 @@ export default function ParceiroLayout() {
                         email: user.email || null,
                         logo_url: null,
                         parceiro_id: null,
+                        role: null,
                     });
                     setLoading(false);
                     return;
+                }
+
+                // Módulos contratados (gate das telas de Medicina Preventiva)
+                if (perfilApp?.parceiro_id) {
+                    const { data: modulosDoParceiro } = await supabase
+                        .from("parceiro_modulos")
+                        .select("habilitado, modulos(nome, slug)")
+                        .eq("parceiro_id", perfilApp.parceiro_id)
+                        .eq("habilitado", true);
+
+                    setModuloPreventivaAtivo(
+                        (modulosDoParceiro || []).some((m: any) => {
+                            const nome = String(m.modulos?.nome ?? "").toLowerCase();
+                            const slug = String(m.modulos?.slug ?? "").toLowerCase();
+                            return nome.includes("preventiva") || slug.includes("preventiva");
+                        })
+                    );
                 }
 
                 // Se tem parceiro_id, buscar dados do parceiro (nome + logo_url)
@@ -108,6 +177,7 @@ export default function ParceiroLayout() {
                             email: user.email || null,
                             logo_url: null,
                             parceiro_id: perfilApp?.parceiro_id || null,
+                            role: perfilApp?.role || null,
                         });
                     } else {
                         setParceiroProfile({
@@ -116,6 +186,7 @@ export default function ParceiroLayout() {
                             email: user.email || null,
                             logo_url: dadosParceiro?.logo_url || null,
                             parceiro_id: perfilApp.parceiro_id,
+                            role: perfilApp.role || null,
                         });
                     }
                 } else {
@@ -125,6 +196,7 @@ export default function ParceiroLayout() {
                         email: user.email || null,
                         logo_url: null,
                         parceiro_id: null,
+                        role: perfilApp?.role || null,
                     });
                 }
             } catch (err) {
@@ -134,6 +206,7 @@ export default function ParceiroLayout() {
                     email: null,
                     logo_url: null,
                     parceiro_id: null,
+                    role: null,
                 });
             } finally {
                 setLoading(false);
@@ -144,11 +217,31 @@ export default function ParceiroLayout() {
     }, []);
 
     const handleLogout = async () => {
+        limparParceiroScope();
         await supabase.auth.signOut();
         navigate("/legado-app/login");
     };
 
-    const currentMenuTitle = menuItems.find((i) => i.path === location.pathname)?.title || "Painel Parceiro";
+    const isOperador = parceiroProfile?.role === "parceiro_operador";
+    const menuVisivel = menuItems.filter(
+        (item) =>
+            (!item.somenteAdmin || !isOperador) &&
+            (!item.moduloPreventiva || moduloPreventivaAtivo)
+    );
+    const currentMenuTitle =
+        menuVisivel.find((i) => i.path === location.pathname)?.title || "Painel Parceiro";
+
+    // Sem o módulo contratado, as telas de Medicina Preventiva também ficam
+    // fechadas para quem tentar entrar pela URL.
+    useEffect(() => {
+        if (loading || moduloPreventivaAtivo) return;
+
+        const rotaBloqueada = menuItems.some(
+            (item) => item.moduloPreventiva && location.pathname.startsWith(item.path)
+        );
+
+        if (rotaBloqueada) navigate("/admin-parceiro/dashboard", { replace: true });
+    }, [loading, moduloPreventivaAtivo, location.pathname, navigate]);
     const logoParaExibir = parceiroProfile?.logo_url || logoPadrao;
     const nomeExibicao = parceiroProfile?.nome || "Carregando...";
     const iniciais =
@@ -159,38 +252,40 @@ export default function ParceiroLayout() {
             .toUpperCase() || "PA";
 
     return (
-        <SidebarProvider>
+        <SidebarProvider style={{ "--sidebar-width": "17.5rem" } as React.CSSProperties}>
             <div className="flex min-h-screen w-full bg-[#e3f1eb]">
                 <Sidebar className="border-r border-[#d1e5dc] shadow-xl bg-white/90 backdrop-blur">
                     <SidebarContent className="bg-white">
                         <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-[#e0f0ea]">
-                            <div className="h-11 w-11 rounded-2xl bg-[#5ba58c] flex items-center justify-center shadow-md shadow-[#5ba58c33]">
-                                <ShieldCheck className="h-6 w-6 text-white" />
-                            </div>
+                            <img
+                                src={logoParaExibir}
+                                alt={nomeExibicao}
+                                className="h-11 w-11 shrink-0 object-contain"
+                            />
                             <div>
                                 <h2 className="text-xs font-extrabold text-[#255f4f] leading-tight uppercase tracking-[0.18em]">
                                     {nomeExibicao}
                                 </h2>
                                 <p className="text-[10px] font-semibold text-[#5ba58c] uppercase tracking-[0.25em] mt-1">
-                                    Painel Parceiro
+                                    {isOperador ? "Operador" : "Painel Parceiro"}
                                 </p>
                             </div>
                         </div>
 
                         <SidebarGroup>
-                            <SidebarGroupLabel className="px-6 mt-4 text-[11px] font-semibold text-[#6b8c7d] uppercase tracking-widest mb-2">
+                            <SidebarGroupLabel className="px-5 mt-5 text-[11px] font-semibold text-[#6b8c7d] uppercase tracking-widest mb-3">
                                 Menu Principal
                             </SidebarGroupLabel>
-                            <SidebarGroupContent className="px-3 pb-4">
+                            <SidebarGroupContent className="px-3 pb-5">
                                 <SidebarMenu>
-                                    {menuItems.map((item) => {
+                                    {menuVisivel.map((item) => {
                                         const isActive = !item.external && location.pathname === item.path;
                                         return (
-                                            <SidebarMenuItem key={item.path} className="mb-1">
+                                            <SidebarMenuItem key={item.path} className="mb-0.5">
                                                 <SidebarMenuButton
                                                     onClick={() => navigate(item.path)}
                                                     className={cn(
-                                                        "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group border border-transparent",
+                                                        "flex h-auto min-h-[44px] w-full items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group border border-transparent",
                                                         isActive
                                                             ? "bg-[#e3f1eb] text-[#255f4f] border-[#c2e1d4] shadow-sm"
                                                             : "text-[#4f665a] hover:bg-[#f4fbf8] hover:text-[#255f4f]"
@@ -199,12 +294,16 @@ export default function ParceiroLayout() {
                                                 >
                                                     <item.icon
                                                         className={cn(
-                                                            "h-5 w-5 transition-colors",
+                                                            "h-5 w-5 shrink-0 transition-colors",
                                                             isActive ? "text-[#5ba58c]" : "text-[#9db4aa] group-hover:text-[#5ba58c]"
                                                         )}
                                                     />
-                                                    <span className="font-medium text-sm">{item.title}</span>
-                                                    {isActive && <ChevronRight className="ml-auto h-4 w-4 text-[#5ba58c]" />}
+                                                    <span className="flex-1 min-w-0 font-medium text-sm leading-snug">
+                                                        {item.title}
+                                                    </span>
+                                                    {isActive && (
+                                                        <ChevronRight className="h-4 w-4 shrink-0 text-[#5ba58c]" />
+                                                    )}
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
                                         );
@@ -244,7 +343,10 @@ export default function ParceiroLayout() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-[#166534] bg-[#bbf7d0] px-3 py-1 rounded-full uppercase tracking-widest">Painel Parceiro</span>
+                            <ParceiroNotificacoesBell parceiroId={parceiroProfile?.parceiro_id ?? null} />
+                            <span className="text-[10px] font-bold text-[#166534] bg-[#bbf7d0] px-3 py-1 rounded-full uppercase tracking-widest">
+                                {isOperador ? "Operador" : "Painel Parceiro"}
+                            </span>
                         </div>
                     </header>
 

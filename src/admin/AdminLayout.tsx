@@ -20,7 +20,6 @@ import {
     Settings,
     LogOut,
     LayoutDashboard,
-    ShieldCheck,
     ChevronRight,
     History as HistoryIcon,
     Puzzle,
@@ -29,7 +28,7 @@ import { supabase } from "../lib/supabaseClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 // Logo padrão do Legado
-import logoPadrao from "@/assets/legado/logo_degrade.png";
+import logoPadrao from "@/assets/logo-ilc.png";
 
 const menuItems = [
     {
@@ -131,9 +130,11 @@ export default function AdminLayout() {
                     <SidebarContent className="bg-white">
                         {/* Header da Sidebar com Logo/Nome */}
                         <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-[#e0f0ea]">
-                            <div className="h-11 w-11 rounded-2xl bg-[#5ba58c] flex items-center justify-center shadow-md shadow-[#5ba58c33]">
-                                <ShieldCheck className="h-6 w-6 text-white" />
-                            </div>
+                            <img
+                                src={logoParaExibir}
+                                alt={nomeSistema}
+                                className="h-11 w-11 shrink-0 object-contain"
+                            />
                             <div>
                                 <h2 className="text-xs font-extrabold text-[#255f4f] leading-tight uppercase tracking-[0.18em]">
                                     {nomeSistema}

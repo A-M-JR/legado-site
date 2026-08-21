@@ -50,6 +50,21 @@ const MiHistoriasPage = lazy(() => import('./modules/melhor-idade/pages/Historia
 const MiFamiliaMemoriasPage = lazy(() => import('./modules/melhor-idade/pages/FamiliaMemoriasPage'))
 const MiPerfilPage = lazy(() => import('./modules/melhor-idade/pages/PerfilPage'))
 const MiRecordacaoPublicaPage = lazy(() => import('./pages/mi-recordacao-publica'))
+const MpLayout = lazy(() => import('./modules/medicina-preventiva/components/MpLayout'))
+const MpHomePage = lazy(() => import('./modules/medicina-preventiva/pages/HomePage'))
+const MpRotinaPage = lazy(() => import('./modules/medicina-preventiva/pages/RotinaPage'))
+const MpReceitasConsultasPage = lazy(() => import('./modules/medicina-preventiva/pages/ReceitasConsultasPage'))
+const MpExamesPage = lazy(() => import('./modules/medicina-preventiva/pages/ExamesPage'))
+const MpSintomasPage = lazy(() => import('./modules/medicina-preventiva/pages/SintomasPage'))
+const MpFamiliaPage = lazy(() => import('./modules/medicina-preventiva/pages/FamiliaPage'))
+const MpFamiliaMensagensPage = lazy(() => import('./modules/medicina-preventiva/pages/FamiliaMensagensPage'))
+const MpMensagemPublicaPage = lazy(() => import('./pages/mp-mensagem-publica'))
+const ParceiroAgendaPage = lazy(() => import('./admin-parceiro/pages/AgendaPage'))
+const ParceiroSintomasPage = lazy(() => import('./admin-parceiro/pages/SintomasRecebidosPage'))
+const ParceiroCatalogoSintomasPage = lazy(() => import('./admin-parceiro/pages/CatalogoSintomasPage'))
+const ParceiroExamesPage = lazy(() => import('./admin-parceiro/pages/ExamesParceiroPage'))
+const ParceiroUnidadesPage = lazy(() => import('./admin-parceiro/pages/UnidadesPage'))
+const ParceiroEquipePage = lazy(() => import('./admin-parceiro/pages/EquipePage'))
 
 export default function App() {
   return (
@@ -61,6 +76,7 @@ export default function App() {
           <Route path="/recordacoes-publicas/:id" element={<RecordacaoPublica />} />
           <Route path="/recordacoes-publicas/sucesso/:id" element={<Sucesso />} />
           <Route path="/melhor-idade/memoria/:titularId/:pessoaId" element={<MiRecordacaoPublicaPage />} />
+          <Route path="/medicina-preventiva/mensagem/:titularId/:pessoaId" element={<MpMensagemPublicaPage />} />
           <Route path="/consulta-recordacao" element={<ConsultaRecordacao />} />
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/legado-app/login" element={<Login />} />
@@ -82,6 +98,24 @@ export default function App() {
             <Route path="/admin-parceiro" element={<ParceiroLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<AdminParceiroDashboard />} />
+              <Route path="agenda" element={<ParceiroAgendaPage />} />
+              <Route path="sintomas" element={<ParceiroSintomasPage />} />
+              <Route path="sintomas/catalogo" element={<ParceiroCatalogoSintomasPage />} />
+              <Route path="exames" element={<ParceiroExamesPage />} />
+              <Route path="unidades" element={<ParceiroUnidadesPage />} />
+              <Route path="equipe" element={<ParceiroEquipePage />} />
+            </Route>
+
+            <Route path="/medicina-preventiva" element={<MpLayout />}>
+              <Route index element={<MpHomePage />} />
+              <Route path="minha-rotina" element={<MpRotinaPage />} />
+              <Route path="receitas-consultas" element={<MpReceitasConsultasPage />} />
+              <Route path="exames-laudos" element={<MpExamesPage />} />
+              <Route path="sintomas" element={<MpSintomasPage />} />
+              <Route path="familia" element={<MpFamiliaPage />} />
+              <Route path="familia/:id" element={<MpFamiliaMensagensPage />} />
+              <Route path="consultas" element={<Navigate to="/medicina-preventiva/receitas-consultas" replace />} />
+              <Route path="exames" element={<Navigate to="/medicina-preventiva/exames-laudos" replace />} />
             </Route>
 
             <Route path="/legado-app/menu" element={<MenuPage />} />
