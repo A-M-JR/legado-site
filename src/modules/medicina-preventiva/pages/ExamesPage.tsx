@@ -4,8 +4,7 @@ import {
     Plus,
     Paperclip,
     Loader2,
-    FileText,
-    Download,
+    Camera,
     Trash2,
     Building2,
     CalendarClock,
@@ -22,15 +21,17 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { assinarArquivo, uploadArquivo } from "@/lib/uploadArquivo";
+import { confirmDialog } from "@/components/ui/confirm-dialog";
+import { uploadArquivo, validarTipo } from "@/lib/uploadArquivo";
 import { MiCard, MiFilterPills } from "@/modules/melhor-idade/components/MiCard";
 import { MiPageHeader } from "@/modules/melhor-idade/components/MiPageHeader";
 import { MiDatePicker } from "@/modules/melhor-idade/components/MiDatePicker";
+import { AnexoGaleria, VisualizadorAnexo, origemDoAnexo } from "../components/ExameAnexos";
 import { examesService } from "../services/examesService";
 import { getMpScope } from "../services/mpScope";
 import { MP_EXAMES_PASTA } from "../lib/storage";
 import { fmtData, fmtDataHora } from "../lib/datas";
-import type { ExameMp, ExameTipo } from "../types";
+import type { ExameArquivo, ExameMp, ExameTipo } from "../types";
 
 const FILTROS = [
     { id: "todos", label: "Todos" },
@@ -78,7 +79,10 @@ export default function ExamesPage() {
     const [form, setForm] = useState(FORM_INICIAL);
     const [salvando, setSalvando] = useState(false);
     const [anexandoId, setAnexandoId] = useState<string | null>(null);
+    const [removendoPath, setRemovendoPath] = useState<string | null>(null);
+    const [visualizando, setVisualizando] = useState<ExameArquivo | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const cameraRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         examesService.list().then(setExames);
@@ -126,28 +130,64 @@ export default function ExamesPage() {
         }
     }
 
-    function pedirArquivo(exameId: string) {
+    function pedirArquivo(exameId: string, camera = false) {
         setAnexandoId(exameId);
-        inputRef.current?.click();
+        (camera ? cameraRef : inputRef).current?.click();
     }
 
     async function anexar(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
+        const files = Array.from(e.target.files ?? []);
         const exameId = anexandoId;
         e.target.value = "";
-        if (!file || !exameId) return;
+        if (!files.length || !exameId) {
+            setAnexandoId(null);
+            return;
+        }
 
         try {
             const scope = await getMpScope();
             if (!scope?.titularId) throw new Error("Conta sem paciente vinculado.");
 
-            const anexo = await uploadArquivo({
-                file,
-                titularId: scope.titularId,
-                pasta: MP_EXAMES_PASTA,
-            });
-            setExames(await examesService.anexar(exameId, anexo));
-            toast({ title: "Arquivo anexado" });
+            const enviados: ExameArquivo[] = [];
+            const falhas: string[] = [];
+
+            for (const file of files) {
+                const erroTipo = validarTipo(file);
+                if (erroTipo) {
+                    falhas.push(`${file.name}: ${erroTipo}`);
+                    continue;
+                }
+                try {
+                    enviados.push(
+                        await uploadArquivo({
+                            file,
+                            titularId: scope.titularId,
+                            pasta: MP_EXAMES_PASTA,
+                        })
+                    );
+                } catch (err) {
+                    falhas.push(
+                        `${file.name}: ${err instanceof Error ? err.message : "falha no envio"}`
+                    );
+                }
+            }
+
+            if (enviados.length) {
+                setExames(await examesService.anexarVarios(exameId, enviados));
+                toast({
+                    title:
+                        enviados.length === 1
+                            ? "Arquivo anexado"
+                            : `${enviados.length} arquivos anexados`,
+                });
+            }
+            if (falhas.length) {
+                toast({
+                    title: "Alguns arquivos não subiram",
+                    description: falhas.join(" · "),
+                    variant: "destructive",
+                });
+            }
         } catch (err) {
             toast({
                 title: "Erro ao anexar",
@@ -159,17 +199,27 @@ export default function ExamesPage() {
         }
     }
 
-    async function abrirArquivo(path: string) {
-        const url = await assinarArquivo(path);
-        if (!url) {
+    async function removerAnexo(exameId: string, arquivo: ExameArquivo) {
+        const ok = await confirmDialog({
+            title: "Remover este arquivo?",
+            description: `${arquivo.nome} será apagado do seu exame.`,
+            confirmLabel: "Remover",
+        });
+        if (!ok) return;
+
+        setRemovendoPath(arquivo.path);
+        try {
+            setExames(await examesService.removerAnexo(exameId, arquivo.path));
+            toast({ title: "Arquivo removido" });
+        } catch (err) {
             toast({
-                title: "Não foi possível abrir",
-                description: "Tente novamente em instantes.",
+                title: "Não foi possível remover",
+                description: err instanceof Error ? err.message : "Tente novamente.",
                 variant: "destructive",
             });
-            return;
+        } finally {
+            setRemovendoPath(null);
         }
-        window.open(url, "_blank", "noopener");
     }
 
     async function removerExame(id: string) {
@@ -207,6 +257,15 @@ export default function ExamesPage() {
                 ref={inputRef}
                 type="file"
                 accept="application/pdf,image/*"
+                multiple
+                className="hidden"
+                onChange={anexar}
+            />
+            <input
+                ref={cameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
                 className="hidden"
                 onChange={anexar}
             />
@@ -286,26 +345,23 @@ export default function ExamesPage() {
                                         </p>
                                     )}
 
-                                    {exame.arquivos.length > 0 && (
-                                        <div className="mt-2 space-y-1">
-                                            {exame.arquivos.map((a) => (
-                                                <button
-                                                    key={a.path}
-                                                    type="button"
-                                                    onClick={() => abrirArquivo(a.path)}
-                                                    className="w-full flex items-center gap-2 text-xs text-[#5ba58c] font-semibold bg-[#f4fbf8] rounded-lg px-3 py-2 hover:bg-[#e3f1eb]"
-                                                >
-                                                    <FileText className="h-3.5 w-3.5 shrink-0" />
-                                                    <span className="truncate flex-1 text-left">
-                                                        {a.nome}
-                                                    </span>
-                                                    <Download className="h-3.5 w-3.5 shrink-0" />
-                                                </button>
-                                            ))}
-                                        </div>
+                                    <AnexoGaleria
+                                        arquivos={exame.arquivos}
+                                        origemExame={exame.origem}
+                                        onAbrir={setVisualizando}
+                                        onRemover={(a) => removerAnexo(exame.id, a)}
+                                        removendoPath={removendoPath}
+                                    />
+
+                                    {exame.arquivos.some(
+                                        (a) => origemDoAnexo(a, exame.origem) === "clinica"
+                                    ) && (
+                                        <p className="text-[11px] text-[#9db4aa] mt-1.5">
+                                            Toque no laudo para ver em tela cheia ou baixar.
+                                        </p>
                                     )}
 
-                                    <div className="flex items-center gap-2 mt-2">
+                                    <div className="flex items-center gap-3 mt-2 flex-wrap">
                                         <button
                                             type="button"
                                             onClick={() => pedirArquivo(exame.id)}
@@ -318,6 +374,16 @@ export default function ExamesPage() {
                                                 <Paperclip className="h-3.5 w-3.5" />
                                             )}
                                             Anexar laudo ou pedido
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => pedirArquivo(exame.id, true)}
+                                            disabled={anexandoId === exame.id}
+                                            className="sm:hidden flex items-center gap-1.5 text-xs font-semibold text-[#5ba58c] hover:underline disabled:opacity-50"
+                                        >
+                                            <Camera className="h-3.5 w-3.5" />
+                                            Tirar foto
                                         </button>
 
                                         {exame.origem === "paciente" && (
@@ -495,6 +561,8 @@ export default function ExamesPage() {
                     </form>
                 </DialogContent>
             </Dialog>
+
+            <VisualizadorAnexo arquivo={visualizando} onClose={() => setVisualizando(null)} />
         </div>
     );
 }

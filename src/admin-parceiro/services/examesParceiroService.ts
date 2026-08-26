@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
+import { removerArquivo } from "@/lib/uploadArquivo";
 import { mapExame } from "@/modules/medicina-preventiva/services/examesService";
 import type {
     ExameArquivo,
@@ -24,6 +25,16 @@ export type ExameInput = {
     resultadoResumo: string;
     observacoes: string;
 };
+
+async function arquivosAtuais(id: string): Promise<ExameArquivo[]> {
+    const { data } = await supabase.from("mp_exames").select("arquivos").eq("id", id).single();
+    return Array.isArray(data?.arquivos) ? (data!.arquivos as ExameArquivo[]) : [];
+}
+
+async function gravarArquivos(id: string, arquivos: ExameArquivo[]): Promise<void> {
+    const { error } = await supabase.from("mp_exames").update({ arquivos }).eq("id", id);
+    if (error) throw new Error(error.message);
+}
 
 export const examesParceiroService = {
     async list(filtro: { titularId?: string; status?: ExameStatus | "todos" } = {}): Promise<
@@ -51,32 +62,38 @@ export const examesParceiroService = {
         });
     },
 
-    async create(input: ExameInput): Promise<void> {
+    /** Cria o exame e devolve o id — usado para anexar os laudos logo em seguida. */
+    async create(input: ExameInput): Promise<string> {
         const scope = await getParceiroScope();
         if (!scope?.parceiroId) throw new Error("Parceiro não identificado.");
 
-        const { error } = await supabase.from("mp_exames").insert({
-            titular_id: input.titularId,
-            auth_id: input.authId ?? null,
-            parceiro_id: scope.parceiroId,
-            unidade_id: input.unidadeId ?? null,
-            nome_exame: input.nomeExame,
-            tipo: input.tipo,
-            medico_solicitante: input.medicoSolicitante,
-            especialidade: input.especialidade,
-            laboratorio: input.laboratorio,
-            data_solicitacao: input.dataSolicitacao || null,
-            data_hora_agendada: input.dataHoraAgendada || null,
-            data_realizacao: input.dataRealizacao || null,
-            status: input.status,
-            resultado_resumo: input.resultadoResumo,
-            observacoes: input.observacoes,
-            arquivos: [],
-            origem: "clinica",
-            criado_por: scope.authId,
-        });
+        const { data, error } = await supabase
+            .from("mp_exames")
+            .insert({
+                titular_id: input.titularId,
+                auth_id: input.authId ?? null,
+                parceiro_id: scope.parceiroId,
+                unidade_id: input.unidadeId ?? null,
+                nome_exame: input.nomeExame,
+                tipo: input.tipo,
+                medico_solicitante: input.medicoSolicitante,
+                especialidade: input.especialidade,
+                laboratorio: input.laboratorio,
+                data_solicitacao: input.dataSolicitacao || null,
+                data_hora_agendada: input.dataHoraAgendada || null,
+                data_realizacao: input.dataRealizacao || null,
+                status: input.status,
+                resultado_resumo: input.resultadoResumo,
+                observacoes: input.observacoes,
+                arquivos: [],
+                origem: "clinica",
+                criado_por: scope.authId,
+            })
+            .select("id")
+            .single();
 
         if (error) throw new Error(error.message);
+        return String(data.id);
     },
 
     async update(id: string, input: Partial<ExameInput>): Promise<void> {
@@ -98,24 +115,45 @@ export const examesParceiroService = {
         if (input.observacoes !== undefined) payload.observacoes = input.observacoes;
         if (input.unidadeId !== undefined) payload.unidade_id = input.unidadeId ?? null;
 
+        if (Object.keys(payload).length === 0) return;
+
         const { error } = await supabase.from("mp_exames").update(payload).eq("id", id);
         if (error) throw new Error(error.message);
     },
 
     async anexar(id: string, arquivo: ExameArquivo): Promise<void> {
-        const { data } = await supabase.from("mp_exames").select("arquivos").eq("id", id).single();
-        const atuais = Array.isArray(data?.arquivos) ? (data!.arquivos as ExameArquivo[]) : [];
+        return this.anexarVarios(id, [arquivo]);
+    },
 
-        const { error } = await supabase
-            .from("mp_exames")
-            .update({ arquivos: [...atuais, arquivo] })
-            .eq("id", id);
+    /** Acrescenta vários laudos/imagens de uma vez, preservando os que já existem. */
+    async anexarVarios(id: string, arquivos: ExameArquivo[]): Promise<void> {
+        if (arquivos.length === 0) return;
+        const atuais = await arquivosAtuais(id);
+        const enviadoEm = new Date().toISOString();
+        const novos = arquivos.map((a) => ({
+            ...a,
+            origem: "clinica" as const,
+            enviadoEm,
+        }));
+        await gravarArquivos(id, [...atuais, ...novos]);
+    },
 
-        if (error) throw new Error(error.message);
+    /** Tira o anexo do exame e apaga o objeto do bucket privado. */
+    async removerAnexo(id: string, path: string): Promise<void> {
+        const atuais = await arquivosAtuais(id);
+        await gravarArquivos(
+            id,
+            atuais.filter((a) => a.path !== path)
+        );
+        await removerArquivo(path);
     },
 
     async remove(id: string): Promise<void> {
+        const atuais = await arquivosAtuais(id);
+
         const { error } = await supabase.from("mp_exames").delete().eq("id", id);
         if (error) throw new Error(error.message);
+
+        await Promise.all(atuais.map((a) => removerArquivo(a.path)));
     },
 };

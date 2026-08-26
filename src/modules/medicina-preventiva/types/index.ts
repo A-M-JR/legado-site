@@ -75,6 +75,9 @@ export interface ExameArquivo {
     nome: string;
     mime: string;
     tamanho?: number;
+    /** Quem enviou o anexo. Ausente nos anexos antigos — cai na origem do exame. */
+    origem?: "paciente" | "clinica";
+    enviadoEm?: string;
 }
 
 export interface ExameMp {

@@ -63,6 +63,7 @@ const ParceiroAgendaPage = lazy(() => import('./admin-parceiro/pages/AgendaPage'
 const ParceiroSintomasPage = lazy(() => import('./admin-parceiro/pages/SintomasRecebidosPage'))
 const ParceiroCatalogoSintomasPage = lazy(() => import('./admin-parceiro/pages/CatalogoSintomasPage'))
 const ParceiroExamesPage = lazy(() => import('./admin-parceiro/pages/ExamesParceiroPage'))
+const ParceiroLembretesPage = lazy(() => import('./admin-parceiro/pages/LembretesPage'))
 const ParceiroUnidadesPage = lazy(() => import('./admin-parceiro/pages/UnidadesPage'))
 const ParceiroEquipePage = lazy(() => import('./admin-parceiro/pages/EquipePage'))
 
@@ -102,6 +103,7 @@ export default function App() {
               <Route path="sintomas" element={<ParceiroSintomasPage />} />
               <Route path="sintomas/catalogo" element={<ParceiroCatalogoSintomasPage />} />
               <Route path="exames" element={<ParceiroExamesPage />} />
+              <Route path="lembretes" element={<ParceiroLembretesPage />} />
               <Route path="unidades" element={<ParceiroUnidadesPage />} />
               <Route path="equipe" element={<ParceiroEquipePage />} />
             </Route>

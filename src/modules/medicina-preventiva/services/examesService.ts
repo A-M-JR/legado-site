@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
+import { removerArquivo } from "@/lib/uploadArquivo";
 import type { ExameArquivo, ExameMp } from "../types";
 import { applyScope, getMpScope } from "./mpScope";
 
@@ -101,15 +102,36 @@ export const examesService = {
     },
 
     async anexar(id: string, arquivo: ExameArquivo): Promise<ExameMp[]> {
+        return this.anexarVarios(id, [arquivo]);
+    },
+
+    /** Anexa vários de uma vez, marcando que o envio partiu do paciente. */
+    async anexarVarios(id: string, novos: ExameArquivo[]): Promise<ExameMp[]> {
+        if (novos.length === 0) return this.list();
+
         const atual = (await this.list()).find((e) => e.id === id);
-        const arquivos = [...(atual?.arquivos ?? []), arquivo];
+        const enviadoEm = new Date().toISOString();
+        const arquivos = [
+            ...(atual?.arquivos ?? []),
+            ...novos.map((a) => ({ ...a, origem: "paciente" as const, enviadoEm })),
+        ];
         return this.update(id, { arquivos });
     },
 
+    /** O paciente só apaga o que ele mesmo enviou; laudo da clínica fica. */
     async removerAnexo(id: string, path: string): Promise<ExameMp[]> {
         const atual = (await this.list()).find((e) => e.id === id);
+        const alvo = (atual?.arquivos ?? []).find((a) => a.path === path);
+
+        const origemAnexo = alvo?.origem ?? atual?.origem ?? "paciente";
+        if (origemAnexo === "clinica") {
+            throw new Error("Laudo enviado pela clínica só pode ser removido por ela.");
+        }
+
         const arquivos = (atual?.arquivos ?? []).filter((a) => a.path !== path);
-        return this.update(id, { arquivos });
+        const lista = await this.update(id, { arquivos });
+        await removerArquivo(path);
+        return lista;
     },
 
     async remove(id: string): Promise<ExameMp[]> {

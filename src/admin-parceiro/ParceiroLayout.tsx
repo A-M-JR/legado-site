@@ -25,6 +25,7 @@ import {
     FlaskConical,
     Building2,
     UserCog,
+    BellRing,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -49,6 +50,12 @@ const menuItems: MenuItem[] = [
         title: "Agenda",
         icon: CalendarClock,
         path: "/admin-parceiro/agenda",
+        moduloPreventiva: true,
+    },
+    {
+        title: "Lembretes",
+        icon: BellRing,
+        path: "/admin-parceiro/lembretes",
         moduloPreventiva: true,
     },
     {
