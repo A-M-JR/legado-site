@@ -47,7 +47,16 @@ const connectionString =
 
 const MIGRATIONS_DIR = join(root, "supabase", "migrations");
 const SKIP = new Set(["001_melhor_idade.sql", "002_mi_rede.sql", "003_mi_midias_bucket.sql"]);
-const PENDING = ["004_mi_receitas_campos.sql", "006_mi_memoria_publica_fix.sql"];
+// Migrations que este script aplica. As 014–018 são idempotentes
+// (CREATE TABLE IF NOT EXISTS / CREATE OR REPLACE / DROP POLICY IF EXISTS),
+// então rodar de novo é seguro mesmo que já tenham sido aplicadas à mão.
+const PENDING = [
+    "014_mp_consentimento.sql",
+    "015_mp_consultas_paciente.sql",
+    "016_mp_mensagens_clinica.sql",
+    "017_mp_campanhas.sql",
+    "018_alterar_email_usuario.sql",
+];
 
 async function ensureTracking(client) {
     await client.query(`
@@ -104,8 +113,7 @@ async function runWithClient(client) {
 
         for (const file of files) {
             if (SKIP.has(file)) continue;
-            if (!PENDING.includes(file) && file !== "005_mi_memoria_publica.sql") continue;
-            if (file === "005_mi_memoria_publica.sql") continue;
+            if (!PENDING.includes(file)) continue;
             if (await isApplied(client, file)) {
                 console.log(`⏭  ${file} (já aplicada)`);
                 continue;

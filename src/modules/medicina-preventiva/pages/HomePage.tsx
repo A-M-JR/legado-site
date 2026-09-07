@@ -9,6 +9,7 @@ import {
     Clock,
     ChevronRight,
     CalendarX,
+    Megaphone,
 } from "lucide-react";
 import { MiCard } from "@/modules/melhor-idade/components/MiCard";
 import { MiPageHeader } from "@/modules/melhor-idade/components/MiPageHeader";
@@ -16,6 +17,7 @@ import { consultasService } from "../services/consultasService";
 import { rotinaService } from "../services/rotinaService";
 import { examesService } from "../services/examesService";
 import { receitasService } from "../services/receitasService";
+import { campanhasService, type CampanhaPaciente } from "../services/campanhasService";
 import { getNomePaciente } from "../services/mpScope";
 import { fmtDataHora, fmtDiaSemana, fmtHora, rotuloRelativo } from "../lib/datas";
 import type { ConsultaMp, ExameMp, RotinaItem } from "../types";
@@ -34,6 +36,7 @@ export default function MpHomePage() {
     const [rotina, setRotina] = useState<RotinaItem[]>([]);
     const [exames, setExames] = useState<ExameMp[]>([]);
     const [receitasAtivas, setReceitasAtivas] = useState(0);
+    const [campanhas, setCampanhas] = useState<CampanhaPaciente[]>([]);
 
     useEffect(() => {
         getNomePaciente().then(setNome);
@@ -41,6 +44,7 @@ export default function MpHomePage() {
         rotinaService.list().then(setRotina);
         examesService.list().then(setExames);
         receitasService.list().then((r) => setReceitasAtivas(r.filter((i) => i.ativa).length));
+        campanhasService.listAtivas().then(setCampanhas);
     }, []);
 
     const proxima = useMemo(() => consultasService.proxima(consultas), [consultas]);
@@ -85,6 +89,43 @@ export default function MpHomePage() {
                 title={nome ? `Olá, ${nome.split(" ")[0]}` : "Olá"}
                 subtitle="Acompanhe suas consultas, exames e a rotina de cuidado."
             />
+
+            {campanhas.map((c) => (
+                <MiCard
+                    key={c.id}
+                    variant="accent"
+                    className={`p-4 sm:p-5 ${c.link ? "cursor-pointer" : ""}`}
+                    onClick={
+                        c.link ? () => window.open(c.link, "_blank", "noopener") : undefined
+                    }
+                >
+                    <div className="flex items-start gap-3">
+                        {c.mediaUrl ? (
+                            <img
+                                src={c.mediaUrl}
+                                alt={c.titulo}
+                                className="h-16 w-16 rounded-xl object-cover border border-white shadow-sm shrink-0"
+                            />
+                        ) : (
+                            <div className="shrink-0 p-3 rounded-2xl bg-[#5ba58c] text-white shadow-sm">
+                                <Megaphone className="h-5 w-5" />
+                            </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9db4aa]">
+                                Aviso da clínica
+                            </p>
+                            <p className="font-bold text-[#255f4f] mt-0.5">{c.titulo}</p>
+                            {c.texto && (
+                                <p className="text-sm text-[#4f665a] mt-1 whitespace-pre-line">
+                                    {c.texto}
+                                </p>
+                            )}
+                        </div>
+                        {c.link && <ChevronRight className="h-5 w-5 text-[#9db4aa] shrink-0" />}
+                    </div>
+                </MiCard>
+            ))}
 
             {proxima ? (
                 <MiCard

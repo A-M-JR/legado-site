@@ -10,6 +10,7 @@ import {
     CalendarX,
     Power,
     Pencil,
+    Trash2,
 } from "lucide-react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,14 @@ import { MiDatePicker } from "@/modules/melhor-idade/components/MiDatePicker";
 import { receitasService } from "../services/receitasService";
 import { consultasService } from "../services/consultasService";
 import { MP_RECEITAS_FOLDER, MP_STORAGE_BUCKET, isFotoValida } from "../lib/storage";
-import { fmtData, fmtDataHora, fmtHora, rotuloRelativo } from "../lib/datas";
+import {
+    fmtData,
+    fmtDataHora,
+    fmtHora,
+    rotuloRelativo,
+    isoParaInputLocal,
+    inputLocalParaIso,
+} from "../lib/datas";
 import type { ConsultaMp, ReceitaMp } from "../types";
 
 const FREQUENCIA_OPCOES = [
@@ -74,6 +82,22 @@ const FORM_INICIAL = {
     observacoes: "",
 };
 
+const TIPO_CONSULTA_OPCOES: { id: ConsultaMp["tipo"]; label: string }[] = [
+    { id: "presencial", label: "Presencial" },
+    { id: "online", label: "Online" },
+    { id: "retorno", label: "Retorno" },
+    { id: "exame", label: "Exame" },
+];
+
+const CONSULTA_FORM_INICIAL = {
+    dataHora: "",
+    profissional: "",
+    especialidade: "",
+    local: "",
+    tipo: "presencial" as ConsultaMp["tipo"],
+    observacoes: "",
+};
+
 export default function ReceitasConsultasPage() {
     const [receitas, setReceitas] = useState<ReceitaMp[]>([]);
     const [consultas, setConsultas] = useState<ConsultaMp[]>([]);
@@ -83,6 +107,11 @@ export default function ReceitasConsultasPage() {
     const [enviandoFoto, setEnviandoFoto] = useState(false);
     const [salvando, setSalvando] = useState(false);
     const [fotoAmpliada, setFotoAmpliada] = useState<string | null>(null);
+
+    const [modalConsulta, setModalConsulta] = useState(false);
+    const [editandoConsultaId, setEditandoConsultaId] = useState<string | null>(null);
+    const [formConsulta, setFormConsulta] = useState(CONSULTA_FORM_INICIAL);
+    const [salvandoConsulta, setSalvandoConsulta] = useState(false);
 
     useEffect(() => {
         receitasService.list().then(setReceitas);
@@ -215,6 +244,83 @@ export default function ReceitasConsultasPage() {
         }
     }
 
+    function abrirNovaConsulta() {
+        setEditandoConsultaId(null);
+        setFormConsulta(CONSULTA_FORM_INICIAL);
+        setModalConsulta(true);
+    }
+
+    function abrirEdicaoConsulta(c: ConsultaMp) {
+        setEditandoConsultaId(c.id);
+        setFormConsulta({
+            dataHora: isoParaInputLocal(c.dataHora),
+            profissional: c.profissional,
+            especialidade: c.especialidade,
+            local: c.local,
+            tipo: c.tipo,
+            observacoes: c.observacoes,
+        });
+        setModalConsulta(true);
+    }
+
+    async function salvarConsulta(e: React.FormEvent) {
+        e.preventDefault();
+        if (salvandoConsulta) return;
+        if (!formConsulta.dataHora) {
+            toast({
+                title: "Informe a data e a hora",
+                description: "Escolha quando será a consulta.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setSalvandoConsulta(true);
+        try {
+            const payload = {
+                dataHora: inputLocalParaIso(formConsulta.dataHora),
+                profissional: formConsulta.profissional.trim(),
+                especialidade: formConsulta.especialidade.trim(),
+                local: formConsulta.local.trim(),
+                tipo: formConsulta.tipo,
+                observacoes: formConsulta.observacoes.trim(),
+            };
+
+            setConsultas(
+                editandoConsultaId
+                    ? await consultasService.update(editandoConsultaId, payload)
+                    : await consultasService.add(payload)
+            );
+
+            setModalConsulta(false);
+            setFormConsulta(CONSULTA_FORM_INICIAL);
+            setEditandoConsultaId(null);
+            toast({ title: editandoConsultaId ? "Consulta atualizada" : "Consulta agendada" });
+        } catch (err) {
+            toast({
+                title: "Erro ao salvar",
+                description: err instanceof Error ? err.message : "Tente novamente.",
+                variant: "destructive",
+            });
+        } finally {
+            setSalvandoConsulta(false);
+        }
+    }
+
+    async function removerConsulta(c: ConsultaMp) {
+        if (!window.confirm("Remover esta consulta?")) return;
+        try {
+            setConsultas(await consultasService.remove(c.id));
+            toast({ title: "Consulta removida" });
+        } catch (err) {
+            toast({
+                title: "Erro",
+                description: err instanceof Error ? err.message : "Tente novamente.",
+                variant: "destructive",
+            });
+        }
+    }
+
     function renderReceita(r: ReceitaMp) {
         return (
             <MiCard key={r.id} className="p-4">
@@ -312,6 +418,16 @@ export default function ReceitasConsultasPage() {
                                     {rotuloRelativo(c.dataHora)}
                                 </span>
                             )}
+                            <span
+                                className={clsx(
+                                    "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                                    c.origem === "paciente"
+                                        ? "bg-indigo-100 text-indigo-700"
+                                        : "bg-slate-100 text-slate-600"
+                                )}
+                            >
+                                {c.origem === "paciente" ? "Marcada por você" : "Agendada pela clínica"}
+                            </span>
                         </div>
                         {c.especialidade && (
                             <p className="text-xs text-[#6b8c7d] mt-0.5">{c.especialidade}</p>
@@ -328,6 +444,27 @@ export default function ReceitasConsultasPage() {
                         )}
                         {c.observacoes && (
                             <p className="text-xs text-[#6b8c7d] mt-1">{c.observacoes}</p>
+                        )}
+
+                        {c.origem === "paciente" && (
+                            <div className="flex items-center gap-3 mt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => abrirEdicaoConsulta(c)}
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-[#5ba58c] hover:underline"
+                                >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                    Editar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => removerConsulta(c)}
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:underline"
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    Remover
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -352,10 +489,20 @@ export default function ReceitasConsultasPage() {
                 <TabsContent value="consultas" className="space-y-5 mt-4">
                     <MiCard variant="soft" className="p-3">
                         <p className="text-xs text-[#6b8c7d] text-center">
-                            As consultas são agendadas pela clínica. Precisa remarcar? Fale com a
-                            equipe.
+                            A clínica agenda consultas para você, e você também pode marcar as suas.
+                            Todas aparecem aqui e para a equipe.
                         </p>
                     </MiCard>
+
+                    <div className="flex justify-end">
+                        <Button
+                            onClick={abrirNovaConsulta}
+                            className="bg-[#5ba58c] text-white rounded-xl"
+                            size="sm"
+                        >
+                            <Plus className="mr-2 h-4 w-4" /> Nova consulta
+                        </Button>
+                    </div>
 
                     <section className="space-y-2">
                         <h2 className="text-base font-bold text-[#255f4f]">Próximas</h2>
@@ -588,6 +735,129 @@ export default function ReceitasConsultasPage() {
                                 className="flex-1 bg-[#5ba58c] text-white"
                             >
                                 {salvando ? "Salvando..." : "Salvar"}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={modalConsulta} onOpenChange={setModalConsulta}>
+                <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-[#255f4f]">
+                            {editandoConsultaId ? "Editar consulta" : "Nova consulta"}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Marque uma consulta. A clínica também acompanha pela agenda.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={salvarConsulta} className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-[#4f665a]">
+                                Data e hora
+                            </label>
+                            <Input
+                                type="datetime-local"
+                                value={formConsulta.dataHora}
+                                onChange={(e) =>
+                                    setFormConsulta((f) => ({ ...f, dataHora: e.target.value }))
+                                }
+                                required
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-[#4f665a]">
+                                    Profissional
+                                </label>
+                                <Input
+                                    value={formConsulta.profissional}
+                                    onChange={(e) =>
+                                        setFormConsulta((f) => ({
+                                            ...f,
+                                            profissional: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Dr(a). ..."
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-[#4f665a]">
+                                    Especialidade
+                                </label>
+                                <Input
+                                    value={formConsulta.especialidade}
+                                    onChange={(e) =>
+                                        setFormConsulta((f) => ({
+                                            ...f,
+                                            especialidade: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-[#4f665a]">Local</label>
+                                <Input
+                                    value={formConsulta.local}
+                                    onChange={(e) =>
+                                        setFormConsulta((f) => ({ ...f, local: e.target.value }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-[#4f665a]">Tipo</label>
+                                <select
+                                    value={formConsulta.tipo}
+                                    onChange={(e) =>
+                                        setFormConsulta((f) => ({
+                                            ...f,
+                                            tipo: e.target.value as ConsultaMp["tipo"],
+                                        }))
+                                    }
+                                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                                >
+                                    {TIPO_CONSULTA_OPCOES.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-[#4f665a]">
+                                Observações
+                            </label>
+                            <Textarea
+                                value={formConsulta.observacoes}
+                                onChange={(e) =>
+                                    setFormConsulta((f) => ({ ...f, observacoes: e.target.value }))
+                                }
+                                rows={2}
+                            />
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => setModalConsulta(false)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={salvandoConsulta}
+                                className="flex-1 bg-[#5ba58c] text-white"
+                            >
+                                {salvandoConsulta ? "Salvando..." : "Salvar"}
                             </Button>
                         </div>
                     </form>

@@ -1,6 +1,16 @@
 import { supabase } from "@/lib/supabaseClient";
-import type { ConsultaMp } from "../types";
-import { applyScope, getMpScope } from "./mpScope";
+import type { ConsultaMp, ConsultaStatus, ConsultaTipo } from "../types";
+import { applyScope, getMpScope, scopePayload } from "./mpScope";
+
+export type ConsultaPacienteInput = {
+    dataHora: string;
+    profissional: string;
+    especialidade: string;
+    local: string;
+    tipo: ConsultaTipo;
+    observacoes: string;
+    status?: ConsultaStatus;
+};
 
 export function mapConsulta(row: Record<string, unknown>): ConsultaMp {
     return {
@@ -20,7 +30,10 @@ export function mapConsulta(row: Record<string, unknown>): ConsultaMp {
 
 const ATIVAS: ConsultaMp["status"][] = ["agendada", "confirmada"];
 
-/** Consultas do paciente — leitura apenas: quem agenda é a clínica. */
+/**
+ * Consultas do paciente. Além de listar, o paciente também pode agendar as
+ * próprias consultas (origem='paciente'); a clínica vê tudo na agenda.
+ */
 export const consultasService = {
     async list(): Promise<ConsultaMp[]> {
         const scope = await getMpScope();
@@ -35,6 +48,50 @@ export const consultasService = {
         const { data, error } = await query;
         if (error || !data) return [];
         return data.map(mapConsulta);
+    },
+
+    async add(input: ConsultaPacienteInput): Promise<ConsultaMp[]> {
+        const scope = await getMpScope();
+        if (!scope) return [];
+
+        const { error } = await supabase.from("mp_consultas").insert({
+            ...scopePayload(scope),
+            parceiro_id: scope.parceiroId,
+            data_hora: input.dataHora,
+            profissional: input.profissional,
+            especialidade: input.especialidade,
+            local: input.local,
+            tipo: input.tipo,
+            observacoes: input.observacoes,
+            origem: "paciente",
+            status: input.status ?? "agendada",
+            criado_por: scope.authId,
+        });
+        if (error) throw new Error(error.message);
+
+        return this.list();
+    },
+
+    async update(id: string, input: Partial<ConsultaPacienteInput>): Promise<ConsultaMp[]> {
+        const payload: Record<string, unknown> = {};
+        if (input.dataHora !== undefined) payload.data_hora = input.dataHora;
+        if (input.profissional !== undefined) payload.profissional = input.profissional;
+        if (input.especialidade !== undefined) payload.especialidade = input.especialidade;
+        if (input.local !== undefined) payload.local = input.local;
+        if (input.tipo !== undefined) payload.tipo = input.tipo;
+        if (input.observacoes !== undefined) payload.observacoes = input.observacoes;
+        if (input.status !== undefined) payload.status = input.status;
+
+        const { error } = await supabase.from("mp_consultas").update(payload).eq("id", id);
+        if (error) throw new Error(error.message);
+
+        return this.list();
+    },
+
+    async remove(id: string): Promise<ConsultaMp[]> {
+        const { error } = await supabase.from("mp_consultas").delete().eq("id", id);
+        if (error) throw new Error(error.message);
+        return this.list();
     },
 
     proxima(list: ConsultaMp[]): ConsultaMp | null {

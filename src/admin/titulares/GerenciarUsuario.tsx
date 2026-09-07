@@ -43,6 +43,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
     const [telefone, setTelefone] = useState("");
     const [dataNascimento, setDataNascimento] = useState("");
     const [email, setEmail] = useState("");
+    const [emailOriginal, setEmailOriginal] = useState("");
     const [role, setRole] = useState("");
     const [status, setStatus] = useState<StatusUsuario>("ativo");
     const [parceiroId, setParceiroId] = useState<string>("none");
@@ -90,6 +91,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
         setTelefone("");
         setDataNascimento("");
         setEmail(user?.email || "");
+        setEmailOriginal(user?.email || "");
         setFotoFile(null);
         setFotoAtual(null);
         setFotoPreview(null);
@@ -127,6 +129,7 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
             setTelefone(maskTelefone(titular.telefone || ""));
             setDataNascimento(titular.data_nascimento || "");
             setEmail(titular.email || "");
+            setEmailOriginal(titular.email || "");
             setFotoAtual(titular.imagem_url || null);
             setFotoPreview(titular.imagem_url || null);
 
@@ -182,6 +185,15 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
         }
 
         try {
+            // Se o e-mail mudou, troca o e-mail de LOGIN (auth.users) também.
+            if (user?.auth_id && email.trim().toLowerCase() !== emailOriginal.trim().toLowerCase()) {
+                const { error: emailErr } = await supabase.rpc("alterar_email_usuario", {
+                    p_auth_id: user.auth_id,
+                    p_novo_email: email.trim(),
+                });
+                if (emailErr) throw emailErr;
+            }
+
             // Atualiza usuários_app
             const { error: uErr } = await supabase.from("usuarios_app").update({
                 role,

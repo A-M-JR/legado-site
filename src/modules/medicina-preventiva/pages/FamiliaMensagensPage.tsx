@@ -43,6 +43,8 @@ export default function FamiliaMensagensPage() {
 
         if (pessoaId === "eu") {
             setPessoa({ nome: card.nome || "Você", fotoUrl: card.fotoUrl, relacao: "Paciente" });
+        } else if (pessoaId === "clinica") {
+            setPessoa({ nome: "Clínica", relacao: "Equipe de saúde" });
         } else {
             const rede = await redeService.list();
             const encontrada = rede.find((p) => p.id === pessoaId);
@@ -172,22 +174,30 @@ export default function FamiliaMensagensPage() {
                 </div>
             </MiCard>
 
-            <div className="grid grid-cols-2 gap-2">
-                <Button
-                    onClick={() => setModalAberto(true)}
-                    className="bg-[#5ba58c] text-white rounded-xl"
-                >
-                    <PlusCircle className="mr-2 h-4 w-4" /> Nova mensagem
-                </Button>
-                <Button
-                    variant="outline"
-                    onClick={() => setConviteAberto(true)}
-                    disabled={!titularId}
-                    className="rounded-xl border-[#c2e1d4] text-[#255f4f]"
-                >
-                    <QrCode className="mr-2 h-4 w-4" /> Convidar
-                </Button>
-            </div>
+            {pessoaId === "clinica" ? (
+                <MiCard variant="soft" className="p-3">
+                    <p className="text-xs text-[#6b8c7d] text-center">
+                        Mensagens enviadas pela sua clínica. Para responder, fale com a equipe.
+                    </p>
+                </MiCard>
+            ) : (
+                <div className="grid grid-cols-2 gap-2">
+                    <Button
+                        onClick={() => setModalAberto(true)}
+                        className="bg-[#5ba58c] text-white rounded-xl"
+                    >
+                        <PlusCircle className="mr-2 h-4 w-4" /> Nova mensagem
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => setConviteAberto(true)}
+                        disabled={!titularId}
+                        className="rounded-xl border-[#c2e1d4] text-[#255f4f]"
+                    >
+                        <QrCode className="mr-2 h-4 w-4" /> Convidar
+                    </Button>
+                </div>
+            )}
 
             {mensagens.length === 0 ? (
                 <MiCard variant="soft" className="p-8 text-center">

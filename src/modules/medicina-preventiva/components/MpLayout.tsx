@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/sheet";
 import { MpBottomNav, MP_NAV_ITEMS } from "./MpBottomNav";
 import { MpNotificacoesBell } from "./MpNotificacoesBell";
+import { MpConsentimentoGate } from "./MpConsentimentoGate";
 import { limparMpScope } from "../services/mpScope";
+import { consentimentoService } from "../services/consentimentoService";
+import { MP_TERMO_VERSAO } from "../lib/termo";
 
 export default function MpLayout() {
     const navigate = useNavigate();
@@ -21,9 +24,17 @@ export default function MpLayout() {
     }>();
     const [multiModulo, setMultiModulo] = useState(true);
     const [saindo, setSaindo] = useState(false);
+    const [consentimentoOk, setConsentimentoOk] = useState<boolean | null>(null);
 
     useEffect(() => {
         limparMpScope();
+    }, []);
+
+    useEffect(() => {
+        consentimentoService
+            .jaAceitou(MP_TERMO_VERSAO)
+            .then(setConsentimentoOk)
+            .catch(() => setConsentimentoOk(true));
     }, []);
 
     useEffect(() => {
@@ -48,6 +59,18 @@ export default function MpLayout() {
         limparMpScope();
         await supabase.auth.signOut();
         navigate("/legado-app/login", { replace: true });
+    }
+
+    if (consentimentoOk === null) {
+        return (
+            <div className="min-h-screen bg-[#f8fcfb] flex items-center justify-center">
+                <HeartPulse className="h-8 w-8 text-[#5ba58c] animate-pulse" />
+            </div>
+        );
+    }
+
+    if (consentimentoOk === false) {
+        return <MpConsentimentoGate onAceito={() => setConsentimentoOk(true)} />;
     }
 
     return (

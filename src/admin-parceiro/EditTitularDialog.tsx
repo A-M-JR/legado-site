@@ -33,6 +33,8 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
     const [telefone, setTelefone] = useState("");
     const [dataNascimento, setDataNascimento] = useState("");
     const [email, setEmail] = useState("");
+    const [emailOriginal, setEmailOriginal] = useState("");
+    const [authId, setAuthId] = useState<string | null>(null);
     const [status, setStatus] = useState<string | null>(null);
 
     // foto
@@ -65,16 +67,18 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
             setTelefone(maskTelefone(tData.telefone || ""));
             setDataNascimento(tData.data_nascimento || "");
             setEmail(tData.email || "");
+            setEmailOriginal(tData.email || "");
             setExistingImagemUrl(tData.imagem_url || null);
 
-            // load status from usuarios_app
+            // load status + auth_id from usuarios_app
             const { data: ua } = await supabase
                 .from("usuarios_app")
-                .select("status")
+                .select("status, auth_id")
                 .eq("titular_id", titularId)
                 .single();
 
             setStatus(ua?.status || null);
+            setAuthId(ua?.auth_id || null);
             setFotoPreview(tData.imagem_url || null);
         } catch (err: any) {
             console.error("Erro ao carregar titular:", err);
@@ -126,6 +130,16 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
                 }
             }
 
+            // Se o e-mail mudou, troca também o e-mail de LOGIN (auth.users) antes,
+            // para não deixar plataforma e login divergentes se algo falhar.
+            if (authId && email.trim().toLowerCase() !== emailOriginal.trim().toLowerCase()) {
+                const { error: emailErr } = await supabase.rpc("alterar_email_usuario", {
+                    p_auth_id: authId,
+                    p_novo_email: email.trim(),
+                });
+                if (emailErr) throw emailErr;
+            }
+
             // update titulares
             const { error: errTit } = await supabase
                 .from("titulares")
@@ -166,7 +180,7 @@ export default function EditTitularDialog({ open, onClose, titularId, parceiroId
     }
 
     function limpar() {
-        setNome(""); setCpf(""); setTelefone(""); setDataNascimento(""); setEmail(""); setFotoFile(null); setFotoPreview(null); setExistingImagemUrl(null); setStatus(null);
+        setNome(""); setCpf(""); setTelefone(""); setDataNascimento(""); setEmail(""); setEmailOriginal(""); setAuthId(null); setFotoFile(null); setFotoPreview(null); setExistingImagemUrl(null); setStatus(null);
     }
 
     return (

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
     Dialog,
     DialogContent,
@@ -8,7 +9,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Activity, Loader2, ImageIcon, MessageCircle, RefreshCw } from "lucide-react";
+import { Activity, Loader2, ImageIcon, RefreshCw } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import clsx from "clsx";
 import { toast } from "@/hooks/use-toast";
 import { assinarArquivo } from "@/lib/uploadArquivo";
@@ -39,6 +41,7 @@ const INTENSIDADE_COR: Record<RegistroSintoma["intensidade"], string> = {
 export default function SintomasRecebidosPage() {
     const [registros, setRegistros] = useState<RegistroSintoma[]>([]);
     const [filtro, setFiltro] = useState<SintomaStatus | "todos">("todos");
+    const [busca, setBusca] = useState("");
     const [loading, setLoading] = useState(true);
     const [fotoUrl, setFotoUrl] = useState<string | null>(null);
     const [telefones, setTelefones] = useState<Map<string, string>>(new Map());
@@ -64,6 +67,11 @@ export default function SintomasRecebidosPage() {
     useEffect(() => {
         carregar();
     }, [carregar]);
+
+    const termoBusca = busca.trim().toLowerCase();
+    const registrosFiltrados = termoBusca
+        ? registros.filter((r) => (r.pacienteNome || "").toLowerCase().includes(termoBusca))
+        : registros;
 
     async function mudarStatus(registro: RegistroSintoma, status: SintomaStatus) {
         try {
@@ -122,6 +130,13 @@ export default function SintomasRecebidosPage() {
                 </Button>
             </div>
 
+            <Input
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Buscar paciente pelo nome..."
+                className="max-w-sm"
+            />
+
             <div className="flex gap-2 flex-wrap">
                 <button
                     type="button"
@@ -156,15 +171,17 @@ export default function SintomasRecebidosPage() {
                 <div className="py-16 flex justify-center">
                     <Loader2 className="h-6 w-6 animate-spin text-[#5ba58c]" />
                 </div>
-            ) : registros.length === 0 ? (
+            ) : registrosFiltrados.length === 0 ? (
                 <Card>
                     <CardContent className="py-16 text-center text-sm text-[#6b8c7d]">
-                        Nenhum registro de sintoma por aqui.
+                        {termoBusca
+                            ? `Nenhum registro para "${busca.trim()}".`
+                            : "Nenhum registro de sintoma por aqui."}
                     </CardContent>
                 </Card>
             ) : (
                 <div className="grid gap-3">
-                    {registros.map((r) => (
+                    {registrosFiltrados.map((r) => (
                         <Card key={r.id} className={r.status === "novo" ? "border-rose-200" : ""}>
                             <CardHeader className="pb-2">
                                 <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -229,7 +246,7 @@ export default function SintomasRecebidosPage() {
                                         onClick={() => responderWhatsapp(r)}
                                         className="flex items-center gap-1.5 text-xs font-semibold text-[#25D366] hover:underline"
                                     >
-                                        <MessageCircle className="h-3.5 w-3.5" />
+                                        <FaWhatsapp className="h-3.5 w-3.5" />
                                         Responder no WhatsApp
                                     </button>
                                     {r.whatsappEnviado && (

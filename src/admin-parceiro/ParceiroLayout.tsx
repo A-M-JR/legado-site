@@ -26,6 +26,8 @@ import {
     Building2,
     UserCog,
     BellRing,
+    Pill,
+    Megaphone,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -68,6 +70,18 @@ const menuItems: MenuItem[] = [
         title: "Exames",
         icon: FlaskConical,
         path: "/admin-parceiro/exames",
+        moduloPreventiva: true,
+    },
+    {
+        title: "Receitas",
+        icon: Pill,
+        path: "/admin-parceiro/receitas",
+        moduloPreventiva: true,
+    },
+    {
+        title: "Campanhas",
+        icon: Megaphone,
+        path: "/admin-parceiro/campanhas",
         moduloPreventiva: true,
     },
     {

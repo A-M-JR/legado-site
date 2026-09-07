@@ -77,8 +77,18 @@ export default function FamiliaPage() {
                 id: "eu",
                 nome: paciente?.nome || "Você",
                 relacao: "Paciente",
-                fotoUrl: paciente?.fotoUrl,
+                fotoUrl: paciente?.fotoUrl as string | undefined,
             },
+            ...(contagem["clinica"]
+                ? [
+                      {
+                          id: "clinica",
+                          nome: "Clínica",
+                          relacao: "Equipe de saúde",
+                          fotoUrl: undefined as string | undefined,
+                      },
+                  ]
+                : []),
             ...rede.map((p) => ({
                 id: p.id,
                 nome: p.nome,
@@ -86,7 +96,7 @@ export default function FamiliaPage() {
                 fotoUrl: p.fotoUrl,
             })),
         ],
-        [paciente, rede]
+        [paciente, rede, contagem]
     );
 
     function abrirNova() {

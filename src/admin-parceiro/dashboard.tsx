@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Settings2, Edit2, Eye, Grid, Search } from "lucide-react";
+import { Users, Plus, Settings2, Edit2, Eye, Grid, Search, MessageCircle } from "lucide-react";
 import GerenciarModulosTitular from "./GerenciarModulosTitular";
 import MeusModulos from "./MeusModulos";
 import NovoTitularDialog from "./NovoTitularDialog";
 import EditTitularDialog from "./EditTitularDialog";
+import MensagemClinicaDialog from "./MensagemClinicaDialog";
 
 interface UsuarioTabela {
     id: string;
@@ -34,6 +35,7 @@ export default function AdminParceiroDashboard() {
     const [showNovoTitular, setShowNovoTitular] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [editingTitularId, setEditingTitularId] = useState<string | null>(null);
+    const [mensagemTarget, setMensagemTarget] = useState<{ id: string; nome: string } | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(1);
     const [pageSize] = useState(10);
@@ -316,6 +318,20 @@ export default function AdminParceiroDashboard() {
                                                             >
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-[#5ba58c] hover:bg-[#e3f1eb] rounded-lg"
+                                                                aria-label="Enviar mensagem ao paciente"
+                                                                onClick={() =>
+                                                                    setMensagemTarget({
+                                                                        id: usuario.id,
+                                                                        nome: usuario.nome,
+                                                                    })
+                                                                }
+                                                            >
+                                                                <MessageCircle className="h-4 w-4" />
+                                                            </Button>
                                                         </>
                                                     )}
                                                 </div>
@@ -386,6 +402,14 @@ export default function AdminParceiroDashboard() {
                 titularId={editingTitularId}
                 parceiroId={parceiroId}
                 refresh={fetchUsuarios}
+            />
+
+            <MensagemClinicaDialog
+                open={!!mensagemTarget}
+                onClose={() => setMensagemTarget(null)}
+                titularId={mensagemTarget?.id ?? null}
+                titularNome={mensagemTarget?.nome ?? ""}
+                remetente={userProfile?.nome || "Clínica"}
             />
         </div>
     );

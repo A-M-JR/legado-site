@@ -3,11 +3,11 @@ import {
     Activity,
     Camera,
     Loader2,
-    MessageCircle,
     CheckCircle2,
     ImageIcon,
     AlertCircle,
 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -198,7 +198,7 @@ export default function SintomasPage() {
                                 disabled={!linkWhatsapp}
                                 className="mt-3 w-full sm:w-auto bg-[#25D366] hover:bg-[#1fb855] text-white rounded-xl"
                             >
-                                <MessageCircle className="mr-2 h-4 w-4" />
+                                <FaWhatsapp className="mr-2 h-4 w-4" />
                                 Enviar no WhatsApp da clínica
                             </Button>
 
@@ -370,7 +370,7 @@ export default function SintomasPage() {
                                                 onClick={() => reenviarWhatsapp(r)}
                                                 className="flex items-center gap-1.5 text-xs font-semibold text-[#25D366] hover:underline"
                                             >
-                                                <MessageCircle className="h-3.5 w-3.5" />
+                                                <FaWhatsapp className="h-3.5 w-3.5" />
                                                 {r.whatsappEnviado
                                                     ? "Enviar de novo"
                                                     : "Enviar no WhatsApp"}
