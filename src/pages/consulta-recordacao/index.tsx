@@ -23,17 +23,15 @@ export default function ConsultaRecordacao() {
         setLoading(true);
 
         const { data, error } = await supabase
-            .from('dependentes')
-            .select('id, nome, imagem_url, data_nascimento, data_falecimento')
-            .eq('cpf', cpfLimpo)
-            .maybeSingle();
+            .rpc('get_homenageado_por_cpf', { p_cpf: cpfLimpo });
 
         setLoading(false);
 
-        if (error || !data) {
+        const homenageado = Array.isArray(data) ? data[0] : data;
+        if (error || !homenageado) {
             setErro('CPF não encontrado. Verifique e tente novamente.');
         } else {
-            setData(data);
+            setData(homenageado);
         }
     };
 
