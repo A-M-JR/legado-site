@@ -118,9 +118,32 @@ function renderHtml(targetUrl: string, title: string, description: string, image
 </html>`;
 }
 
+/**
+ * Aceita o UUID inteiro ou o link curto "nome-da-pessoa-69675667" (8 primeiros hex do id).
+ * O prefixo vira um intervalo de UUIDs (uuid compara na mesma ordem do texto hex), então não
+ * precisa de coluna nova nem RPC. Prefixo ambíguo (2+ pessoas) não resolve, para nunca abrir a pessoa errada.
+ */
+async function resolverId(parametro: string): Promise<string | null> {
+    if (UUID_RE.test(parametro)) return parametro.toLowerCase();
+    const prefixo = parametro.toLowerCase().match(/(?:^|-)([0-9a-f]{8})$/)?.[1];
+    if (!prefixo) return null;
+
+    const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+    const key = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    const faixa = `id=gte.${prefixo}-0000-0000-0000-000000000000&id=lte.${prefixo}-ffff-ffff-ffff-ffffffffffff&select=id&limit=2`;
+    const encontrados: string[] = [];
+    for (const table of ["dependentes", "titulares"]) {
+        const res = await fetch(`${url}/rest/v1/${table}?${faixa}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+        if (res.ok) encontrados.push(...((await res.json()) as { id: string }[]).map((r) => r.id));
+    }
+    return encontrados.length === 1 ? encontrados[0] : null;
+}
+
 export async function GET(request: Request): Promise<Response> {
-    const id = new URL(request.url).searchParams.get("id")?.trim() ?? "";
-    if (!UUID_RE.test(id)) {
+    const parametro = new URL(request.url).searchParams.get("id")?.trim() ?? "";
+    const id = await resolverId(parametro).catch(() => null);
+    if (!id) {
         return Response.redirect(SITE_URL, 302);
     }
 

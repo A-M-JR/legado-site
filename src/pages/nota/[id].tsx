@@ -48,7 +48,7 @@ export default function NotaFalecimentoPage() {
 
     async function compartilhar() {
         if (!pessoa) return;
-        const url = linkCompartilhamento(pessoa.id);
+        const url = linkCompartilhamento(pessoa.id, pessoa.nome);
         if (navigator.share) {
             // Share nativo (celular). Se o usuário cancelar, não fazemos nada.
             await navigator.share({ title: `Nota de Falecimento - ${pessoa.nome}`, url }).catch(() => undefined);

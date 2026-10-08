@@ -70,8 +70,26 @@ export function dataBR(date?: string | null): string {
     return formatted === "Data não informada" ? "" : formatted;
 }
 
-export function linkCompartilhamento(id: string): string {
-    return `${SITE_URL}/n/${id}`;
+/** "Maria Antônia da Silva" → "maria-antonia-da-silva" (máx. 40 caracteres). */
+export function slugNome(nome?: string | null): string {
+    return limparNome(nome)
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 40)
+        .replace(/-+$/, "");
+}
+
+/**
+ * Link curto para compartilhar: /n/maria-antonia-69675667.
+ * Só os 8 primeiros hex do id identificam a pessoa (resolvido em api/nota.ts); o nome é para leitura.
+ */
+export function linkCompartilhamento(id: string, nome?: string | null): string {
+    const codigo = id.slice(0, 8).toLowerCase();
+    const slug = slugNome(nome);
+    return `${SITE_URL}/n/${slug ? `${slug}-` : ""}${codigo}`;
 }
 
 export function linkMaps(c: Cerimonia): string {
@@ -130,7 +148,7 @@ export function linkCoroaFlores(nota: NotaFalecimento, nome: string): string | n
 export function mensagemWhatsApp(pessoa: Homenageado): string {
     const nome = nomeLimpo(pessoa.nome);
     const falecimento = dataBR(pessoa.data_falecimento);
-    const link = linkCompartilhamento(pessoa.id);
+    const link = linkCompartilhamento(pessoa.id, nome);
     return pessoa.falecido
         ? `Caros familiares, amigos e colegas, lamentamos informar o falecimento de *${nome}*${falecimento ? ` na data ${falecimento}` : ""}.\n\nPara informações do velório e para deixar sua mensagem de carinho à família, acesse: ${link}`
         : `💙 Olá! Gostaria de convidar você para deixar uma recordação especial para *${nome}* no Instituto Legado.\n\nAcesse pelo link: ${link}`;

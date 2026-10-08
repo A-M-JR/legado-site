@@ -173,7 +173,7 @@ export default function RecordacoesListPage({
     async function copiarLink() {
         if (!dependenteId) return;
         try {
-            await navigator.clipboard.writeText(linkCompartilhamento(dependenteId));
+            await navigator.clipboard.writeText(linkCompartilhamento(dependenteId, person?.nome));
             setLinkCopiado(true);
             setTimeout(() => setLinkCopiado(false), 2000);
         } catch {
