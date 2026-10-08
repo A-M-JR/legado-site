@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { checkValidDateBR, formatBR } from "../../../utils/formatDateToBR";
 import { toast } from "@/hooks/use-toast";
-import { maskDataBR } from "@/lib/masks";
+import { dataBRParaISO, dataISOParaBR, maskDataBR } from "@/lib/masks";
 import { Divisor } from "@/components/recordacoes/Ornamentos";
 import { temaMemorial } from "@/lib/legadoTema";
 import LegadoNav, { LEGADO_NAV_ESPACO } from "@/components/legado/LegadoNav";
@@ -138,8 +138,17 @@ export default function MenuPage() {
             return;
         }
 
-        const [d, m, y] = modalData.split("/");
-        const dataISO = `${y}-${m}-${d}`;
+        const dataISO = dataBRParaISO(modalData);
+
+        // Falecimento não pode ser antes do nascimento (há cadastros com nascimento em ISO e em dd/MM/aaaa).
+        const nascimentoRaw = modalTarget === "titular"
+            ? titular?.data_nascimento
+            : dependentes.find((dep) => dep.id === modalDepId)?.data_nascimento;
+        const nascimentoISO = nascimentoRaw ? dataBRParaISO(dataISOParaBR(nascimentoRaw)) : "";
+        if (nascimentoISO && dataISO < nascimentoISO) {
+            setDataErro(`A data de falecimento não pode ser anterior ao nascimento (${dataISOParaBR(nascimentoRaw!)}).`);
+            return;
+        }
 
         if (modalTarget === "titular" && titular) {
             const { error } = await supabase

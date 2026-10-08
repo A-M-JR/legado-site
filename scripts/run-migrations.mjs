@@ -58,6 +58,7 @@ const PENDING = [
     "018_alterar_email_usuario.sql",
     "026_notas_falecimento.sql",
     "027_limpar_espacos_nomes.sql",
+    "028_padronizar_datas_iso.sql",
 ];
 
 async function ensureTracking(client) {
