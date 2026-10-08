@@ -2,13 +2,14 @@
 // Usada como og:image por api/nota.ts → aparece como card grande no WhatsApp/Facebook.
 // GET /api/og?id=<uuid>[&v=<versão>]  (v só serve para invalidar cache quando a nota muda)
 
-import { ImageResponse } from "@vercel/og";
-
-// Edge: a build Edge do @vercel/og só usa APIs web (sem fs/Buffer), ideal para gerar imagens.
-export const config = { runtime: "edge" };
+// Satori (layout → SVG) + resvg (SVG → PNG) no runtime Node da Vercel.
+// Não usamos o runtime Edge: ele proíbe compilar WebAssembly em tempo de execução fora do Next.js.
+import satori from "satori";
+import { Resvg, initWasm } from "@resvg/resvg-wasm";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FONTES = "https://cdn.jsdelivr.net/npm/@fontsource/lora@5.2.5/files";
+const RESVG_WASM = "https://cdn.jsdelivr.net/npm/@resvg/resvg-wasm@2.4.0/index_bg.wasm";
 const W = 1200;
 const H = 630;
 
@@ -90,9 +91,32 @@ async function fotoDataUrl(url: string | null): Promise<string | null> {
     return null;
 }
 
-async function fonte(arquivo: string): Promise<ArrayBuffer> {
-    const res = await fetch(`${FONTES}/${arquivo}`);
-    return res.arrayBuffer();
+// Fontes e wasm ficam em memória entre execuções da mesma instância da função.
+const fontesCache = new Map<string, Promise<ArrayBuffer>>();
+function fonte(arquivo: string): Promise<ArrayBuffer> {
+    if (!fontesCache.has(arquivo)) {
+        const p = fetch(`${FONTES}/${arquivo}`).then((res) => {
+            if (!res.ok) throw new Error(`fonte ${arquivo}: HTTP ${res.status}`);
+            return res.arrayBuffer();
+        });
+        p.catch(() => fontesCache.delete(arquivo));
+        fontesCache.set(arquivo, p);
+    }
+    return fontesCache.get(arquivo)!;
+}
+
+let resvgPronto: Promise<void> | null = null;
+function iniciarResvg(): Promise<void> {
+    if (!resvgPronto) {
+        resvgPronto = fetch(RESVG_WASM)
+            .then((res) => {
+                if (!res.ok) throw new Error(`resvg wasm: HTTP ${res.status}`);
+                return res.arrayBuffer();
+            })
+            .then((wasm) => initWasm(wasm));
+        resvgPronto.catch(() => (resvgPronto = null));
+    }
+    return resvgPronto;
 }
 
 // ---------- desenho ----------
@@ -263,20 +287,21 @@ function desenhar(pessoa: Homenageado | null, nota: Nota | null, foto: string | 
     );
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
     const id = new URL(request.url).searchParams.get("id")?.trim() ?? "";
     const { pessoa, nota } = UUID_RE.test(id) ? await carregar(id).catch(() => ({ pessoa: null, nota: null })) : { pessoa: null, nota: null };
 
-    const [foto, lora700, lora400, lora400i] = await Promise.all([
-        fotoDataUrl(pessoa?.imagem_url ?? null),
-        fonte("lora-latin-700-normal.woff"),
-        fonte("lora-latin-400-normal.woff"),
-        fonte("lora-latin-400-italic.woff"),
-    ]);
-
     try {
+        const [foto, lora700, lora400, lora400i] = await Promise.all([
+            fotoDataUrl(pessoa?.imagem_url ?? null),
+            fonte("lora-latin-700-normal.woff"),
+            fonte("lora-latin-400-normal.woff"),
+            fonte("lora-latin-400-italic.woff"),
+            iniciarResvg(),
+        ]);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const resposta = new ImageResponse(desenhar(pessoa, nota, foto) as any, {
+        const svg = await satori(desenhar(pessoa, nota, foto) as any, {
             width: W,
             height: H,
             fonts: [
@@ -285,10 +310,8 @@ export default async function handler(request: Request): Promise<Response> {
                 { name: "Lora", data: lora400i, weight: 400, style: "italic" },
             ],
         });
-        // O ImageResponse é um stream: se o desenho falhar, ele devolve 200 vazio. Lemos tudo aqui
-        // para conseguir responder com o erro de verdade.
-        const png = await resposta.arrayBuffer();
-        if (!png.byteLength) throw new Error("imagem vazia");
+        const png = new Resvg(svg, { fitTo: { mode: "width", value: W } }).render().asPng();
+
         return new Response(png, {
             headers: {
                 "Content-Type": "image/png",
