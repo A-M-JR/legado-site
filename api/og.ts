@@ -274,18 +274,33 @@ export default async function handler(request: Request): Promise<Response> {
         fonte("lora-latin-400-italic.woff"),
     ]);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new ImageResponse(desenhar(pessoa, nota, foto) as any, {
-        width: W,
-        height: H,
-        fonts: [
-            { name: "Lora", data: lora700, weight: 700, style: "normal" },
-            { name: "Lora", data: lora400, weight: 400, style: "normal" },
-            { name: "Lora", data: lora400i, weight: 400, style: "italic" },
-        ],
-        headers: {
-            // A URL inclui ?v= com a versão dos dados, então pode ficar em cache por bastante tempo.
-            "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800",
-        },
-    });
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const resposta = new ImageResponse(desenhar(pessoa, nota, foto) as any, {
+            width: W,
+            height: H,
+            fonts: [
+                { name: "Lora", data: lora700, weight: 700, style: "normal" },
+                { name: "Lora", data: lora400, weight: 400, style: "normal" },
+                { name: "Lora", data: lora400i, weight: 400, style: "italic" },
+            ],
+        });
+        // O ImageResponse é um stream: se o desenho falhar, ele devolve 200 vazio. Lemos tudo aqui
+        // para conseguir responder com o erro de verdade.
+        const png = await resposta.arrayBuffer();
+        if (!png.byteLength) throw new Error("imagem vazia");
+        return new Response(png, {
+            headers: {
+                "Content-Type": "image/png",
+                // A URL inclui ?v= com a versão dos dados, então pode ficar em cache por bastante tempo.
+                "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800",
+            },
+        });
+    } catch (erro) {
+        console.error("[og] falha ao gerar imagem", erro);
+        return new Response(`Falha ao gerar imagem: ${erro instanceof Error ? erro.message : String(erro)}`, {
+            status: 500,
+            headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+        });
+    }
 }

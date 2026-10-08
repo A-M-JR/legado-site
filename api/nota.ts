@@ -38,7 +38,10 @@ type Cerimonia = { tipo?: string; local?: string; data?: string; hora?: string }
 async function selectFirst<T>(table: string, query: string): Promise<T | null> {
     const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
     const key = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
+    if (!url || !key) {
+        console.error("[nota] SUPABASE_URL/SUPABASE_ANON_KEY ausentes no ambiente da função");
+        return null;
+    }
     const res = await fetch(`${url}/rest/v1/${table}?${query}&limit=1`, {
         headers: { apikey: key, Authorization: `Bearer ${key}` },
     });
@@ -154,6 +157,8 @@ export async function GET(request: Request): Promise<Response> {
         headers: {
             "Content-Type": "text/html; charset=utf-8",
             "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400",
+            // Diagnóstico: diz só se as variáveis existem (nunca o valor).
+            "X-Legado-Env": (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL) ? "ok" : "ausente",
         },
     });
 }
