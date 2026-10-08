@@ -19,6 +19,10 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Código legado usa "any" em vários pontos: aviso, não bloqueia o lint.
+      '@typescript-eslint/no-explicit-any': 'warn',
+      // "_" na frente = descartado de propósito (ex.: const { a: _a, ...resto } = obj).
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

@@ -22,7 +22,7 @@ export default function RecordacaoPublica() {
             setDependenteNaoEncontrado(false);
             const cleanId = dependenteId.trim();
 
-            let { data, error } = await supabase
+            const { data, error } = await supabase
                 .from('dependentes')
                 .select('nome, data_nascimento, data_falecimento, imagem_url, falecido')
                 .eq('id', cleanId)
