@@ -210,7 +210,7 @@ export default function ExercicioDetailPage() {
     return (
         <LegadoLayout
             title={exercicio?.titulo || "Exercício"}
-            subtitle={<span className="text-sm text-[#4f665a]">{exercicio.grupo} • {exercicio.duracao_minutos} min</span>}
+            subtitle={<span className="text-sm text-tema-texto">{exercicio.grupo} • {exercicio.duracao_minutos} min</span>}
         >
             <div className="w-full">
                 <div className="legado-form-card w-full">

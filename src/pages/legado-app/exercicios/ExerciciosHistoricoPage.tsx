@@ -17,7 +17,6 @@ import {
   Moon,
   Clock,
   NotebookPen,
-  History,
   ArrowLeft,
 } from "lucide-react";
 import LegadoLayout from "../../../components/legado/LegadoLayout";
@@ -189,13 +188,9 @@ export default function ExerciciosHistoricoPage() {
 
   return (
     <LegadoLayout title="Histórico de Exercícios" backPath="/legado-app/exercicios">
-      <div className="w-full max-w-md mx-auto">
-        {/* Header com botão de export */}
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl font-semibold text-[#255f4f] flex items-center gap-2">
-            <History size={20} /> Histórico de Exercícios
-          </h2>
-
+      <div className="w-full">
+        {/* Botão de export */}
+        <div className="flex items-center justify-end mb-3">
           <div className="flex items-center gap-2">
             <button
               className="legado-button !px-3 !py-1.5 text-sm flex items-center gap-2"
@@ -210,20 +205,20 @@ export default function ExerciciosHistoricoPage() {
         {/* Filtros */}
         <div className="grid grid-cols-1 gap-2 mb-3">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             <input
-              className="legado-input pl-9"
+              className="legado-input !pl-9"
               placeholder="Buscar por título..."
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
 
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Calendar size={16} className="absolute left-3 top-3 text-gray-400" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="relative">
+              <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               <select
-                className="legado-input pl-9"
+                className="legado-input !pl-9"
                 value={periodo}
                 onChange={(e) => setPeriodo(e.target.value as any)}
               >
@@ -234,7 +229,7 @@ export default function ExerciciosHistoricoPage() {
               </select>
             </div>
 
-            <div className="flex-1">
+            <div>
               <select
                 className="legado-input"
                 value={categoria}

@@ -1,7 +1,7 @@
 .legado-app-wrapper {
-  background-color: #e3f1eb;
+  background-color: rgb(var(--tema-claro));
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'Nunito Sans', 'Noto Color Emoji', sans-serif;
   display: flex;
   flex-direction: column;
 }
@@ -19,7 +19,7 @@
 .legado-form-card label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #4f665a;
+  color: rgb(var(--tema-texto));
   display: flex;
   /* <-- TROQUE block por flex */
   align-items: center;
@@ -33,11 +33,11 @@
 
 .legado-input {
   width: 100%;
-  border: 1px solid #eceb9c;
+  border: 1px solid rgb(var(--tema-input-borda));
   border-radius: 10px;
   padding: 12px;
   font-size: 0.95rem;
-  background-color: #f9f9f9;
+  background-color: rgb(var(--tema-input-fundo));
   color: #2d2d2d;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: border 0.2s;
@@ -45,11 +45,11 @@
 
 .legado-input:focus {
   outline: none;
-  border-color: #5ba58c;
+  border-color: rgb(var(--tema-primaria));
 }
 
 .legado-button {
-  background-color: #5ba58c;
+  background-color: rgb(var(--tema-primaria));
   color: white;
   padding: 12px;
   border-radius: 10px;
@@ -62,7 +62,7 @@
 }
 
 .legado-button:hover {
-  background-color: #4c947e;
+  background-color: rgb(var(--tema-primaria-escura));
 }
 
 .legado-checkbox {
@@ -75,12 +75,12 @@
 .legado-checkbox input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: #5ba58c;
+  accent-color: rgb(var(--tema-primaria));
 }
 
 .legado-alert {
   margin-top: 1rem;
-  background-color: #4c947e;
+  background-color: rgb(var(--tema-primaria-escura));
   color: white;
   padding: 10px 16px;
   border-radius: 8px;
@@ -98,7 +98,7 @@
 }
 
 .legado-perfil-header {
-  background-color: #d8ede6;
+  background-color: rgb(var(--tema-claro));
   padding: 24px;
   border-radius: 16px;
   text-align: center;
@@ -118,13 +118,13 @@
 .legado-perfil-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #255f4f;
+  color: rgb(var(--tema-titulo));
   margin-bottom: 4px;
 }
 
 .legado-perfil-header p {
   font-size: 0.875rem;
-  color: #4f665a;
+  color: rgb(var(--tema-texto));
 }
 
 .legado-perfil-actions {
@@ -153,7 +153,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #f0f8f6;
+  background-color: rgb(var(--tema-claro-2));
   padding: 12px;
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -193,8 +193,8 @@
 }
 
 .legado-filtro-button {
-  background-color: #def0e8;
-  color: #337b68;
+  background-color: rgb(var(--tema-borda));
+  color: rgb(var(--tema-medio));
   padding: 6px 16px;
   font-weight: 600;
   border-radius: 999px;
@@ -229,7 +229,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #d8ede6;
+  background-color: rgb(var(--tema-claro));
   padding: 24px;
   border-radius: 16px;
   margin-bottom: 20px;
@@ -250,13 +250,13 @@
 .legado-titular-container h2 {
   font-size: 1.6rem;
   font-weight: bold;
-  color: #255f4f;
+  color: rgb(var(--tema-titulo));
   margin-bottom: 6px;
 }
 
 .legado-titular-container p {
   font-size: 0.9rem;
-  color: #4f665a;
+  color: rgb(var(--tema-texto));
   margin-bottom: 6px;
 }
 
@@ -268,8 +268,8 @@
 }
 
 .legado-filtro-buttons button {
-  background-color: #def0e8;
-  color: #337b68;
+  background-color: rgb(var(--tema-borda));
+  color: rgb(var(--tema-medio));
   padding: 6px 14px;
   font-weight: 600;
   border-radius: 999px;
@@ -281,7 +281,7 @@
 
 .legado-filtro-buttons button.active,
 .legado-filtro-buttons button:hover {
-  background-color: #a3d9c4;
+  background-color: rgb(var(--tema-borda-forte));
 }
 
 .legado-dependente-actions {
@@ -299,12 +299,12 @@
   cursor: pointer;
   padding: 4px;
   font-size: 1rem;
-  color: #337b68;
+  color: rgb(var(--tema-medio));
   transition: color 0.2s ease;
 }
 
 .legado-dependente-actions button:hover {
-  color: #255f4f;
+  color: rgb(var(--tema-titulo));
 }
 
 .legado-dependente-actions .lapide {
@@ -313,7 +313,7 @@
 
 .legado-fab {
   /* Não precisa mais de width/height fixos nem border-radius: 50% */
-  background-color: #5ba58c;
+  background-color: rgb(var(--tema-primaria));
   color: white;
   padding: 12px 24px;
   /* Ajuste aqui para mais/menos largura */
@@ -332,13 +332,13 @@
 }
 
 .legado-fab:hover {
-  background-color: #418d73;
+  background-color: rgb(var(--tema-primaria-escura));
 }
 
 .legado-label {
   font-size: 0.96rem;
   font-weight: 600;
-  color: #4f665a;
+  color: rgb(var(--tema-texto));
   margin-bottom: 4px;
   display: block;
 }
@@ -348,7 +348,7 @@ input[type="file"] {
 }
 
 .legado-icon-button {
-  background: #e0f0ec;
+  background: rgb(var(--tema-borda));
   border: none;
   padding: 6px;
   display: flex;
@@ -357,11 +357,11 @@ input[type="file"] {
   cursor: pointer;
   border-radius: 50%;
   transition: background 0.2s;
-  color: #255f4f;
+  color: rgb(var(--tema-titulo));
 }
 
 .legado-icon-button:hover {
-  background: #b8ebe0;
+  background: rgb(var(--tema-borda-forte));
 }
 
 .legado-button {
@@ -375,7 +375,7 @@ input[type="file"] {
 .legado-form-label {
   font-size: 0.96rem;
   font-weight: 600;
-  color: #4F665A;
+  color: rgb(var(--tema-texto));
   margin-bottom: 6px;
   margin-top: 6px;
   display: block;
@@ -394,11 +394,11 @@ input[type="file"] {
 
 .legado-input {
   width: 100%;
-  border: 1px solid #eceb9c;
+  border: 1px solid rgb(var(--tema-input-borda));
   border-radius: 10px;
   padding: 12px;
   font-size: 0.95rem;
-  background-color: #f9f9f9;
+  background-color: rgb(var(--tema-input-fundo));
   color: #2d2d2d;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -480,7 +480,7 @@ input[type="file"] {
   font-weight: bold;
   font-size: 16px;
   border: none;
-  background: #5BA58C;
+  background: rgb(var(--tema-primaria));
   color: #fff;
   transition: background .2s;
   display: flex;
@@ -489,8 +489,8 @@ input[type="file"] {
 }
 
 .legado-fab-bar button.qr {
-  background: #eafcf9;
-  color: #007080;
+  background: rgb(var(--tema-destaque-claro));
+  color: rgb(var(--tema-destaque));
 }
 
 .legado-recordacao-card {
@@ -554,7 +554,7 @@ input[type="file"] {
   font-weight: bold;
   font-size: 16px;
   border: none;
-  background: #5BA58C;
+  background: rgb(var(--tema-primaria));
   color: #fff;
   transition: background .2s;
   display: flex;
@@ -563,8 +563,8 @@ input[type="file"] {
 }
 
 .legado-fab-bar button.qr {
-  background: #eafcf9;
-  color: #007080;
+  background: rgb(var(--tema-destaque-claro));
+  color: rgb(var(--tema-destaque));
 }
 
 .sticky-bottom-actions {
@@ -576,16 +576,16 @@ input[type="file"] {
 }
 
 .legado-recordacao-card {
-  background: #f2faf7;
+  background: rgb(var(--tema-claro-2));
   border-radius: 18px;
-  border: 1px solid #def0e8;
+  border: 1px solid rgb(var(--tema-borda));
   padding: 1.25rem;
   margin-bottom: 1rem;
   transition: box-shadow 0.2s;
 }
 
 .legado-recordacao-card:hover {
-  box-shadow: 0 4px 24px 0 #b5e2d0;
+  box-shadow: 0 4px 24px 0 rgb(var(--tema-borda-forte));
 }
 
 .legado-icon-button {
@@ -601,7 +601,7 @@ input[type="file"] {
 }
 
 .legado-icon-button:hover {
-  background: #e0f0ec;
+  background: rgb(var(--tema-borda));
 }
 
 .line-clamp-2 {
@@ -622,10 +622,10 @@ input[type="file"] {
 .skeleton-card {
   height: 82px;
   border-radius: 12px;
-  background: linear-gradient(90deg, #f3f7f5 25%, #e8f1ee 37%, #f3f7f5 63%);
+  background: linear-gradient(90deg, rgb(var(--tema-claro-2)) 25%, rgb(var(--tema-claro)) 37%, rgb(var(--tema-claro-2)) 63%);
   background-size: 400% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
-  border: 1px solid #def0e8;
+  border: 1px solid rgb(var(--tema-borda));
 }
 
 @keyframes shimmer {
@@ -640,14 +640,14 @@ input[type="file"] {
 
 /* Card do diário com um leve destaque */
 .diario-card {
-  border: 1px solid #def0e8;
+  border: 1px solid rgb(var(--tema-borda));
   background: #ffffff;
   border-radius: 14px;
 }
 
 /* Botões de ícone consistentes já existem (.legado-icon-button), só garantir contraste ao hover */
 .legado-icon-button:hover {
-  background: #e0f0ec;
+  background: rgb(var(--tema-borda));
 }
 
 /* Corrigir centralização de chips/badges se houver */
@@ -656,8 +656,8 @@ input[type="file"] {
   font-size: 0.75rem;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #e4f6f0;
-  color: #255f4f;
+  background: rgb(var(--tema-claro));
+  color: rgb(var(--tema-titulo));
 }
 
 /* Melhor legibilidade na área de preview */

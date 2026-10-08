@@ -1,8 +1,9 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import { CheckCircle2, Heart, ImageIcon, Loader2, User, Video, X } from "lucide-react";
+import { CheckCircle2, Cross, Heart, ImageIcon, Loader2, Star, User, Video, X } from "lucide-react";
 import { MAX_RECORDACAO_MENSAGEM, MAX_RECORDACAO_NOME, validateMediaFile } from "@/lib/validation";
 import { formatBR } from "@/utils/formatDateToBR";
 import clsx from "clsx";
+import { COR, Coroa, Divisor } from "@/components/recordacoes/Ornamentos";
 
 export type HomenageadoInfo = {
     nome: string;
@@ -18,6 +19,8 @@ type Props = {
     subtitle?: string;
     loading?: boolean;
     embedded?: boolean;
+    /** "memorial": visual da nota de falecimento/PDF (creme, coroa de folhas, serifa). */
+    tema?: "padrao" | "memorial";
     onSubmit: (data: {
         mensagem: string;
         nome: string;
@@ -32,8 +35,13 @@ export default function RecordacaoForm({
     subtitle = "Escreva com carinho. Você pode anexar uma foto ou um vídeo curto.",
     loading = false,
     embedded = false,
+    tema = "padrao",
     onSubmit,
 }: Props) {
+    const memorial = tema === "memorial";
+    const campoBorda = memorial
+        ? "border-[#e8dcc6] focus:ring-[#c9a96e]/30 focus:border-[#c9a96e]"
+        : "border-[#d1e5dc] focus:ring-[#5ba58c]/30 focus:border-[#5ba58c]";
     const inputId = useId();
     const [mensagem, setMensagem] = useState("");
     const [nome, setNome] = useState("");
@@ -53,6 +61,11 @@ export default function RecordacaoForm({
         setPreviewUrl(url);
         return () => URL.revokeObjectURL(url);
     }, [file]);
+
+    const nascimento = person.data_nascimento ? formatBR(person.data_nascimento) : "";
+    const falecimento = person.falecido && person.data_falecimento ? formatBR(person.data_falecimento) : "";
+    const temNascimento = !!nascimento && nascimento !== "Data não informada";
+    const temFalecimento = !!falecimento && falecimento !== "Data não informada";
 
     const iniciais = useMemo(
         () => person.nome?.charAt(0)?.toUpperCase() || "?",
@@ -94,34 +107,91 @@ export default function RecordacaoForm({
 
     return (
         <form onSubmit={handleSubmit} className="w-full space-y-5">
-            <div className="flex flex-col items-center text-center gap-3 pb-2">
-                {person.imagem_url ? (
-                    <img
-                        src={person.imagem_url}
-                        alt={person.nome}
-                        className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-[#c2e1d4] shadow-lg"
-                    />
-                ) : (
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#e3f1eb] flex items-center justify-center border-4 border-white shadow-lg">
-                        <span className="text-3xl font-bold text-[#255f4f]">{iniciais}</span>
+            {memorial ? (
+                <div className="flex flex-col items-center text-center">
+                    <div className="relative" style={{ width: 184, height: 184 }}>
+                        <Coroa size={184} />
+                        <div
+                            className="absolute rounded-full overflow-hidden flex items-center justify-center"
+                            style={{ top: 32, left: 32, width: 120, height: 120, border: "4px solid #ffffff", boxShadow: "0 6px 18px rgba(47,107,92,0.18)", background: "#eef3f1" }}
+                        >
+                            {person.imagem_url ? (
+                                <img src={person.imagem_url} alt={person.nome} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="font-serif text-4xl font-bold" style={{ color: COR.titulo }}>{iniciais}</span>
+                            )}
+                        </div>
                     </div>
-                )}
-                <div>
-                    <p className="text-lg font-bold text-[#255f4f]">{person.nome}</p>
-                    {person.data_nascimento && (
-                        <p className="text-sm text-[#6b8c7d] mt-0.5">
-                            Nascimento: {formatBR(person.data_nascimento)}
+                    <p className="font-serif text-2xl sm:text-3xl font-bold leading-tight mt-1" style={{ color: COR.titulo }}>{person.nome}</p>
+                    {(temNascimento || temFalecimento) && (
+                        <p className="font-serif mt-1.5 flex flex-wrap justify-center gap-x-5 gap-y-1" style={{ color: COR.suave }}>
+                            {temNascimento && (
+                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                    <Star className="h-3.5 w-3.5 fill-current" aria-label="Nascimento" /> {nascimento}
+                                </span>
+                            )}
+                            {temFalecimento && (
+                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                    <Cross className="h-3.5 w-3.5" aria-label="Falecimento" /> {falecimento}
+                                </span>
+                            )}
                         </p>
                     )}
+                    <div className="mt-5">
+                        <Divisor />
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div className="flex flex-col items-center text-center gap-3 pb-2">
+                    {person.imagem_url ? (
+                        <img
+                            src={person.imagem_url}
+                            alt={person.nome}
+                            className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-[#c2e1d4] shadow-lg"
+                        />
+                    ) : (
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#e3f1eb] flex items-center justify-center border-4 border-white shadow-lg">
+                            <span className="text-3xl font-bold text-[#255f4f]">{iniciais}</span>
+                        </div>
+                    )}
+                    <div>
+                        <p className="text-lg font-bold text-[#255f4f]">{person.nome}</p>
+                        {(temNascimento || temFalecimento) && (
+                            <div className="flex items-center justify-center gap-4 text-sm text-[#6b8c7d] mt-1">
+                                {temNascimento && (
+                                    <span className="flex items-center gap-1" title="Nascimento">
+                                        <Star className="h-3.5 w-3.5 fill-current" aria-label="Nascimento" />
+                                        {nascimento}
+                                    </span>
+                                )}
+                                {temFalecimento && (
+                                    <span className="flex items-center gap-1" title="Falecimento">
+                                        <Cross className="h-3.5 w-3.5" aria-label="Falecimento" />
+                                        {falecimento}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {!embedded && (
                 <div className="text-center space-y-1">
-                    <h1 className="text-xl sm:text-2xl font-bold text-[#255f4f] flex items-center justify-center gap-2">
-                        {title} <Heart className="h-5 w-5 text-[#5ba58c] fill-[#5ba58c]/30" />
-                    </h1>
+                    {memorial ? (
+                        <h1 className="font-serif text-2xl font-bold" style={{ color: COR.titulo }}>{title} 💙</h1>
+                    ) : (
+                        <h1 className="text-xl sm:text-2xl font-bold text-[#255f4f] flex items-center justify-center gap-2">
+                            {title} <Heart className="h-5 w-5 text-[#5ba58c] fill-[#5ba58c]/30" />
+                        </h1>
+                    )}
                     <p className="text-sm text-[#6b8c7d]">{subtitle}</p>
+                    {person.falecido && (
+                        <p className="text-sm text-[#6b8c7d] italic pt-2">
+                            Sabemos como é difícil encontrar as palavras certas em momentos como este,
+                            mas sua mensagem de apoio será muito importante para os familiares.
+                        </p>
+                    )}
                 </div>
             )}
 
@@ -131,7 +201,7 @@ export default function RecordacaoForm({
                 </label>
                 <textarea
                     placeholder="Escreva sua mensagem com carinho..."
-                    className="w-full min-h-[130px] p-4 text-[#255f4f] border border-[#d1e5dc] rounded-2xl bg-white placeholder:text-[#9db4aa] focus:ring-2 focus:ring-[#5ba58c]/30 focus:border-[#5ba58c] focus:outline-none transition resize-y"
+                    className={clsx("w-full min-h-[130px] p-4 text-[#255f4f] border rounded-2xl bg-white placeholder:text-[#9db4aa] focus:ring-2 focus:outline-none transition resize-y", campoBorda)}
                     value={mensagem}
                     onChange={(e) => setMensagem(e.target.value)}
                     maxLength={MAX_RECORDACAO_MENSAGEM}
@@ -155,7 +225,10 @@ export default function RecordacaoForm({
                 {!previewUrl ? (
                     <label
                         htmlFor={inputId}
-                        className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-[#c2e1d4] rounded-2xl bg-[#f8fcfb] cursor-pointer hover:bg-[#f0f9f6] hover:border-[#5ba58c] transition"
+                        className={clsx(
+                            "flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-2xl cursor-pointer transition",
+                            memorial ? "border-[#e8dcc6] bg-white hover:border-[#c9a96e]" : "border-[#c2e1d4] bg-[#f8fcfb] hover:bg-[#f0f9f6] hover:border-[#5ba58c]"
+                        )}
                     >
                         <div className="flex gap-3 text-[#5ba58c]">
                             <ImageIcon className="h-6 w-6" />
@@ -192,8 +265,9 @@ export default function RecordacaoForm({
                     placeholder="Como você quer ser identificado?"
                     disabled={anonimo}
                     className={clsx(
-                        "w-full p-4 border border-[#d1e5dc] rounded-2xl text-[#255f4f] placeholder:text-[#9db4aa] transition",
-                        anonimo ? "bg-[#f4fbf8] text-[#9db4aa]" : "bg-white focus:ring-2 focus:ring-[#5ba58c]/30 focus:border-[#5ba58c] focus:outline-none"
+                        "w-full p-4 border rounded-2xl text-[#255f4f] placeholder:text-[#9db4aa] transition",
+                        campoBorda,
+                        anonimo ? "bg-[#f4fbf8] text-[#9db4aa]" : "bg-white focus:ring-2 focus:outline-none"
                     )}
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
@@ -201,7 +275,7 @@ export default function RecordacaoForm({
                 />
             </div>
 
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-[#f8fcfb] border border-[#e6efe9] cursor-pointer">
+            <label className={clsx("flex items-center gap-3 p-3 rounded-xl border cursor-pointer", memorial ? "bg-white border-[#e8dcc6]" : "bg-[#f8fcfb] border-[#e6efe9]")}>
                 <input
                     type="checkbox"
                     checked={anonimo}
@@ -220,7 +294,10 @@ export default function RecordacaoForm({
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#5ba58c] hover:bg-[#4a8a75] text-white py-4 rounded-2xl font-bold text-base shadow-lg flex items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-60"
+                className={clsx(
+                    "w-full text-white py-4 rounded-2xl font-bold text-base shadow-lg flex items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-60",
+                    memorial ? "bg-[#2f6b5c] hover:bg-[#275a4d]" : "bg-[#5ba58c] hover:bg-[#4a8a75]"
+                )}
             >
                 {loading ? (
                     <>

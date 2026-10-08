@@ -4,6 +4,11 @@
  * Ao salvar no banco, limpe com: valor.replace(/\D/g, "")
  */
 
+/** Nome sem espaços nas pontas ou duplicados ("Maria  Antonia " → "Maria Antonia"). Use ao salvar. */
+export function limparNome(value?: string | null): string {
+    return (value ?? "").replace(/\s+/g, " ").trim();
+}
+
 /** CPF: 000.000.000-00 */
 export function maskCPF(value: string): string {
     return value
@@ -27,7 +32,10 @@ export function maskCNPJ(value: string): string {
 
 /** Telefone: (00) 00000-0000 ou (00) 0000-0000 */
 export function maskTelefone(value: string): string {
-    const digits = value.replace(/\D/g, "").slice(0, 11);
+    let digits = value.replace(/\D/g, "");
+    // Número colado com código do país (+55 45 99999-9999): descarta o 55.
+    if (digits.length > 11 && digits.startsWith("55")) digits = digits.slice(2);
+    digits = digits.slice(0, 11);
     if (digits.length <= 10) {
         // Fixo: (00) 0000-0000
         return digits
@@ -38,6 +46,12 @@ export function maskTelefone(value: string): string {
     return digits
         .replace(/(\d{2})(\d)/, "($1) $2")
         .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+}
+
+/** Telefone completo: DDD + 8 (fixo) ou 9 (celular) dígitos. */
+export function isTelefoneValido(value: string): boolean {
+    const digits = value.replace(/\D/g, "");
+    return digits.length === 10 || digits.length === 11;
 }
 
 /** Data: DD/MM/AAAA */

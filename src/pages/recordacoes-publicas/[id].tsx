@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import logoVerde from '@/assets/Legado - Verde.png';
+import { COR } from '@/components/recordacoes/Ornamentos';
 import { supabase } from '@/lib/supabaseClient';
 import RecordacaoForm, { type HomenageadoInfo } from '@/components/recordacoes/RecordacaoForm';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ScrollText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 export default function RecordacaoPublica() {
@@ -125,10 +127,29 @@ export default function RecordacaoPublica() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#e3f1eb] to-[#f8fcfb] flex items-center justify-center px-4 py-8 sm:py-12">
-            <div className="bg-white w-full max-w-lg p-5 sm:p-8 rounded-3xl shadow-xl border border-[#d1e5dc]">
+        <div className="min-h-screen flex items-center justify-center px-3 py-6 sm:px-4 sm:py-10" style={{ background: "#f6f1e8" }}>
+            <div
+                className="relative w-full max-w-lg overflow-hidden rounded-[28px] px-5 pt-6 pb-8 sm:px-8 shadow-[0_10px_40px_rgba(140,110,60,0.12)]"
+                style={{ background: COR.fundo, border: `1.5px solid ${COR.moldura}` }}
+            >
+                <header className="flex items-start justify-between gap-4 mb-4">
+                    <img src={logoVerde} alt="Legado" className="h-9" />
+                    {dependente?.falecido && dependenteId ? (
+                        <Link
+                            to={`/nota/${dependenteId}`}
+                            className="flex items-center gap-1 text-xs sm:text-sm font-semibold pt-1"
+                            style={{ color: COR.titulo }}
+                        >
+                            <ScrollText className="h-4 w-4" /> Ver nota de falecimento
+                        </Link>
+                    ) : (
+                        <p className="font-serif italic text-xs text-right leading-snug max-w-[180px]" style={{ color: COR.suave }}>
+                            Porque toda vida merece ser lembrada com carinho!
+                        </p>
+                    )}
+                </header>
                 {carregandoDependente ? (
-                    <div className="flex flex-col items-center py-16 text-[#5ba58c] gap-3">
+                    <div className="flex flex-col items-center py-16 gap-3" style={{ color: COR.folhaEscura }}>
                         <Loader2 className="h-8 w-8 animate-spin" />
                         <span className="text-sm font-medium">Carregando...</span>
                     </div>
@@ -140,9 +161,13 @@ export default function RecordacaoPublica() {
                     <RecordacaoForm
                         person={dependente}
                         loading={enviando}
+                        tema="memorial"
                         onSubmit={handleSubmit}
                     />
                 ) : null}
+                <p className="font-serif mt-6 text-center text-xs tracking-wide" style={{ color: COR.suave }}>
+                    Instituto Legado e Conforto · legadoeconforto.com.br
+                </p>
             </div>
         </div>
     );

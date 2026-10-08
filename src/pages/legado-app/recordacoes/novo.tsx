@@ -4,6 +4,7 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import { supabase } from "../../../lib/supabaseClient";
 import "@/styles/legado-app.css";
 import LegadoLayout from "@/components/legado/LegadoLayout";
+import { temaMemorial } from "@/lib/legadoTema";
 import RecordacaoForm, { type HomenageadoInfo } from "@/components/recordacoes/RecordacaoForm";
 
 export default function NovaRecordacaoPage({ embedded = false }: { embedded?: boolean }) {
@@ -94,14 +95,14 @@ export default function NovaRecordacaoPage({ embedded = false }: { embedded?: bo
       subtitle={homenageado ? `Para ${homenageado.nome}` : "Compartilhe uma mensagem especial"}
     >
       {loadingPerson ? (
-        <div className="flex justify-center py-12 text-[#5ba58c]">
+        <div className="flex justify-center py-12 text-tema-primaria">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : erro && !homenageado ? (
         <p className="text-center text-red-600 py-8">{erro}</p>
       ) : homenageado ? (
         <>
-          <RecordacaoForm person={homenageado} loading={loading} onSubmit={handleSubmit} />
+          <RecordacaoForm person={homenageado} loading={loading} tema={temaMemorial ? "memorial" : "padrao"} onSubmit={handleSubmit} />
           {erro && (
             <p className="mt-4 text-sm text-red-600 text-center">{erro}</p>
           )}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { QRCodeCanvas } from 'qrcode.react';
 import { validarCPF } from '@/utils/validarCPF';
+import { maskCPF } from '@/lib/masks';
 
 export default function ConsultaRecordacao() {
     const [cpf, setCpf] = useState('');
@@ -46,7 +47,9 @@ export default function ConsultaRecordacao() {
                     type="text"
                     placeholder="Digite o CPF"
                     value={cpf}
-                    onChange={(e) => setCpf(e.target.value)}
+                    onChange={(e) => setCpf(maskCPF(e.target.value))}
+                    inputMode="numeric"
+                    maxLength={14}
                     className="w-full mb-4 px-4 py-3 rounded-lg border border-[#B2D8D8] text-[#2D2D2D] focus:ring-2 focus:ring-[#5BA58C] outline-none"
                 />
 
@@ -71,9 +74,15 @@ export default function ConsultaRecordacao() {
                         <h2 className="text-lg font-bold text-[#007080] mb-2">{data.nome}</h2>
                         <p className="text-sm text-gray-700 mb-6">
                             É com pesar que comunicamos o falecimento de <span className="font-semibold">{data.nome}</span>.
-                            As informações sobre o velório serão divulgadas em breve.
                             Caso você deseje, já pode deixar aqui carinho e conforto para a família.
                         </p>
+
+                        <a
+                            href={`/nota/${data.id}`}
+                            className="block w-full mb-6 border-2 border-[#007080] text-[#007080] font-bold py-2 rounded-lg hover:bg-[#f1fdf9] transition"
+                        >
+                            Ver informações do velório
+                        </a>
 
                         <QRCodeCanvas value={qrLink} size={180} className="mx-auto mb-4" />
 

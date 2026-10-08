@@ -1,6 +1,16 @@
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Heart, NotebookPen, Sparkles } from "lucide-react";
+import { ChevronLeft, Heart } from "lucide-react";
+import LegadoNav, { LEGADO_NAV_ESPACO } from "@/components/legado/LegadoNav";
+import { Divisor } from "@/components/recordacoes/Ornamentos";
+import { temaMemorial } from "@/lib/legadoTema";
+
+// Larguras do conteúdo: coluna no celular, mais largo em telas maiores.
+const LARGURAS = {
+    estreita: "max-w-md",
+    media: "max-w-md md:max-w-2xl",
+    larga: "max-w-md md:max-w-3xl lg:max-w-5xl",
+} as const;
 
 type Props = {
     title?: string;
@@ -10,9 +20,10 @@ type Props = {
     className?: string;
     backPath?: string;
     embedded?: boolean;
+    largura?: keyof typeof LARGURAS;
 };
 
-export default function LegadoLayout({ title, subtitle, children, showBack = true, className = "", backPath, embedded = false }: Props) {
+export default function LegadoLayout({ title, subtitle, children, showBack = true, className = "", backPath, embedded = false, largura = "media" }: Props) {
     const navigate = useNavigate();
 
     if (embedded) {
@@ -20,8 +31,8 @@ export default function LegadoLayout({ title, subtitle, children, showBack = tru
             <div className={`w-full space-y-4 ${className}`}>
                 {title && (
                     <div className="space-y-1">
-                        <h2 className="text-xl sm:text-2xl font-bold text-[#255f4f] tracking-tight">{title}</h2>
-                        {subtitle && <p className="text-sm text-[#6b8c7d]">{subtitle}</p>}
+                        <h2 className="text-xl sm:text-2xl font-bold text-tema-titulo tracking-tight">{title}</h2>
+                        {subtitle && <p className="text-sm text-tema-suave">{subtitle}</p>}
                     </div>
                 )}
                 {children}
@@ -30,66 +41,45 @@ export default function LegadoLayout({ title, subtitle, children, showBack = tru
     }
 
     return (
-        <div className={`legado-app-wrapper min-h-screen flex flex-col pb-24 px-4 bg-gradient-to-b from-[#e6f4f1] to-white ${className}`}>
-            {/* Top Bar */}
-            <div className="pt-6 sm:pt-4 md:pt-3">
-                <div className="w-full max-w-md mx-auto mb-2 flex items-center justify-between animate-in fade-in slide-in-from-top duration-500">
+        <div className={`legado-app-wrapper min-h-screen flex flex-col px-4 pt-4 bg-gradient-to-b from-tema-fundo-topo to-tema-fundo-base ${LEGADO_NAV_ESPACO} ${className}`}>
+            <div className={`w-full ${LARGURAS[largura]} mx-auto flex-1 flex flex-col`}>
+                {/* Top bar */}
+                <div className="flex items-center justify-between mb-4 animate-in fade-in slide-in-from-top duration-500">
                     {showBack ? (
                         <button
                             onClick={() => backPath ? navigate(backPath) : navigate(-1)}
-                            className="flex items-center gap-1.5 text-[#255f4f] font-bold text-sm bg-white/50 backdrop-blur-sm px-3 py-2 rounded-xl hover:bg-white transition-all active:scale-95 shadow-sm"
+                            className="flex items-center gap-1.5 text-tema-titulo font-bold text-sm bg-white/60 backdrop-blur-sm px-3 py-2 rounded-xl hover:bg-white transition-all active:scale-95 shadow-sm"
                             aria-label="Voltar"
                         >
                             <ChevronLeft size={18} />
                             Voltar
                         </button>
                     ) : (
-                        <div style={{ width: 96 }} />
+                        <span />
                     )}
-
-                    <div className="opacity-20">
-                        <Heart size={20} className="text-[#255f4f]" />
-                    </div>
+                    <Heart size={20} className="text-tema-titulo opacity-20" aria-hidden />
                 </div>
-            </div>
 
-            <div className="w-full max-w-md mx-auto flex-1 flex flex-col items-center justify-center py-6 space-y-6 overflow-hidden">
-                {/* Title area */}
+                {/* Título */}
                 {title && (
-                    <div className="text-center space-y-1 animate-in fade-in duration-700">
-                        <div className="flex items-center justify-center gap-2 text-[#255f4f]">
-                            <Heart size={22} fill="#255f4f" className="opacity-20" />
-                            <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+                    <div className="text-center space-y-1 mb-6 animate-in fade-in duration-700">
+                        <div className="flex items-center justify-center gap-2 text-tema-titulo">
+                            <Heart size={22} fill="currentColor" className="opacity-20 shrink-0" />
+                            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{title}</h2>
                         </div>
-                        {subtitle && <p className="text-base text-[#4f665a] opacity-80">{subtitle}</p>}
+                        {subtitle && <p className="text-base text-tema-texto opacity-80">{subtitle}</p>}
+                        {temaMemorial && (
+                            <div className="pt-3">
+                                <Divisor />
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {/* Centered card area */}
-                <div className="w-full ">
-                    {children}
-                </div>
-
-                {/* Spacer to keep center when content small */}
+                <div className="w-full">{children}</div>
             </div>
 
-            {/* Bottom navbar (altura reduzida) */}
-            <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-md bg-white/95 backdrop-blur-md border border-[#d8e8e0] rounded-xl shadow-lg px-4 py-2 flex items-center justify-between z-50 animate-in slide-in-from-bottom duration-500">
-                <button onClick={() => navigate("/legado-app/menu")} className="flex flex-col items-center gap-0.5 text-[#255f4f] group">
-                    <Heart size={18} className="group-active:scale-125 transition-transform" />
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">Menu</span>
-                </button>
-
-                <button onClick={() => navigate("/legado-app/diario")} className="flex flex-col items-center gap-0.5 text-[#6c63ff] group">
-                    <NotebookPen size={18} className="group-active:scale-125 transition-transform" />
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">Diário</span>
-                </button>
-
-                <button onClick={() => navigate("/legado-app/exercicios")} className="flex flex-col items-center gap-0.5 text-[#ff9a56] group">
-                    <Sparkles size={18} className="group-active:scale-125 transition-transform" />
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">Exercícios</span>
-                </button>
-            </nav>
+            <LegadoNav />
         </div>
     );
 }

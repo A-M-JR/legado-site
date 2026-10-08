@@ -14,6 +14,8 @@ const PageLoader = () => (
 const Home = lazy(() => import('./pages/recordacoes-publicas/Home'))
 const RecordacaoPublica = lazy(() => import('./pages/recordacoes-publicas/[id]'))
 const Sucesso = lazy(() => import('./pages/recordacoes-publicas/sucesso'))
+const NotaFalecimentoPage = lazy(() => import('./pages/nota/[id]'))
+const EditarNotaFalecimentoPage = lazy(() => import('./pages/legado-app/nota/editar'))
 const ConsultaRecordacao = lazy(() => import('./pages/consulta-recordacao'))
 const Privacidade = lazy(() => import('./pages/privacidade'))
 const Login = lazy(() => import('./pages/legado-app/login'))
@@ -78,6 +80,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/recordacoes-publicas/:id" element={<RecordacaoPublica />} />
           <Route path="/recordacoes-publicas/sucesso/:id" element={<Sucesso />} />
+          <Route path="/nota/:id" element={<NotaFalecimentoPage />} />
           <Route path="/melhor-idade/memoria/:titularId/:pessoaId" element={<MiRecordacaoPublicaPage />} />
           <Route path="/medicina-preventiva/mensagem/:titularId/:pessoaId" element={<MpMensagemPublicaPage />} />
           <Route path="/consulta-recordacao" element={<ConsultaRecordacao />} />
@@ -130,6 +133,7 @@ export default function App() {
             <Route path="/legado-app/dependentes/novo" element={<NovoDependentePage />} />
             <Route path="/legado-app/recordacoes/list/:id" element={<RecordacoesListPage />} />
             <Route path="/legado-app/recordacoes/nova/:id" element={<NovaRecordacaoPage />} />
+            <Route path="/legado-app/nota/editar/:id" element={<EditarNotaFalecimentoPage />} />
             <Route path="/legado-app/parcerias/acalme-coracao" element={<AcolhimentoPage />} />
             <Route path="/legado-app/diario" element={<DiarioListPage />} />
             <Route path="/legado-app/diario/novo" element={<DiarioFormPage />} />

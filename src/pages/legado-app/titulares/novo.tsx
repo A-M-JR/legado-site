@@ -1,7 +1,8 @@
 // src/pages/legado-app/titulares/CadastroTitular.tsx
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import InputMask from "react-input-mask";
+import { isTelefoneValido, limparNome, maskCPF, maskDataBR, maskTelefone } from "@/lib/masks";
+import { isValidDateBR } from "@/utils/formatDateToBR";
 import { supabase } from "../../../lib/supabaseClient";
 import {
     CheckCircle,
@@ -88,11 +89,31 @@ export default function CadastroTitular() {
         e.preventDefault();
         setLoading(true);
 
-        if (!nome || !telefone || !dataNascimento || !email || !senha) {
+        if (!limparNome(nome) || !telefone || !dataNascimento || !email || !senha) {
             toast({
                 variant: "destructive",
                 title: "Campos obrigatórios",
                 description: "Preencha todos os campos para continuar.",
+            });
+            setLoading(false);
+            return;
+        }
+
+        if (!isTelefoneValido(telefone)) {
+            toast({
+                variant: "destructive",
+                title: "Telefone inválido",
+                description: "Informe DDD + número.",
+            });
+            setLoading(false);
+            return;
+        }
+
+        if (!isValidDateBR(dataNascimento)) {
+            toast({
+                variant: "destructive",
+                title: "Data inválida",
+                description: "Informe uma data válida no formato DD/MM/AAAA.",
             });
             setLoading(false);
             return;
@@ -144,7 +165,7 @@ export default function CadastroTitular() {
         }
 
         const { error: insertError } = await supabase.from("titulares").insert({
-            nome,
+            nome: limparNome(nome),
             telefone,
             cpf,
             data_nascimento: dataNascISO,
@@ -268,9 +289,9 @@ export default function CadastroTitular() {
                     {/* Campos de Input */}
                     {[
                         { label: "Nome completo", icon: User, value: nome, setter: setNome, placeholder: "Seu nome completo", type: "text" },
-                        { label: "Telefone", icon: Phone, value: telefone, setter: setTelefone, placeholder: "(99) 99999-9999", mask: "(99) 99999-9999" },
-                        { label: "CPF", icon: CreditCard, value: cpf, setter: setCpf, placeholder: "000.000.000-00", mask: "999.999.999-99" },
-                        { label: "Data de nascimento", icon: Calendar, value: dataNascimento, setter: setDataNascimento, placeholder: "DD/MM/AAAA", mask: "99/99/9999" },
+                        { label: "Telefone", icon: Phone, value: telefone, setter: setTelefone, placeholder: "(99) 99999-9999", format: maskTelefone, type: "tel", inputMode: "tel" as const, maxLength: 15 },
+                        { label: "CPF", icon: CreditCard, value: cpf, setter: setCpf, placeholder: "000.000.000-00", format: maskCPF, type: "text", inputMode: "numeric" as const, maxLength: 14 },
+                        { label: "Data de nascimento", icon: Calendar, value: dataNascimento, setter: setDataNascimento, placeholder: "DD/MM/AAAA", format: maskDataBR, type: "text", inputMode: "numeric" as const, maxLength: 10 },
                         { label: "E-mail", icon: Mail, value: email, setter: setEmail, placeholder: "seu@email.com", type: "email", onBlur: sugerirNomeSeVazio }
                     ].map((field, idx) => (
                         <div key={idx} className="space-y-1.5">
@@ -278,22 +299,16 @@ export default function CadastroTitular() {
                                 <field.icon size={14} className="text-legado-primary sm:w-4 sm:h-4" />
                                 {field.label} *
                             </label>
-                            {field.mask ? (
-                                <InputMask mask={field.mask} value={field.value} onChange={(e) => field.setter(e.target.value)}>
-                                    {(inputProps: any) => (
-                                        <input {...inputProps} className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-gray-200 focus:border-legado-primary focus:ring-2 focus:ring-legado-primary/20 outline-none transition-all text-base" placeholder={field.placeholder} />
-                                    )}
-                                </InputMask>
-                            ) : (
-                                <input
-                                    type={field.type}
-                                    className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-gray-200 focus:border-legado-primary focus:ring-2 focus:ring-legado-primary/20 outline-none transition-all text-base"
-                                    value={field.value}
-                                    onChange={(e) => field.setter(e.target.value)}
-                                    onBlur={field.onBlur}
-                                    placeholder={field.placeholder}
-                                />
-                            )}
+                            <input
+                                type={field.type}
+                                inputMode={"inputMode" in field ? field.inputMode : undefined}
+                                maxLength={"maxLength" in field ? field.maxLength : undefined}
+                                className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-gray-200 focus:border-legado-primary focus:ring-2 focus:ring-legado-primary/20 outline-none transition-all text-base"
+                                value={field.value}
+                                onChange={(e) => field.setter("format" in field && field.format ? field.format(e.target.value) : e.target.value)}
+                                onBlur={"onBlur" in field ? field.onBlur : undefined}
+                                placeholder={field.placeholder}
+                            />
                         </div>
                     ))}
 

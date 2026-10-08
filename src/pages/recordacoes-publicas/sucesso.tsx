@@ -1,81 +1,93 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CheckCircle2, Heart, Home, PlusCircle } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { Home, PlusCircle, ScrollText } from "lucide-react";
+import logoVerde from "@/assets/Legado - Verde.png";
+import { COR, Coroa, Divisor } from "@/components/recordacoes/Ornamentos";
+import { buscarHomenageado, type Homenageado } from "@/lib/notaFalecimento";
 
 export default function Sucesso() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const [nome, setNome] = useState<string | null>(null);
+    const [pessoa, setPessoa] = useState<Homenageado | null>(null);
 
     useEffect(() => {
         if (!id) return;
-        (async () => {
-            const { data: dep } = await supabase
-                .from("dependentes")
-                .select("nome")
-                .eq("id", id)
-                .maybeSingle();
-            if (dep?.nome) {
-                setNome(dep.nome);
-                return;
-            }
-            const { data: tit } = await supabase
-                .from("titulares")
-                .select("nome")
-                .eq("id", id)
-                .maybeSingle();
-            if (tit?.nome) setNome(tit.nome);
-        })();
+        buscarHomenageado(id).then(setPessoa);
     }, [id]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#e3f1eb] to-[#f8fcfb] flex items-center justify-center px-4 py-10">
-            <div className="bg-white w-full max-w-md p-8 sm:p-10 rounded-3xl shadow-xl border border-[#d1e5dc] text-center animate-in fade-in zoom-in-95 duration-500">
-                <div className="mx-auto w-16 h-16 rounded-full bg-[#e3f1eb] flex items-center justify-center mb-5">
-                    <CheckCircle2 className="h-9 w-9 text-[#5ba58c]" strokeWidth={2.5} />
+        <div className="min-h-screen flex items-center justify-center px-3 py-8 sm:px-4" style={{ background: "#f6f1e8" }}>
+            <div
+                className="w-full max-w-md rounded-[28px] px-6 pt-6 pb-8 sm:px-10 text-center shadow-[0_10px_40px_rgba(140,110,60,0.12)] animate-in fade-in zoom-in-95 duration-500"
+                style={{ background: COR.fundo, border: `1.5px solid ${COR.moldura}`, color: COR.texto }}
+            >
+                <img src={logoVerde} alt="Legado" className="h-9 mx-auto" />
+
+                <div className="relative mx-auto mt-4" style={{ width: 150, height: 150 }}>
+                    <Coroa size={150} />
+                    <div
+                        className="absolute rounded-full overflow-hidden flex items-center justify-center"
+                        style={{ top: 30, left: 30, width: 90, height: 90, border: "4px solid #ffffff", boxShadow: "0 6px 18px rgba(47,107,92,0.18)", background: "#eef3f1" }}
+                    >
+                        {pessoa?.imagem_url ? (
+                            <img src={pessoa.imagem_url} alt={pessoa.nome} className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-3xl" aria-hidden>💙</span>
+                        )}
+                    </div>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 mb-3">
-                    <Heart className="h-5 w-5 text-[#5ba58c] fill-[#5ba58c]/25" />
-                    <h1 className="text-xl sm:text-2xl font-bold text-[#255f4f]">
-                        Obrigado por sua homenagem
-                    </h1>
-                    <span aria-hidden>💙</span>
-                </div>
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold mt-2" style={{ color: COR.titulo }}>
+                    Obrigado por sua homenagem 💙
+                </h1>
 
-                <p className="text-[#6b8c7d] text-sm sm:text-base leading-relaxed mb-2">
+                <p className="font-serif mt-3 leading-relaxed">
                     Sua recordação foi enviada com sucesso
-                    {nome ? (
-                        <> e fará parte da memória de <strong className="text-[#255f4f]">{nome}</strong>.</>
+                    {pessoa?.nome ? (
+                        <> e fará parte da memória de <strong style={{ color: COR.titulo }}>{pessoa.nome}</strong>.</>
                     ) : (
                         <> e fará parte da memória daqueles que já se foram.</>
                     )}
                 </p>
-
-                <p className="text-xs text-[#9db4aa] mb-8">
+                <p className="font-serif italic text-sm mt-2" style={{ color: COR.suave }}>
                     Seu carinho chegou com segurança e será guardado com respeito.
                 </p>
 
+                <div className="my-6">
+                    <Divisor />
+                </div>
+
                 <div className="flex flex-col gap-3">
+                    {pessoa?.falecido && id && (
+                        <button
+                            type="button"
+                            onClick={() => navigate(`/nota/${id}`)}
+                            className="w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 px-6 rounded-2xl shadow-md transition hover:brightness-110 active:scale-[0.99]"
+                            style={{ background: COR.titulo }}
+                        >
+                            <ScrollText className="h-5 w-5" />
+                            Ver nota de falecimento
+                        </button>
+                    )}
                     {id && (
                         <button
                             type="button"
                             onClick={() => navigate(`/recordacoes-publicas/${id}`)}
-                            className="w-full flex items-center justify-center gap-2 bg-[#5ba58c] hover:bg-[#4a8a75] text-white font-bold py-3.5 px-6 rounded-2xl shadow-md transition active:scale-[0.99]"
+                            className="w-full flex items-center justify-center gap-2 bg-white font-bold py-3.5 px-6 rounded-2xl border-2 transition hover:brightness-95 active:scale-[0.99]"
+                            style={{ borderColor: COR.titulo, color: COR.titulo }}
                         >
                             <PlusCircle className="h-5 w-5" />
                             Deixar outra recordação
                         </button>
                     )}
-
                     <button
                         type="button"
                         onClick={() => navigate("/")}
-                        className="w-full flex items-center justify-center gap-2 bg-white border-2 border-[#c2e1d4] text-[#255f4f] hover:bg-[#f8fcfb] font-semibold py-3.5 px-6 rounded-2xl transition"
+                        className="w-full flex items-center justify-center gap-2 font-semibold py-3 px-6 rounded-2xl transition hover:bg-white/60"
+                        style={{ color: COR.suave }}
                     >
-                        <Home className="h-5 w-5" />
-                        Conheça nossa página
+                        <Home className="h-4 w-4" />
+                        Conheça o Instituto Legado
                     </button>
                 </div>
             </div>

@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import InputMask from "react-input-mask";
 import { supabase } from "../../../lib/supabaseClient";
 import { validarCPF } from "../../../utils/validarCPF";
+import { dataISOParaBR, isTelefoneValido, limparNome, maskCPF, maskDataBR, maskTelefone } from "@/lib/masks";
 import { isValidDateBR } from '../../../utils/formatDateToBR';
 import { ArrowLeft, CheckCircle, Camera, Image as ImageIcon, Plus } from "lucide-react";
+import LegadoNav, { LEGADO_NAV_ESPACO } from "@/components/legado/LegadoNav";
 import "@/styles/legado-app.css";
 
 export default function EditarDependentePage() {
@@ -46,16 +47,14 @@ export default function EditarDependentePage() {
                 return;
             }
             setNome(data.nome);
-            setTelefone(data.telefone ?? "");
+            setTelefone(maskTelefone(data.telefone ?? ""));
             
             // Formatar data de nascimento para DD/MM/AAAA
-            if (data.data_nascimento) {
-                const [y, m, d] = data.data_nascimento.split("-");
-                setDataNascimento(`${d}/${m}/${y}`);
-            }
+            // Cadastros antigos guardam dd/MM/aaaa; os novos, ISO.
+            if (data.data_nascimento) setDataNascimento(dataISOParaBR(data.data_nascimento));
             
             setImagemAtual(data.imagem_url || null);
-            setCpf(data.cpf || "");
+            setCpf(maskCPF(data.cpf || ""));
             setIsMaster(data.usuario_mestre || false);
             setEmail(data.email || "");
         })();
@@ -78,8 +77,13 @@ export default function EditarDependentePage() {
     async function handleSalvar(e: React.FormEvent) {
         e.preventDefault();
 
-        if (!nome || !telefone || !dataNascimento) {
+        if (!limparNome(nome) || !telefone || !dataNascimento) {
             setAlerta("Preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        if (!isTelefoneValido(telefone)) {
+            setAlerta("Telefone inválido. Informe DDD + número.");
             return;
         }
 
@@ -123,7 +127,7 @@ export default function EditarDependentePage() {
             const { error: updateError } = await supabase
                 .from("dependentes")
                 .update({
-                    nome,
+                    nome: limparNome(nome),
                     telefone,
                     cpf: cpf || null,
                     data_nascimento: dataISO,
@@ -146,54 +150,54 @@ export default function EditarDependentePage() {
     }
 
     return (
-        <div className="legado-app-wrapper min-h-screen flex items-center justify-center px-4 py-8">
-            <div className="w-full max-w-md space-y-6">
+        <div className={`legado-app-wrapper min-h-screen flex flex-col items-center px-4 pt-6 bg-gradient-to-b from-tema-fundo-topo to-tema-fundo-base ${LEGADO_NAV_ESPACO}`}>
+            <div className="w-full max-w-md md:max-w-xl space-y-6">
                 
                 {/* Top Bar - Botão Voltar */}
                 <div className="flex items-center justify-between animate-in fade-in slide-in-from-top duration-500">
                     <button 
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-1.5 text-[#255f4f] font-bold text-sm bg-white/50 backdrop-blur-sm px-3 py-2 rounded-xl hover:bg-white transition-all active:scale-95 shadow-sm"
+                        className="flex items-center gap-1.5 text-tema-titulo font-bold text-sm bg-white/50 backdrop-blur-sm px-3 py-2 rounded-xl hover:bg-white transition-all active:scale-95 shadow-sm"
                     >
                         <ArrowLeft size={18} />
                         Voltar
                     </button>
                     <div className="opacity-20">
-                        <CheckCircle size={20} className="text-[#255f4f]" />
+                        <CheckCircle size={20} className="text-tema-titulo" />
                     </div>
                 </div>
                 
                 {/* Título */}
                 <div className="text-center space-y-1 animate-in fade-in duration-700">
-                    <h2 className="text-2xl font-bold tracking-tight text-[#255f4f]">Editar Dependente</h2>
-                    <p className="text-base text-[#4f665a] opacity-80">Atualize as informações da pessoa</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-tema-titulo">Editar Dependente</h2>
+                    <p className="text-base text-tema-texto opacity-80">Atualize as informações da pessoa</p>
                 </div>
 
                 {/* Form Card */}
                 <form
-                    className="bg-white rounded-2xl p-6 shadow-lg border border-[#def0e8] animate-in zoom-in-95 duration-300 space-y-5"
+                    className="bg-white rounded-2xl p-6 shadow-lg border border-tema-borda animate-in zoom-in-95 duration-300 space-y-5"
                     onSubmit={handleSalvar}
                     autoComplete="off"
                 >
                     {/* Imagem de perfil */}
-                    <div className="flex flex-col items-center pb-4 border-b border-[#def0e8]">
+                    <div className="flex flex-col items-center pb-4 border-b border-tema-borda">
                         <div className="relative group mb-4">
                             <label htmlFor="fileInput" className="cursor-pointer">
                                 {imagemPreview ? (
                                     <img
                                         src={imagemPreview}
                                         alt="Preview"
-                                        className="rounded-full w-28 h-28 object-cover border-4 border-[#5BA58C] shadow-lg group-hover:opacity-90 transition-all"
+                                        className="rounded-full w-28 h-28 object-cover border-4 border-tema-primaria shadow-lg group-hover:opacity-90 transition-all"
                                     />
                                 ) : imagemAtual ? (
                                     <img
                                         src={imagemAtual}
                                         alt="Dependente"
-                                        className="rounded-full w-28 h-28 object-cover border-4 border-[#5BA58C] shadow-lg group-hover:opacity-90 transition-all"
+                                        className="rounded-full w-28 h-28 object-cover border-4 border-tema-primaria shadow-lg group-hover:opacity-90 transition-all"
                                     />
                                 ) : (
-                                    <div className="bg-gradient-to-br from-[#f5fbf9] to-[#e0f0ec] rounded-full w-28 h-28 flex items-center justify-center border-4 border-[#5BA58C] shadow-lg group-hover:scale-105 transition-all">
-                                        <Camera size={40} className="text-[#5BA58C]" />
+                                    <div className="bg-gradient-to-br from-tema-claro-2 to-tema-borda rounded-full w-28 h-28 flex items-center justify-center border-4 border-tema-primaria shadow-lg group-hover:scale-105 transition-all">
+                                        <Camera size={40} className="text-tema-primaria" />
                                     </div>
                                 )}
                                 <input
@@ -205,13 +209,13 @@ export default function EditarDependentePage() {
                                 />
                             </label>
                             {/* Badge de edição */}
-                            <div className="absolute bottom-1 right-1 bg-[#5BA58C] p-2 rounded-full border-3 border-white shadow-md group-hover:scale-110 transition-transform">
+                            <div className="absolute bottom-1 right-1 bg-tema-primaria p-2 rounded-full border-3 border-white shadow-md group-hover:scale-110 transition-transform">
                                 <Camera size={16} className="text-white" />
                             </div>
                         </div>
                         <button
                             type="button"
-                            className="flex items-center gap-2 px-5 py-2 rounded-xl text-[#007080] bg-[#d1f2eb] font-bold text-sm hover:bg-[#b8ebe0] transition-all active:scale-95 shadow-sm"
+                            className="flex items-center gap-2 px-5 py-2 rounded-xl text-tema-destaque bg-tema-destaque-claro font-bold text-sm hover:bg-tema-borda-forte transition-all active:scale-95 shadow-sm"
                             onClick={() => document.getElementById("fileInput")?.click()}
                         >
                             <ImageIcon size={18} />
@@ -233,34 +237,39 @@ export default function EditarDependentePage() {
 
                         <div>
                             <label className="legado-form-label text-base">Telefone *</label>
-                            <InputMask
+                            <input
                                 className="legado-input text-base"
+                                type="tel"
+                                inputMode="tel"
+                                autoComplete="tel-national"
                                 value={telefone}
-                                onChange={(e) => setTelefone(e.target.value)}
-                                mask="(99) 99999-9999"
+                                onChange={(e) => setTelefone(maskTelefone(e.target.value))}
                                 placeholder="(99) 99999-9999"
+                                maxLength={15}
                             />
                         </div>
 
                         <div>
                             <label className="legado-form-label text-base">CPF (opcional)</label>
-                            <InputMask
+                            <input
                                 className="legado-input text-base"
+                                inputMode="numeric"
                                 value={cpf}
-                                onChange={(e) => setCpf(e.target.value)}
-                                mask="999.999.999-99"
+                                onChange={(e) => setCpf(maskCPF(e.target.value))}
                                 placeholder="999.999.999-99"
+                                maxLength={14}
                             />
                         </div>
 
                         <div>
                             <label className="legado-form-label text-base">Data de nascimento *</label>
-                            <InputMask
+                            <input
                                 className="legado-input text-base"
+                                inputMode="numeric"
                                 value={dataNascimento}
-                                onChange={(e) => setDataNascimento(e.target.value)}
-                                mask="99/99/9999"
+                                onChange={(e) => setDataNascimento(maskDataBR(e.target.value))}
                                 placeholder="DD/MM/AAAA"
+                                maxLength={10}
                             />
                         </div>
                     </div>
@@ -297,6 +306,7 @@ export default function EditarDependentePage() {
                     )}
                 </form>
             </div>
+            <LegadoNav />
         </div>
     );
 }

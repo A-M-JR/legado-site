@@ -1,0 +1,66 @@
+/*
+ * Temas do app Legado (/legado-app).
+ *
+ * As cores são canais RGB ("R G B") para o Tailwind aceitar opacidade (ex.: bg-tema-primaria/30).
+ * Uso nas telas: classes tema-* (ver tailwind.config.js) ou rgb(var(--tema-*)) no CSS.
+ *
+ * - "classico": visual original do Legado (verde-água). Valores idênticos às cores antigas.
+ * - "memorial": visual da nota de falecimento/PDF (creme, dourado, verde escuro, títulos em serifa).
+ *
+ * O tema ativo vem de VITE_LEGADO_TEMA (src/lib/legadoTema.ts) e é aplicado em <html data-legado-tema>.
+ * O escopo é .legado-app-wrapper, então nenhum outro módulo é afetado.
+ */
+
+.legado-app-wrapper {
+  --tema-titulo: 37 95 79;          /* #255f4f */
+  --tema-primaria: 91 165 140;      /* #5ba58c */
+  --tema-primaria-escura: 74 138 117; /* #4a8a75 */
+  --tema-medio: 51 123 104;         /* #337b68 */
+  --tema-texto: 79 102 90;          /* #4f665a */
+  --tema-suave: 107 140 125;        /* #6b8c7d */
+  --tema-apagado: 157 180 170;      /* #9db4aa */
+  --tema-destaque: 0 112 128;       /* #007080 */
+  --tema-destaque-claro: 209 242 235; /* #d1f2eb */
+  --tema-dourado: 91 165 140;       /* sem dourado no clássico: usa a primária */
+  --tema-borda: 222 240 232;        /* #def0e8 */
+  --tema-borda-forte: 194 225 212;  /* #c2e1d4 */
+  --tema-claro: 227 241 235;        /* #e3f1eb */
+  --tema-claro-2: 240 249 246;      /* #f0f9f6 */
+  --tema-fundo-topo: 230 244 241;   /* #e6f4f1 */
+  --tema-fundo-base: 255 255 255;   /* #ffffff */
+  --tema-input-borda: 236 235 156;  /* #eceb9c */
+  --tema-input-fundo: 249 249 249;  /* #f9f9f9 */
+}
+
+:root[data-legado-tema="memorial"] .legado-app-wrapper {
+  --tema-titulo: 47 107 92;         /* #2f6b5c */
+  --tema-primaria: 47 107 92;       /* #2f6b5c */
+  --tema-primaria-escura: 39 90 77; /* #275a4d */
+  --tema-medio: 94 143 121;         /* #5e8f79 */
+  --tema-texto: 74 93 84;           /* #4a5d54 */
+  --tema-suave: 138 155 147;        /* #8a9b93 */
+  --tema-apagado: 169 181 174;      /* #a9b5ae */
+  --tema-destaque: 47 107 92;       /* #2f6b5c */
+  --tema-destaque-claro: 241 233 218; /* #f1e9da */
+  --tema-dourado: 201 169 110;      /* #c9a96e */
+  --tema-borda: 232 220 198;        /* #e8dcc6 */
+  --tema-borda-forte: 220 205 176;  /* #dccdb0 */
+  --tema-claro: 246 241 232;        /* #f6f1e8 */
+  --tema-claro-2: 251 247 240;      /* #fbf7f0 */
+  --tema-fundo-topo: 246 241 232;   /* #f6f1e8 */
+  --tema-fundo-base: 253 250 245;   /* #fdfaf5 */
+  --tema-input-borda: 232 220 198;  /* #e8dcc6 */
+  --tema-input-fundo: 255 255 255;  /* #ffffff */
+}
+
+/* Memorial: títulos em serifa, como na nota e no PDF. */
+:root[data-legado-tema="memorial"] .legado-app-wrapper :is(h1, h2, h3) {
+  font-family: "Lora", Georgia, "Noto Color Emoji", serif;
+}
+
+/* Memorial: cartões de perfil brancos com moldura creme (no clássico são verde-água). */
+:root[data-legado-tema="memorial"] .legado-app-wrapper :is(.legado-titular-container, .legado-perfil-header) {
+  background-color: #fffdf9;
+  border: 1.5px solid rgb(var(--tema-borda));
+  box-shadow: 0 10px 30px rgba(140, 110, 60, 0.1);
+}

@@ -79,8 +79,8 @@ export default function AcolhimentoPage({
     pageTitle = "Acolhimento",
     pageSubtitle = (
         <>
-            <strong className="text-[#007080]">Você não está sozinho</strong>
-            <span className="block text-sm text-[#4f665a]">A saudade é a prova do amor que permanece. Sinta, honre e cuide do seu coração no seu tempo.</span>
+            <strong className="text-tema-destaque">Você não está sozinho</strong>
+            <span className="block text-sm text-tema-texto">A saudade é a prova do amor que permanece. Sinta, honre e cuide do seu coração no seu tempo.</span>
         </>
     ),
 }: AcolhimentoPageProps) {
@@ -111,7 +111,7 @@ export default function AcolhimentoPage({
                         return (
                             <article
                                 key={psic.nome}
-                                className={`rounded-2xl border p-5 transition-all bg-white ${isOpen ? "ring-4 ring-[#5ba58c] shadow-lg" : "border-[#e6f2ee] shadow-sm"
+                                className={`rounded-2xl border p-5 transition-all bg-white ${isOpen ? "ring-4 ring-tema-primaria shadow-lg" : "border-tema-borda shadow-sm"
                                     }`}
                             >
                                 <header>
@@ -122,13 +122,13 @@ export default function AcolhimentoPage({
                                         aria-controls={`section-${idx}`}
                                     >
                                         <div className="flex items-center gap-4 text-left">
-                                            <div className="w-10 h-10 rounded-full bg-[#e9f8f4] flex items-center justify-center flex-shrink-0">
-                                                <HeartHandshake className="text-[#5ba58c]" size={20} />
+                                            <div className="w-10 h-10 rounded-full bg-tema-claro-2 flex items-center justify-center flex-shrink-0">
+                                                <HeartHandshake className="text-tema-primaria" size={20} />
                                             </div>
                                             <div>
-                                                <div className="font-extrabold text-lg text-[#255f4f]">{psic.nome}</div>
+                                                <div className="font-extrabold text-lg text-tema-titulo">{psic.nome}</div>
                                                 {psic.especialidade && (
-                                                    <div className="text-sm text-[#337b68] mt-0.5">{psic.especialidade}</div>
+                                                    <div className="text-sm text-tema-medio mt-0.5">{psic.especialidade}</div>
                                                 )}
                                             </div>
                                         </div>
@@ -142,20 +142,20 @@ export default function AcolhimentoPage({
                                 </header>
 
                                 {isOpen && (
-                                    <div id={`section-${idx}`} className="mt-4 pt-2 border-t border-[#e6f2ee] animate-fade-in">
+                                    <div id={`section-${idx}`} className="mt-4 pt-2 border-t border-tema-borda animate-fade-in">
                                         <div className="flex flex-col gap-3">
                                             {psic.wa ? (
                                                 <a
                                                     href={waLink(psic.wa)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center justify-center gap-2 bg-[#c4e4df] hover:bg-[#b8ebe0] px-3 py-3 rounded-xl font-bold text-[#007080] text-base no-underline transition shadow-sm"
+                                                    className="flex items-center justify-center gap-2 bg-tema-borda-forte hover:bg-tema-borda-forte px-3 py-3 rounded-xl font-bold text-tema-destaque text-base no-underline transition shadow-sm"
                                                 >
-                                                    <MessageCircle size={18} className="text-[#007080]" />
+                                                    <MessageCircle size={18} className="text-tema-destaque" />
                                                     Falar com {psic.nome} — ({psic.fone || "Contato indisponível"})
                                                 </a>
                                             ) : (
-                                                <div className="px-4 py-3 bg-[#f1f9f6] text-[#337b68] rounded-lg">Contato via WhatsApp indisponível</div>
+                                                <div className="px-4 py-3 bg-tema-claro-2 text-tema-medio rounded-lg">Contato via WhatsApp indisponível</div>
                                             )}
 
                                             {psic.instagram && (
@@ -175,7 +175,7 @@ export default function AcolhimentoPage({
 
                                             {(psic.video || psic.video2 || psic.video3) && (
                                                 <div className="mt-4 space-y-3">
-                                                    <span className="block text-[#255f4f] font-extrabold mb-1">▶️ Vídeos e Conteúdos</span>
+                                                    <span className="block text-tema-titulo font-extrabold mb-1">▶️ Vídeos e Conteúdos</span>
 
                                                     {psic.video && (
                                                         <div className="rounded-xl overflow-hidden shadow-md">
@@ -230,19 +230,19 @@ export default function AcolhimentoPage({
                                                 </div>
                                             )}
 
-                                            <div className="mt-4 pt-3 border-t border-[#e6f2ee]">
-                                                <span className="block text-[#255f4f] font-extrabold mb-2">📚 Cursos e Conteúdos Exclusivos</span>
+                                            <div className="mt-4 pt-3 border-t border-tema-borda">
+                                                <span className="block text-tema-titulo font-extrabold mb-2">📚 Cursos e Conteúdos Exclusivos</span>
                                                 {psic.link_curso ? (
                                                     <a
                                                         href={psic.link_curso}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="flex items-center justify-center gap-2 px-5 py-3 bg-[#5ba58c] text-white rounded-xl font-extrabold text-base shadow-lg hover:bg-[#337b68] transition"
+                                                        className="flex items-center justify-center gap-2 px-5 py-3 bg-tema-primaria text-white rounded-xl font-extrabold text-base shadow-lg hover:bg-tema-medio transition"
                                                     >
                                                         Acessar Conteúdo <BookOpen size={16} />
                                                     </a>
                                                 ) : (
-                                                    <span className="inline-block px-4 py-3 bg-[#e7f6f1] text-[#337b68] rounded-lg font-semibold text-sm opacity-90">
+                                                    <span className="inline-block px-4 py-3 bg-tema-claro-2 text-tema-medio rounded-lg font-semibold text-sm opacity-90">
                                                         Em breve! Painel de vendas disponível aqui.
                                                     </span>
                                                 )}

@@ -121,7 +121,7 @@ export default function DiarioFormPage({
             embedded={embedded}
             showBack={!embedded}
             title={id ? "Editar entrada" : "Nova entrada"}
-            subtitle={<span className="text-sm text-[#4f665a]">Um espaço seguro para acolher seus sentimentos.</span>}
+            subtitle={<span className="text-sm text-tema-texto">Um espaço seguro para acolher seus sentimentos.</span>}
         >
             {fetchLoading ? (
                 <div className="flex justify-center py-12">

@@ -2,20 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
-import {
-    Sparkles,
-    Wind,
-    Footprints,
-    Heart,
-    Eye,
-    Palette,
-    MessageCircle,
-    Moon,
-    Clock,
-    History,
-    FileText,
-    NotebookPen,
-} from "lucide-react";
+import { CheckCircle2, ChevronRight, Clock, FileText } from "lucide-react";
 import LegadoLayout from "../../../components/legado/LegadoLayout";
 import "@/styles/legado-app.css";
 
@@ -35,15 +22,34 @@ type ExercicioRealizado = {
     realizado_em: string;
 };
 
-const iconMap: Record<string, any> = {
-    Wind,
-    Footprints,
-    Heart,
-    Eye,
-    Palette,
-    MessageCircle,
-    Sparkles,
-    Moon,
+// Emojis no lugar dos ícones de linha (renderizados com Noto Color Emoji, ver legado-app.css).
+const emojiPorIcone: Record<string, string> = {
+    Wind: "🌬️",
+    Footprints: "👣",
+    Heart: "💗",
+    Eye: "💭",
+    Palette: "🎨",
+    MessageCircle: "💌",
+    Sparkles: "✨",
+    Moon: "🌙",
+};
+
+const emojiPorCategoria: Record<string, string> = {
+    respiracao: "🌬️",
+    movimento: "🚶",
+    gratidao: "💗",
+    mindfulness: "🧘",
+    criatividade: "🎨",
+    conexao: "🤝",
+};
+
+const nomeCategoria: Record<string, string> = {
+    respiracao: "Respiração",
+    movimento: "Movimento",
+    gratidao: "Gratidão",
+    mindfulness: "Mindfulness",
+    criatividade: "Criatividade",
+    conexao: "Conexão",
 };
 
 const grupoEmojis: Record<string, string> = {
@@ -113,97 +119,118 @@ export default function ExerciciosListPage() {
         return acc;
     }, {} as Record<string, Exercicio[]>);
 
-    return (
-        <LegadoLayout title="Exercícios para Melhorar o Dia" backPath="/legado-app/menu">
-            <div className="w-full max-w-md mx-auto">
-                <div className="mb-3 flex items-start justify-between">
-                    <h2 className="text-xl font-semibold text-[#255f4f] flex items-center gap-2">
-                        <Sparkles size={20} /> Exercícios para Melhorar o Dia
-                    </h2>
+    const grupos = Object.entries(exerciciosPorGrupo);
+    const mostrarGrupos = !(grupos.length === 1 && grupos[0][0] === "Sem grupo");
+    const feitosHoje = exercicios.filter((ex) => foiRealizado(ex.id)).length;
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            className="legado-button !px-3 !py-1.5 text-sm"
-                            onClick={() => navigate("/legado-app/exercicios/historico")}
-                            title="Ver histórico de exercícios realizados"
-                            style={{ backgroundColor: "#2563eb" }}
-                        >
-                            <FileText size={14} className="inline mr-1" />
-                            Histórico
-                        </button>
+    return (
+        <LegadoLayout
+            title="Exercícios para Melhorar o Dia"
+            subtitle="Durante o luto, cuidar de si pode parecer difícil. Aqui estão pequenas práticas diárias para ajudar você a reconectar-se com a vida."
+            backPath="/legado-app/menu"
+            largura="larga"
+        >
+            <div className="w-full">
+                {/* Resumo do dia + histórico */}
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white border border-tema-borda px-4 py-3 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl" aria-hidden>{feitosHoje > 0 ? "🌱" : "☀️"}</span>
+                        <div>
+                            <p className="text-sm font-bold text-tema-titulo">
+                                {feitosHoje > 0
+                                    ? `Você já fez ${feitosHoje} ${feitosHoje === 1 ? "exercício" : "exercícios"} hoje`
+                                    : "Escolha um pequeno passo para hoje"}
+                            </p>
+                            <p className="text-xs text-tema-suave">Sem pressa. Cada cuidado conta.</p>
+                        </div>
                     </div>
+                    <button
+                        className="inline-flex items-center gap-2 rounded-full bg-[#2563eb]/10 hover:bg-[#2563eb]/15 text-[#2563eb] text-sm font-bold px-4 py-2 transition"
+                        onClick={() => navigate("/legado-app/exercicios/historico")}
+                        title="Ver histórico de exercícios realizados"
+                    >
+                        <FileText size={16} />
+                        Histórico
+                    </button>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-4">
-                    Durante o luto, cuidar de si pode parecer difícil. Aqui estão pequenas práticas diárias para ajudar você a reconectar-se com a vida.
-                </p>
-
                 {loading ? (
-                    <p className="text-center text-gray-500">Carregando...</p>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div key={i} className="skeleton-card animate-pulse rounded-2xl h-40" />
+                        ))}
+                    </div>
                 ) : exercicios.length === 0 ? (
-                    <div className="p-6 rounded-lg bg-white/60 backdrop-blur-sm border border-white/30 text-center">
-                        <p className="text-gray-700 mb-2">Ainda não há exercícios disponíveis.</p>
-                        <p className="text-sm text-gray-500">Volte mais tarde ou confira o histórico.</p>
+                    <div className="p-8 rounded-2xl bg-white/70 border border-dashed border-tema-borda-forte text-center">
+                        <p className="text-tema-titulo font-semibold mb-1">Ainda não há exercícios disponíveis.</p>
+                        <p className="text-sm text-tema-suave">Volte mais tarde ou confira o histórico.</p>
                     </div>
                 ) : (
-                    <div className="space-y-6">
-                        {Object.entries(exerciciosPorGrupo).map(([grupo, exs]) => {
-                            const emoji = grupoEmojis[grupo] || "✨";
-                            const displayGroup = grupo || "Sem grupo";
-                            return (
-                                <div key={grupo}>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="text-lg">{emoji}</div>
-                                        <h3 className="font-semibold text-[#255f4f]">{displayGroup}</h3>
+                    <div className="space-y-8">
+                        {grupos.map(([grupo, exs]) => (
+                            <section key={grupo}>
+                                {mostrarGrupos && (
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="text-xl" aria-hidden>{grupoEmojis[grupo] || "✨"}</span>
+                                        <h3 className="font-semibold text-tema-titulo">{grupo}</h3>
+                                        <span className="text-xs text-tema-suave">({exs.length})</span>
                                     </div>
+                                )}
 
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                        {exs.map((ex) => {
-                                            const Icon = (ex.icone && iconMap[ex.icone]) || Sparkles;
-                                            const realizado = foiRealizado(ex.id);
-                                            const cor = categoriaColors[ex.categoria] || "#6c63ff";
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {exs.map((ex) => {
+                                        const realizado = foiRealizado(ex.id);
+                                        const cor = categoriaColors[ex.categoria] || "#6c63ff";
+                                        const emoji = (ex.icone && emojiPorIcone[ex.icone]) || emojiPorCategoria[ex.categoria] || "✨";
 
-                                            return (
-                                                <button
-                                                    key={ex.id}
-                                                    onClick={() => navigate(`/legado-app/exercicios/${ex.id}`)}
-                                                    className="text-left p-4 rounded-xl border bg-white/80 backdrop-blur-sm hover:shadow-md transition-shadow flex items-start gap-3 w-full"
-                                                    style={{ borderLeft: `4px solid ${cor}` }}
-                                                >
-                                                    <div
-                                                        className="p-2 rounded-full flex-shrink-0"
-                                                        style={{ backgroundColor: `${cor}22` }}
+                                        return (
+                                            <button
+                                                key={ex.id}
+                                                onClick={() => navigate(`/legado-app/exercicios/${ex.id}`)}
+                                                className="group relative text-left w-full h-full flex flex-col rounded-2xl bg-white border border-tema-borda p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                                            >
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <span
+                                                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl"
+                                                        style={{ backgroundColor: `${cor}1f` }}
+                                                        aria-hidden
                                                     >
-                                                        <Icon size={20} style={{ color: cor }} />
+                                                        {emoji}
+                                                    </span>
+                                                    {realizado && (
+                                                        <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-1 rounded-full">
+                                                            <CheckCircle2 size={12} /> Feito hoje
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <h4 className="mt-4 font-serif text-lg font-bold leading-snug text-tema-titulo">{ex.titulo}</h4>
+                                                <p className="mt-1.5 text-sm text-tema-texto leading-relaxed line-clamp-3">{ex.descricao}</p>
+
+                                                <div className="mt-auto pt-4 flex items-center justify-between gap-2">
+                                                    <div className="flex flex-wrap items-center gap-1.5">
+                                                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-tema-suave bg-tema-claro-2 px-2.5 py-1 rounded-full">
+                                                            <Clock size={12} /> {ex.duracao_minutos} min
+                                                        </span>
+                                                        {nomeCategoria[ex.categoria] && (
+                                                            <span
+                                                                className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                                                                style={{ backgroundColor: `${cor}1a`, color: cor }}
+                                                            >
+                                                                {nomeCategoria[ex.categoria]}
+                                                            </span>
+                                                        )}
                                                     </div>
-
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center justify-between gap-2">
-                                                            <h4 className="font-medium text-gray-800 text-sm line-clamp-2">{ex.titulo}</h4>
-                                                            {realizado && (
-                                                                <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                                                                    ✓ Feito hoje
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        <p className="text-sm text-gray-600 mt-1 line-clamp-3">{ex.descricao}</p>
-
-                                                        <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
-                                                            <Clock size={14} />
-                                                            <span>{ex.duracao_minutos} min</span>
-                                                        </div>
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                                    <ChevronRight size={18} className="text-tema-apagado group-hover:text-tema-titulo group-hover:translate-x-0.5 transition" />
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
-                            );
-                        })}
+                            </section>
+                        ))}
                     </div>
                 )}
-
             </div>
         </LegadoLayout>
     );

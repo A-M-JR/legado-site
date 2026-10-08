@@ -114,18 +114,18 @@ export default function DiarioListPage({
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-32 w-full bg-white/50 animate-pulse rounded-2xl border border-[#e6f2ee]"
+                className="h-32 w-full bg-white/50 animate-pulse rounded-2xl border border-tema-borda"
               />
             ))}
           </div>
         ) : empty ? (
-          <div className="text-center text-[#4f665a] bg-white/60 backdrop-blur-sm border border-[#e6f2ee] rounded-2xl p-8 shadow-sm mx-1">
+          <div className="text-center text-tema-texto bg-white/60 backdrop-blur-sm border border-tema-borda rounded-2xl p-8 shadow-sm mx-1">
             <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 rounded-full bg-[#f0f7f4] flex items-center justify-center">
-                <Heart size={24} className="text-[#255f4f] opacity-40" />
+              <div className="w-12 h-12 rounded-full bg-tema-claro-2 flex items-center justify-center">
+                <Heart size={24} className="text-tema-titulo opacity-40" />
               </div>
             </div>
-            <p className="font-bold text-lg text-[#255f4f]">
+            <p className="font-bold text-lg text-tema-titulo">
               Que tal começar com poucas linhas?
             </p>
             <p className="text-sm mt-2 opacity-80">
@@ -143,12 +143,12 @@ export default function DiarioListPage({
             {items.map((it) => (
               <div
                 key={it.id}
-                className="group relative bg-white border border-[#e6f2ee] p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300"
+                className="group relative bg-white border border-tema-borda p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300"
               >
                 <div className="flex justify-between items-start gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-lg text-[#255f4f] truncate">
+                      <h3 className="font-bold text-lg text-tema-titulo truncate">
                         {it.titulo || "(Sem título)"}
                       </h3>
                       {it.privado && (
@@ -162,7 +162,7 @@ export default function DiarioListPage({
                   <div className="flex gap-1">
                     <button
                       title="Editar"
-                      className="p-2 text-[#64748b] hover:text-[#255f4f] hover:bg-[#f1f5f9] rounded-lg transition-colors"
+                      className="p-2 text-[#64748b] hover:text-tema-titulo hover:bg-[#f1f5f9] rounded-lg transition-colors"
                       onClick={() =>
                         navigate(`${basePath}/editar/${it.id}`)
                       }
@@ -214,7 +214,7 @@ export default function DiarioListPage({
                     Ler entrada completa
                   </button>
                   {it.tipo_pessoa && it.titular_ou_dependente_id && (
-                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md bg-[#e9f8f4] text-[#255f4f]">
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md bg-tema-claro-2 text-tema-titulo">
                       {it.tipo_pessoa}
                     </span>
                   )}
