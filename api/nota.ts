@@ -141,19 +141,7 @@ async function resolverId(parametro: string): Promise<string | null> {
 }
 
 export async function GET(request: Request): Promise<Response> {
-    const params = new URL(request.url).searchParams;
-    // Diagnóstico de deploy: só NOMES de variáveis com "SUPABASE", nunca valores.
-    if (params.get("diag") === "1") {
-        return Response.json(
-            {
-                ambiente: process.env.VERCEL_ENV ?? null,
-                commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
-                variaveis: Object.keys(process.env).filter((k) => k.includes("SUPABASE")).sort(),
-            },
-            { headers: { "Cache-Control": "no-store" } }
-        );
-    }
-    const parametro = params.get("id")?.trim() ?? "";
+    const parametro = new URL(request.url).searchParams.get("id")?.trim() ?? "";
     const id = await resolverId(parametro).catch(() => null);
     if (!id) {
         return Response.redirect(SITE_URL, 302);
