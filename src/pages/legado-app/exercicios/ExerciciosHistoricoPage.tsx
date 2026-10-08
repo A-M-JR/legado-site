@@ -1,6 +1,5 @@
 // src/pages/legado-app/exercicios/ExerciciosHistoricoPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import {
   Search,
@@ -16,8 +15,6 @@ import {
   MessageCircle,
   Moon,
   Clock,
-  NotebookPen,
-  ArrowLeft,
 } from "lucide-react";
 import LegadoLayout from "../../../components/legado/LegadoLayout";
 import "@/styles/legado-app.css";
@@ -85,7 +82,6 @@ function formatDateTimeBR(iso: string) {
 }
 
 export default function ExerciciosHistoricoPage() {
-  const navigate = useNavigate();
   const [itens, setItens] = useState<Realizado[]>([]);
   const [loading, setLoading] = useState(true);
 

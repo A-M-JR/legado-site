@@ -201,7 +201,7 @@ export default function AdminDashboard() {
                         const { data: usuarios } = await supabase.rpc(
                             "get_usuarios_com_email"
                         );
-                        const mapaUsuarios = new Map(
+                        const mapaUsuarios = new Map<string, any>(
                             (usuarios || []).map((u: any) => [u.auth_id, u])
                         );
 

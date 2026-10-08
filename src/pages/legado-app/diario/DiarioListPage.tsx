@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
-import { Plus, NotebookPen, Edit, Trash2, Lock, Heart } from "lucide-react";
+import { Plus, Edit, Trash2, Lock, Heart } from "lucide-react";
 import LegadoLayout from "@/components/legado/LegadoLayout";
 import { toast } from "@/hooks/use-toast";
 import { confirmDialog } from "@/components/ui/confirm-dialog";
@@ -189,7 +189,7 @@ export default function DiarioListPage({
                           <span
                             key={i}
                             className={`text-base ${
-                              i < it.humor ? "grayscale-0" : "grayscale opacity-30"
+                              i < (it.humor ?? 0) ? "grayscale-0" : "grayscale opacity-30"
                             }`}
                           >
                             😊

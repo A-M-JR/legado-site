@@ -1,5 +1,3 @@
-import React from 'react';
-import { motion } from 'framer-motion';
 import { ArrowRight, Heart, Sparkles } from 'lucide-react';
 
 export default function Hero() {

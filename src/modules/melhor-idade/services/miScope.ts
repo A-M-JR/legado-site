@@ -160,7 +160,10 @@ type ScopedQuery = {
     eq: (column: string, value: string) => ScopedQuery;
 };
 
-export function applyScope<T extends ScopedQuery>(query: T, scope: MiScope): T {
-    if (scope.titularId) return query.eq("titular_id", scope.titularId);
-    return query.eq("auth_id", scope.authId);
+// T sem restrição de propósito: "T extends ScopedQuery" fazia o TS comparar a fundo o builder do
+// Supabase em cada chamada (TS2589). .eq() devolve o mesmo builder, então o tipo é preservado.
+export function applyScope<T>(query: T, scope: MiScope): T {
+    const q = query as unknown as ScopedQuery;
+    if (scope.titularId) return q.eq("titular_id", scope.titularId) as unknown as T;
+    return q.eq("auth_id", scope.authId) as unknown as T;
 }

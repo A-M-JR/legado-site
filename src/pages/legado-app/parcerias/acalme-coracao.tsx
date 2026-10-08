@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
     HeartHandshake,
     MessageCircle,
@@ -84,7 +83,6 @@ export default function AcolhimentoPage({
         </>
     ),
 }: AcolhimentoPageProps) {
-    const navigate = useNavigate();
     const [expanded, setExpanded] = useState<number | null>(null);
 
     function toggle(idx: number) {

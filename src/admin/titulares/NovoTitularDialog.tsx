@@ -191,7 +191,7 @@ export default function NovoTitularDialog({ open, onClose, refresh }: NovoTitula
             let fotoUrl = null;
             if (fotoFile) {
                 const fileName = `${authId}-${Date.now()}.${fotoFile.name.split(".").pop()}`;
-                const { data: uploadData, error: uploadError } = await supabase.storage
+                const { error: uploadError } = await supabase.storage
                     .from("titulares")
                     .upload(fileName, fotoFile);
 

@@ -27,8 +27,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    Trash2, KeyRound, Save, Loader2, Eye, EyeOff,
-    Upload, X, User, ShieldCheck, History, Smartphone
+    Trash2, KeyRound, Save, Loader2,
+    Upload, User, ShieldCheck, History, Smartphone
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -71,7 +71,6 @@ export default function GerenciarUsuario({ open, onClose, user, refresh }: any) 
     const [showPasswordDialog, setShowPasswordDialog] = useState(false);
     const [novaSenha, setNovaSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         if (open && user) {

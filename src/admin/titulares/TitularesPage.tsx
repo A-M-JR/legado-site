@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +33,6 @@ export default function TitularesPage() {
     const [selectedUser, setSelectedUser] = useState<Linha | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
 
-    const navigate = useNavigate();
 
     useEffect(() => {
         fetchUsuarios();

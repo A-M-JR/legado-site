@@ -37,7 +37,7 @@ const PERIODOS: { id: CuidadoPeriodo | "todos"; label: string; icon: typeof Sun 
 const TIPO_LABEL: Record<CuidadoTipo, string> = {
     remedio: "Remédio",
     comida: "Alimentação",
-    higene: "Higiene",
+    higiene: "Higiene",
     atividade: "Atividade",
 };
 

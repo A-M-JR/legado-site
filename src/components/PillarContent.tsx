@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, AlertCircle, ArrowRight, Quote, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface PillarData {
   id: string;
@@ -50,7 +49,6 @@ interface PillarContentProps {
 }
 
 const PillarContent: React.FC<PillarContentProps> = ({ data }) => {
-  const navigate = useNavigate();
 
   return (
     <motion.div

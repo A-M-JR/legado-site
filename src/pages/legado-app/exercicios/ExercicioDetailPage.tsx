@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
 import {
@@ -13,7 +13,6 @@ import {
     Sparkles,
     Moon,
     Clock,
-    NotebookPen,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import LegadoLayout from "@/components/legado/LegadoLayout";

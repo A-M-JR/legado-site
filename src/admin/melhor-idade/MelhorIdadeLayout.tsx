@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation, NavLink } from "react-router-dom";
+import { Outlet, useNavigate, NavLink } from "react-router-dom";
 import { useOutletContext } from "react-router-dom";
 import {
     Heart,
@@ -13,7 +13,6 @@ import {
 export default function MelhorIdadeLayout() {
     const { userProfile } = useOutletContext<{ userProfile: any }>();
     const navigate = useNavigate();
-    const location = useLocation();
 
     const menuItems = [
         { icon: Home, label: "Início", path: "/melhor-idade" },

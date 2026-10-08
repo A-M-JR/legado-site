@@ -21,7 +21,6 @@ import {
     LogOut,
     LayoutDashboard,
     ChevronRight,
-    History as HistoryIcon,
     Puzzle,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";

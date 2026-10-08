@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Mic, MessageSquare, Heart, Image as ImageIcon, Plus, X } from "lucide-react";
+import { Camera, Mic, MessageSquare, Heart, Plus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 type Post = {

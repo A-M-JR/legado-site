@@ -6,7 +6,7 @@ import { supabase } from "../../../lib/supabaseClient";
 import { validarCPF } from "../../../utils/validarCPF";
 import { dataISOParaBR, isTelefoneValido, limparNome, maskCPF, maskDataBR, maskTelefone } from "@/lib/masks";
 import { isValidDateBR } from '../../../utils/formatDateToBR';
-import { ArrowLeft, CheckCircle, Camera, Image as ImageIcon, Plus } from "lucide-react";
+import { ArrowLeft, CheckCircle, Camera, Image as ImageIcon } from "lucide-react";
 import LegadoNav, { LEGADO_NAV_ESPACO } from "@/components/legado/LegadoNav";
 import "@/styles/legado-app.css";
 
@@ -26,7 +26,6 @@ export default function EditarDependentePage() {
     // Usuário mestre (admin dependente)
     const [isMaster, setIsMaster] = useState(false);
     const [email, setEmail] = useState("");
-    const [senha, setSenha] = useState("");
     const [loading, setLoading] = useState(false);
 
     // Alerta

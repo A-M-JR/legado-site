@@ -48,7 +48,7 @@ export function checkValidDateBR(dateStr: string): {
 export function formatBR(date?: string): string {
     if (!date) return "Data não informada";
 
-    let parsed = parse(date, 'yyyy-MM-dd', new Date());
+    let parsed: Date | null = parse(date, 'yyyy-MM-dd', new Date());
     if (!isValid(parsed)) {
         parsed = parseBR(date);
     }

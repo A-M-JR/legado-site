@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "../../../lib/supabaseClient";
-import { Save, ArrowLeft, NotebookPen, Heart, Sparkles } from "lucide-react";
+import { Save, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import LegadoLayout from "@/components/legado/LegadoLayout";
 import "@/styles/legado-app.css";

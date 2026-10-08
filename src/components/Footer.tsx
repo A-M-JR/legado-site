@@ -1,4 +1,3 @@
-import React from 'react';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
 import { LogIn, ShieldCheck, FileText, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

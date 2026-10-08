@@ -23,7 +23,7 @@ interface Props {
     refresh: () => void;
 }
 
-export default function EditTitularDialog({ open, onClose, titularId, parceiroId, refresh }: Props) {
+export default function EditTitularDialog({ open, onClose, titularId, refresh }: Props) {
     const [loading, setLoading] = useState(false);
     const [loadingData, setLoadingData] = useState(false);
 

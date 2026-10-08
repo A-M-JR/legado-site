@@ -1,6 +1,6 @@
 // src/components/FAQ.tsx
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 type FAQItem = {
   question: string;

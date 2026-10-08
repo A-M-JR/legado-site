@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { BookHeart, HeartPulse, UserRoundPlus, Stethoscope, ChevronRight, Sparkles, ShieldCheck, Loader2, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import logoPadrao from "@/assets/logo-ilc.png";
 
